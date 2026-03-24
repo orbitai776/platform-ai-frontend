@@ -108,6 +108,7 @@ const signInWithGoogle = async () => {
     emitUsername(user.value.displayName);
 
     console.log("Đăng nhập thành công:", JSON.stringify(user.value));
+    console.log("ID Token:", idToken);
   } catch (error) {
     console.error("Lỗi đăng nhập:", error);
     if (error.code === 'auth/popup-closed-by-user') {
