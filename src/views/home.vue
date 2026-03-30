@@ -3,6 +3,7 @@
     <div class="text-center text-white">
       <h1 class="text-5xl font-bold mb-4">Orbit AI</h1>
       <p class="text-xl">Welcome to Orbit AI, env-secret-hook : {{ env }}</p>
+      <p class="text-xl">Welcome to Orbit AI, test commit : {{ env }}</p>
     </div>
   </div>
 </template>
