@@ -8,7 +8,7 @@ export default defineNuxtConfig({
     '@nuxt/devtools',
     '@nuxtjs/tailwindcss',
   ],
-  
+   
   // App config
   app: {
     head: {
