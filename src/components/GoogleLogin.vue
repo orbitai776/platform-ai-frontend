@@ -37,7 +37,12 @@
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { auth, provider, signInWithPopup, signOut } from "../auth/firebase";
+import apiResource from '../composables/apiResource';
 const router = useRouter();
+
+const {
+  authenticateFirebaseToken,
+} = apiResource();
 
 const props = defineProps({
   username: String,
@@ -109,6 +114,20 @@ const signInWithGoogle = async () => {
 
     console.log("Đăng nhập thành công:", JSON.stringify(user.value));
     console.log("ID Token:", idToken);
+
+    if (idToken) {
+      const gatewayLogin = await authenticateFirebaseToken({
+        idToken: idToken
+      });
+
+      if (gatewayLogin && gatewayLogin.accessToken) {
+        console.log("Gateway login response:", JSON.stringify(gatewayLogin));
+        console.log("Gateway login successful, access token stored.");
+      } else {
+        console.error("Gateway login failed: No access token received");
+        showErrorNotification('Đăng nhập thất bại: Không nhận được token');
+      }
+    }
   } catch (error) {
     console.error("Lỗi đăng nhập:", error);
     if (error.code === 'auth/popup-closed-by-user') {
