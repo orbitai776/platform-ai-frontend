@@ -1,0 +1,51 @@
+import { defineNuxtConfig } from 'nuxt/config'
+
+export default defineNuxtConfig({
+  ssr: true,
+  
+  // Nuxt modules
+  modules: [
+    '@nuxt/devtools',
+    '@nuxtjs/tailwindcss',
+  ],
+  
+  // App config
+  app: {
+    head: {
+      title: 'Orbit AI',
+      meta: [
+        { charset: 'utf-8' },
+        { name: 'viewport', content: 'width=device-width, initial-scale=1' }
+      ],
+      link: [
+        { rel: 'icon', type: 'image/svg+xml', href: '/vite.svg' }
+      ]
+    }
+  },
+  
+  // Alias cho dễ import
+  alias: {
+    '@': '.',
+    '@components': './components',
+    '@pages': './pages',
+    '@server': './server'
+  },
+
+  nitro: {
+    preset: 'vercel',  // Quan trọng: set preset cho Vercel
+    compressPublicAssets: true,
+    minify: true,
+    vercel: {
+      functions: {
+        maxDuration: 10  // Tối đa 10 giây cho serverless functions
+      }
+    }
+  },
+
+  build: {
+    transpile: [],
+    analyze: false
+  },
+
+  devtools: { enabled: true }
+})

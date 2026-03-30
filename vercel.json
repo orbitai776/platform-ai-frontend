@@ -1,5 +1,7 @@
 {
-    "rewrites": [
-        {"source": "/(.*)", "destination": "/"}
-    ]
+  "buildCommand": "npm run vercel-build",
+  "outputDirectory": ".output/public",
+  "devCommand": "npm run dev:nuxt",
+  "installCommand": "npm install",
+  "framework": "nuxtjs"
 }
