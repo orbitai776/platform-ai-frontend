@@ -26,14 +26,14 @@ jobs:
         env:
           ADMIN_USER: ${{ vars.ADMIN_USER }}
           ADMIN_MAIL: ${{ vars.ADMIN_MAIL }}
-          
+          BRANCH: ${{ github.ref_name }}
         run: |
           # BƯỚC 2: Cấu hình danh tính Admin (Thay bằng email/name của bạn)
           git config --global user.name "$ADMIN_USER"
           git config --global user.email "$ADMIN_MAIL"
           # BƯỚC 3: Tạo thay đổi nhỏ để ghi đè (Trigger file)
-          COMMIT_MSG=$(git log -1 --pretty=%B)COMMIT_MSG=$(git log -1 --pretty=%B)
+          COMMIT_MSG=$(git log -1 --pretty=%B)
           
           # 3. Ghi đè commit: Đổi Tác giả (Author) và thêm [skip ci] vào message để tránh vòng lặp
           git commit --amend --author="$ADMIN_USER <$ADMIN_MAIL>" -m "$COMMIT_MSG - [skip ci]"
-          git push --force-with-lease origin dev
+          git push --force-with-lease origin ${{ env.BRANCH }}
