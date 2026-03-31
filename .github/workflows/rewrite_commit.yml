@@ -7,15 +7,11 @@ jobs:
   override-commit:
     runs-on: ubuntu-latest
     
-    # BƯỚC 1: Phải khai báo Environment ở đây để GitHub nạp các biến/secrets vào Job
     environment: dev 
 
-    # BƯỚC 2: Sử dụng biến đó trong phần 'if' của Job (hoặc của từng Step)
-    # Lưu ý: Dùng context 'vars' cho Variable hoặc 'secrets' cho Secret
-    if: github.actor == vars.LEAD
-    
     steps:
       - name: Checkout Code
+        if: github.actor == vars.LEAD
         uses: actions/checkout@v4
         with:
           # Dùng Token của Admin để có quyền ghi và trigger Vercel
@@ -23,6 +19,7 @@ jobs:
           fetch-depth: 0
 
       - name: Overwrite with Admin Identity
+        if: github.actor == vars.LEAD
         env:
           ADMIN_USER: ${{ vars.ADMIN_USER }}
           ADMIN_MAIL: ${{ vars.ADMIN_MAIL }}
