@@ -1,11 +1,10 @@
 <template>
   <div id="app">
-    <Navbar />
-    <router-view />
+    <NuxtPage />
   </div>
 </template>
 
 <script setup>
-  import Navbar from './views/navbar.vue';
+  
 </script>
 
