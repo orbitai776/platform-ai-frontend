@@ -9,6 +9,9 @@
         <li>
           <a href="/profile" class="hover:text-accent transition">Profile</a>
         </li>
+          <li>
+          <a href="/billing" class="hover:text-accent transition">Billing</a>
+        </li>
       </ul>
     </div>
   </nav>
