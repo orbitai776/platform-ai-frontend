@@ -5,17 +5,15 @@ import Home from '../views/home.vue';
 
 
 //example
-import AdminLayout from '../layout/admin/AdminExampleLayout.vue';
-import HomeAdmin from '../views/admin/HomeAdminExample.vue';
+import AdminLayout from '../layout/admin/layoutAdmin.vue';
+import HomeAdmin from '../views/admin/HomeAdmin.vue';
 
 const routes = [
     { path: '/', name: 'Home', component: Home },
     { path: '/profile', name: 'Profile', component: Profile },
     
         //example
-    {path: '/admin', component: AdminLayout, children: [
-        { path: '', name: 'AdminHome', component: HomeAdmin },
-    ]},
+    
 ];
 
 // Create router instance
