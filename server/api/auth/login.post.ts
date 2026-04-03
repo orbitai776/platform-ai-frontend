@@ -2,7 +2,6 @@ import { defineEventHandler, readBody, setCookie } from 'h3'
 
 export default defineEventHandler(async (event) => {
   const { idToken } = await readBody(event)
-  
   const response: any = await $fetch(`${process.env.VITE_GATEWAY_URL}/v1/api/auth`, {
     method: 'POST',
     body: { idToken }

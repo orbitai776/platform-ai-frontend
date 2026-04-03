@@ -7,10 +7,13 @@
       <div class="mt-4 p-4 bg-blue-100 rounded">
         <p>This section only renders on client</p>
       </div>
+      
+      <!-- AI Chat Component -->
+      <AIChatContainer />
     </ClientOnly>
   </div>
 </template>
 
 <script setup>
-// Page logic
+import AIChatContainer from '../src/components/ai-chat/AIChatContainer.vue'
 </script>
