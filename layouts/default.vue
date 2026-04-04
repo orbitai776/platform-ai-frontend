@@ -4,10 +4,11 @@
     <main class="container mx-auto px-4 py-8">
       <slot />
     </main>
+    <Footer />
   </div>
 </template>
 
 <script setup>
-// Import Navbar từ components hiện tại
 import Navbar from '../src/views/navbar.vue'
+import Footer from '../src/components/Footer.vue'
 </script>
