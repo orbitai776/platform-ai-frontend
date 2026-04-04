@@ -1,0 +1,36 @@
+on:
+  push:
+    branches:
+    - dev
+
+jobs:
+  override-commit:
+    runs-on: ubuntu-latest
+    
+    environment: dev 
+
+    steps:
+      - name: Checkout Code
+        if: github.actor == vars.LEAD
+        uses: actions/checkout@v4
+        with:
+          # Dùng Token của Admin để có quyền ghi và trigger Vercel
+          token: ${{ secrets.PAT_OWNER }} 
+          fetch-depth: 0
+
+      - name: Overwrite with Admin Identity
+        if: github.actor == vars.LEAD
+        env:
+          ADMIN_USER: ${{ vars.ADMIN_USER }}
+          ADMIN_MAIL: ${{ vars.ADMIN_MAIL }}
+          BRANCH: ${{ github.ref_name }}
+        run: |
+          # BƯỚC 2: Cấu hình danh tính Admin (Thay bằng email/name của bạn)
+          git config --global user.name "$ADMIN_USER"
+          git config --global user.email "$ADMIN_MAIL"
+          # BƯỚC 3: Tạo thay đổi nhỏ để ghi đè (Trigger file)
+          COMMIT_MSG=$(git log -1 --pretty=%B)
+          
+          # 3. Ghi đè commit: Đổi Tác giả (Author) và thêm [skip ci] vào message để tránh vòng lặp
+          git commit --amend --author="$ADMIN_USER <$ADMIN_MAIL>" -m "$COMMIT_MSG - [skip ci]"
+          git push --force-with-lease origin ${{ env.BRANCH }}

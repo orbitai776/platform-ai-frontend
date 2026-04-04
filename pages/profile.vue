@@ -36,8 +36,8 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { auth, provider, signInWithPopup, signOut } from "../auth/firebase";
-import apiResource from '../composables/apiResource';
+import { auth, provider, signInWithPopup, signOut } from "../src/auth/firebase";
+import apiResource from '../src/composables/apiResource';
 const router = useRouter();
 
 const {
@@ -99,6 +99,23 @@ const setupAuthListener = async () => {
   }
 };
 
+const loginWithFirebaseToken = async (idToken) => {
+  try {
+    const response = await $fetch('/api/auth/login', {
+      method: 'POST',
+      body: { idToken }
+    })
+    
+    if (response.success) {
+      console.log('Login successful:', response.user)
+      return response
+    }
+  } catch (error) {
+    console.error('Login error:', error)
+    showErrorNotification('Đăng nhập thất bại')
+  }
+}
+
 const signInWithGoogle = async () => {
   try {
     // Optional: Sign out before signing in again
@@ -115,19 +132,27 @@ const signInWithGoogle = async () => {
     console.log("Đăng nhập thành công:", JSON.stringify(user.value));
     console.log("ID Token:", idToken);
 
-    if (idToken) {
-      const gatewayLogin = await authenticateFirebaseToken({
-        idToken: idToken
-      });
-
-      if (gatewayLogin && gatewayLogin.accessToken) {
-        console.log("Gateway login response:", JSON.stringify(gatewayLogin));
-        console.log("Gateway login successful, access token stored.");
-      } else {
-        console.error("Gateway login failed: No access token received");
-        showErrorNotification('Đăng nhập thất bại: Không nhận được token');
-      }
+    const loginResult = await loginWithFirebaseToken(idToken);
+    if (loginResult?.success) {
+      console.log('Logged in successfully')
+    } else {
+      console.error('Login failed: No success response from server');
+      showErrorNotification('Đăng nhập thất bại: Không nhận được phản hồi thành công từ server');
     }
+
+    // if (idToken) {
+    //   const gatewayLogin = await authenticateFirebaseToken({
+    //     idToken: idToken
+    //   });
+
+    //   if (gatewayLogin && gatewayLogin.accessToken) {
+    //     console.log("Gateway login response:", JSON.stringify(gatewayLogin));
+    //     console.log("Gateway login successful, access token stored.");
+    //   } else {
+    //     console.error("Gateway login failed: No access token received");
+    //     showErrorNotification('Đăng nhập thất bại: Không nhận được token');
+    //   }
+    // }
   } catch (error) {
     console.error("Lỗi đăng nhập:", error);
     if (error.code === 'auth/popup-closed-by-user') {
