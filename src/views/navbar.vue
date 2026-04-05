@@ -28,6 +28,9 @@
         <li>
           <a href="/news" class="hover:text-accent transition">News</a>
         </li>
+          <li>
+          <a href="/billing" class="hover:text-accent transition">Billing</a>
+        </li>
       </ul>
 
       <!-- Actions -->
