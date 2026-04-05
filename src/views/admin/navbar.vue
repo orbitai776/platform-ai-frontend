@@ -13,11 +13,11 @@
         <div class="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
           <div class="hidden sm:ml-6 sm:block">
             <div class="flex space-x-4">
-              <a v-for="item in navigation" :key="item.name" :href="item.href"
+              <NuxtLink v-for="item in navigation" :key="item.name" :to="item.href"
                 :class="[item.current ? 'bg-gray-950/50 text-white' : 'text-gray-300 hover:bg-white/5 hover:text-white', 'rounded-md px-3 py-2 text-sm font-medium']"
                 :aria-current="item.current ? 'page' : undefined">
                 {{ item.name }}
-              </a>
+              </NuxtLink>
             </div>
           </div>
         </div>
@@ -29,32 +29,30 @@
             <BellIcon class="size-6" aria-hidden="true" />
           </button>
 
-          <!-- Profile dropdown -->
           <Menu as="div" class="relative ml-3">
-            <MenuButton class="relative flex rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500">
-              <span class="absolute -inset-1.5"></span>
-              <span class="sr-only">Open user menu</span>
-              <img
-                class="size-8 rounded-full bg-gray-800 outline -outline-offset-1 outline-white/10"
-                :src="user?.photoURL || 'https://ui-avatars.com/api/?name=Admin&background=374151&color=fff'"
-                :alt="user?.displayName || 'User'"
-              />
-            </MenuButton>
-
+            <div>
+              <MenuButton class="relative flex rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500">
+                <span class="absolute -inset-1.5"></span>
+                <span class="sr-only">Open user menu</span>
+                <img
+                  class="size-8 rounded-full bg-gray-800 outline -outline-offset-1 outline-white/10"
+                  :src="user?.photoURL || 'https://ui-avatars.com/api/?name=Admin&background=374151&color=fff'"
+                  :alt="user?.displayName || 'User'"
+                />
+              </MenuButton>
+            </div>
             <transition enter-active-class="transition ease-out duration-100" enter-from-class="transform opacity-0 scale-95" enter-to-class="transform scale-100" leave-active-class="transition ease-in duration-75" leave-from-class="transform scale-100" leave-to-class="transform opacity-0 scale-95">
               <MenuItems class="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-gray-800 py-1 outline -outline-offset-1 outline-white/10">
-              
                 <div class="px-4 py-2 border-b border-white/10">
                   <p class="text-sm text-white font-medium truncate">{{ user?.displayName }}</p>
                   <p class="text-xs text-gray-400 truncate">{{ user?.email }}</p>
                 </div>
                 <MenuItem v-slot="{ active }">
-                  <a href="#" :class="[active ? 'bg-white/5' : '', 'block px-4 py-2 text-sm text-gray-300']">Your profile</a>
+                  <NuxtLink to="/profile" :class="[active ? 'bg-white/5' : '', 'block px-4 py-2 text-sm text-gray-300']">Your profile</NuxtLink>
                 </MenuItem>
                 <MenuItem v-slot="{ active }">
-                  <a href="#" :class="[active ? 'bg-white/5' : '', 'block px-4 py-2 text-sm text-gray-300']">Settings</a>
+                  <NuxtLink to="/settings" :class="[active ? 'bg-white/5' : '', 'block px-4 py-2 text-sm text-gray-300']">Settings</NuxtLink>
                 </MenuItem>
-               
                 <MenuItem v-slot="{ active }">
                   <button
                     @click="handleLogout"
@@ -72,29 +70,32 @@
 
     <DisclosurePanel class="sm:hidden">
       <div class="space-y-1 px-2 pt-2 pb-3">
-        <DisclosureButton v-for="item in navigation" :key="item.name" as="a" :href="item.href"
+        <NuxtLink v-for="item in navigation" :key="item.name" :to="item.href"
           :class="[item.current ? 'bg-gray-950/50 text-white' : 'text-gray-300 hover:bg-white/5 hover:text-white', 'block rounded-md px-3 py-2 text-base font-medium']"
           :aria-current="item.current ? 'page' : undefined">
           {{ item.name }}
-        </DisclosureButton>
+        </NuxtLink>
       </div>
     </DisclosurePanel>
   </Disclosure>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
+import { useRoute } from 'vue-router'
 import { Disclosure, DisclosureButton, DisclosurePanel, Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue'
 import { Bars3Icon, BellIcon, XMarkIcon } from '@heroicons/vue/24/outline'
 
-const navigation = [
-  { name: 'Dashboard', href: '#', current: true },
-  { name: 'Users', href: '#', current: false },
-  { name: 'Partners', href: '#', current: false },
-  { name: 'Organizations', href: '#', current: false },
-  { name: 'Services', href: '#', current: false },
-]
+const route = useRoute()
 
+// CHỈ CHỈNH TẠI ĐÂY: Thêm link đến users
+const navigation = computed(() => [
+  { name: 'Dashboard', href: '/admin', current: route.path === '/admin' },
+  { name: 'Users', href: '/admin/users', current: route.path === '/admin/users' },
+  { name: 'Partners', href: '/admin/partners', current: route.path === '/admin/partners' },
+  { name: 'Organizations', href: '/admin/organizations', current: route.path === '/admin/organizations' },
+  { name: 'Services', href: '/admin/services', current: route.path === '/admin/services' },
+])
 
 const user = ref(null)
 
@@ -107,14 +108,14 @@ onMounted(async () => {
   })
 })
 
-
 const handleLogout = async () => {
   try {
     const { auth } = await import('~/src/auth/firebase.js')
     const { signOut } = await import('firebase/auth')
 
     await signOut(auth)
-    navigateTo('/loginAdmin')
+    // Sử dụng navigateTo của Nuxt hoặc window.location
+    window.location.href = '/loginAdmin'
   } catch (error) {
     console.error('Logout failed:', error)
   }
