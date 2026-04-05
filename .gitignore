@@ -1,5 +1,11 @@
+# Dependencies
 node_modules/
+
+# Nuxt
 .nuxt/
+.output/
+
+# Environment variables
 .env
-.env.secret
-dist/
+.env.local
+.env.*.local
