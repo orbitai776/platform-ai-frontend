@@ -25,6 +25,9 @@
         <li>
           <a href="#" class="text-white/65 no-underline text-sm transition-colors duration-200 hover:text-white">Tin tức</a>
         </li>
+        <li>
+          <a href="/news" class="hover:text-accent transition">News</a>
+        </li>
       </ul>
 
       <!-- Actions -->
