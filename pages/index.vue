@@ -200,12 +200,17 @@
       </div>
 
     </div>
-
+    <!-- ===== AI CHAT FLOAT ===== -->
+    <ClientOnly>
+      <AIChatContainer />
+    </ClientOnly>
+    <!-- ===== END AI CHAT ===== -->
   </div>
 </template>
 
 <script setup>
 import { ref, computed } from 'vue'
+import AIChatContainer from '../src/components/ai-chat/AIChatContainer.vue'
 
 definePageMeta({
   layout: 'default'
