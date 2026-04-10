@@ -7,5 +7,4 @@
 
 <script setup>
 import navbar from '~/src/views/admin/navbar.vue';
-import users from '~/src/views/admin/users.vue';
 </script>
