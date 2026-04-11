@@ -12,8 +12,8 @@
       <div class="p-6 space-y-4">
         <div class="space-y-3">
           <div v-for="pkg in tokenPackages" :key="pkg.id"
-               @click="selectedPackage = pkg.id"
-               :class="selectedPackage === pkg.id ? 'border-blue-500 bg-blue-500/10' : 'border-slate-700 hover:border-slate-500 bg-slate-800/30'"
+               @click="selectedPackage = pkg"
+               :class="selectedPackage.id === pkg.id ? 'border-blue-500 bg-blue-500/10' : 'border-slate-700 hover:border-slate-500 bg-slate-800/30'"
                class="flex items-center justify-between p-4 border-2 rounded-2xl cursor-pointer transition-all">
             
             <div>
@@ -26,7 +26,7 @@
               <div class="text-sm font-medium text-slate-400 mt-1">Giá: <span class="text-blue-400">{{ pkg.price }}</span></div>
             </div>
             
-            <div :class="selectedPackage === pkg.id ? 'text-blue-500 scale-100' : 'text-transparent scale-50'" class="transition-transform duration-200">
+            <div :class="selectedPackage.id === pkg.id ? 'text-blue-500 scale-100' : 'text-transparent scale-50'" class="transition-transform duration-200">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg>
             </div>
           </div>
@@ -34,8 +34,12 @@
       </div>
 
       <div class="p-6 pt-2">
-        <button @click="handleTopup" class="w-full py-4 bg-blue-600 hover:bg-blue-500 text-white font-bold text-lg rounded-xl transition-all shadow-[0_0_20px_rgba(37,99,235,0.3)] hover:shadow-[0_0_30px_rgba(37,99,235,0.5)] active:scale-95">
-          Thanh toán ngay
+        <button 
+          @click="handleTopup" 
+          :disabled="isProcessing"
+          class="w-full py-4 bg-blue-600 hover:bg-blue-500 text-white font-bold text-lg rounded-xl transition-all shadow-[0_0_20px_rgba(37,99,235,0.3)] hover:shadow-[0_0_30px_rgba(37,99,235,0.5)] active:scale-95 disabled:opacity-50"
+        >
+          {{ isProcessing ? 'Đang chuyển hướng...' : 'Thanh toán ngay' }}
         </button>
       </div>
 
@@ -46,18 +50,23 @@
 <script setup>
 import { ref } from 'vue'
 
-// Khai báo sự kiện báo lên cha
-const emit = defineEmits(['close-modal'])
+const props = defineProps({
+  isProcessing: Boolean
+})
 
-const selectedPackage = ref(1)
+const emit = defineEmits(['close-modal', 'submit-payment'])
+
+// Thêm trường rawAmount để gửi lên BE chuẩn xác
 const tokenPackages = [
-  { id: 1, tokens: '1,000', price: '100.000 VNĐ', bonus: '0' },
-  { id: 2, tokens: '5,500', price: '500.000 VNĐ', bonus: '+10%' },
-  { id: 3, tokens: '12,000', price: '1.000.000 VNĐ', bonus: '+20%' },
+  { id: 1, tokens: '1,000', price: '100.000 VNĐ', bonus: '0', rawAmount: 100000 },
+  { id: 2, tokens: '5,500', price: '500.000 VNĐ', bonus: '+10%', rawAmount: 500000 },
+  { id: 3, tokens: '12,000', price: '1.000.000 VNĐ', bonus: '+20%', rawAmount: 1000000 },
 ]
 
+const selectedPackage = ref(tokenPackages[0])
+
 const handleTopup = () => {
-  alert('Đã ghi nhận yêu cầu nạp Token! Đang chờ tích hợp VNPay...')
-  emit('close-modal') // Tắt modal sau khi bấm xong
+  // Bắn sự kiện kèm theo số tiền gốc (rawAmount) lên file cha xử lý
+  emit('submit-payment', selectedPackage.value.rawAmount)
 }
 </script>

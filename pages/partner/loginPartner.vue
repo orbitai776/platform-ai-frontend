@@ -143,6 +143,10 @@ const savePartnerSession = (user, loginProvider) => {
   }
 
   localStorage.setItem('partnerAuthUser', JSON.stringify(profile))
+  
+  // Set real token/cookie for authentication
+  const token = useCookie('token')
+  token.value = user.accessToken || "mock_token_if_access_token_missing"
 }
 
 const goToHomePartner = async () => {

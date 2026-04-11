@@ -59,6 +59,24 @@
           </div>
         </form>
 
+        <div class="mt-6 flex items-center justify-between">
+          <span class="border-b border-gray-600 w-1/5 lg:w-1/4"></span>
+          <span class="text-xs text-center text-gray-400 uppercase">Or continue with</span>
+          <span class="border-b border-gray-600 w-1/5 lg:w-1/4"></span>
+        </div>
+
+        <div class="mt-6 gap-4">
+          <button @click="signInWithGoogle" type="button" class="w-full flex items-center justify-center gap-3 rounded-xl border border-gray-600 bg-gray-800/50 px-4 py-3 text-sm font-semibold text-white transition hover:bg-gray-700">
+            <svg class="h-5 w-5" viewBox="0 0 24 24" aria-hidden="true">
+              <path fill="#EA4335" d="M12.24 10.285V14.4h5.806c-.24 1.368-1.617 4.013-5.806 4.013-3.492 0-6.336-2.893-6.336-6.413s2.844-6.413 6.336-6.413c1.989 0 3.32.848 4.083 1.579l2.785-2.688C17.285 2.773 14.99 1.8 12.24 1.8 6.981 1.8 2.72 6.061 2.72 11.32s4.261 9.52 9.52 9.52c5.493 0 9.136-3.861 9.136-9.296 0-.624-.067-1.1-.153-1.559H12.24z"/>
+              <path fill="#34A853" d="M3.96 7.63l3.383 2.48c.916-2.722 3.497-4.523 6.897-4.523 1.989 0 3.32.848 4.083 1.579l2.785-2.688C19.82 2.773 17.525 1.8 14.775 1.8 10.138 1.8 6.14 4.457 3.96 7.63z"/>
+              <path fill="#FBBC05" d="M3.96 16.37c2.18 3.173 6.178 5.83 10.815 5.83 2.639 0 4.858-.873 6.46-2.365l-3.12-2.55c-.885.617-2.013.988-3.34.988-3.38 0-6.24-2.278-7.267-5.348L3.96 16.37z"/>
+              <path fill="#4285F4" d="M22.84 11.544c0-.624-.067-1.1-.153-1.559H14.775V14.1h4.54c-.194 1.046-.795 2.63-2.12 3.57l3.12 2.55c1.867-1.723 2.946-4.258 2.946-8.676z"/>
+            </svg>
+            Google
+          </button>
+        </div>
+
         <div class="mt-6 text-center text-sm text-gray-300">
           Don't have an account?
           <a href="#" @click.prevent="goRegister" class="font-medium text-indigo-400 hover:text-indigo-300 transition ease-in-out duration-150">
@@ -74,6 +92,7 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { EnvelopeIcon, LockClosedIcon, UserIcon } from '@heroicons/vue/24/outline';
+import { auth, provider, signInWithPopup } from "~/src/auth/firebase.js";
 
 const email = ref('');
 const password = ref('');
@@ -90,6 +109,9 @@ const handleLogin = () => {
     return;
   }
 
+  const token = useCookie('token');
+  token.value = "mock_token_for_testing";
+
   alert("Login successful (mock)");
   router.push("/");
 };
@@ -100,6 +122,26 @@ const goRegister = () => {
 
 const goForgot = () => {
   router.push("/user/ForgotPassword");
+};
+
+const signInWithGoogle = async () => {
+  try {
+    const result = await signInWithPopup(auth, provider);
+    const idToken = await result.user.getIdToken();
+
+    console.log("Đăng nhập Google thành công:", JSON.stringify(result.user));
+
+    if (idToken) {
+      const token = useCookie('token');
+      token.value = idToken; // Lưu token
+      router.push("/");
+    }
+  } catch (error) {
+    console.error("Lỗi đăng nhập Google:", error);
+    if (error.code === 'auth/popup-closed-by-user') {
+      alert('Bạn đã đóng cửa sổ đăng nhập Google');
+    }
+  }
 };
 </script>
 
