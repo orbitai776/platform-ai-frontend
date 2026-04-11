@@ -66,7 +66,6 @@ const handleGoogleLogin = async () => {
 
     const user = result.user;
 
-    console.log("User:", user);
 
     navigateTo("/admin");
 

@@ -1,6 +1,8 @@
 <template>
   <div>
-    <HomeAdmin />
+    <ClientOnly>
+      <HomeAdmin />
+    </ClientOnly>
   </div>
 </template>
 
