@@ -1544,12 +1544,12 @@
   integrity sha512-60BCwRFOZCQhDncwQdxxeOEEkbc5dIMccYLwbxsS4TUNeVECQ/pBJ0j09mrHOl/JJvpRPGwO9SvE4nR2Nb/a4Q==
 
 "@unhead/vue@^2.1.12":
-  version "2.1.12"
-  resolved "https://registry.npmjs.org/@unhead/vue/-/vue-2.1.12.tgz"
-  integrity sha512-zEWqg0nZM8acpuTZE40wkeUl8AhIe0tU0OkilVi1D4fmVjACrwoh5HP6aNqJ8kUnKsoy6D+R3Vi/O+fmdNGO7g==
+  version "2.1.13"
+  resolved "https://registry.npmjs.org/@unhead/vue/-/vue-2.1.13.tgz"
+  integrity sha512-HYy0shaHRnLNW9r85gppO8IiGz0ONWVV3zGdlT8CQ0tbTwixznJCIiyqV4BSV1aIF1jJIye0pd1p/k6Eab8Z/A==
   dependencies:
     hookable "^6.0.1"
-    unhead "2.1.12"
+    unhead "2.1.13"
 
 "@vercel/nft@^1.5.0":
   version "1.5.0"
@@ -3789,6 +3789,11 @@ jsonfile@^6.0.1:
   optionalDependencies:
     graceful-fs "^4.1.6"
 
+jwt-decode@^4.0.0:
+  version "4.0.0"
+  resolved "https://registry.npmjs.org/jwt-decode/-/jwt-decode-4.0.0.tgz"
+  integrity sha512-+KJGIyHgkGuIq3IEBNftfhW/LfWhXUIY6OmyVWjliu5KH1y0fw7VQ8YndE2O4qZdMSd9SqbnC8GOcZEy0Om7sA==
+
 keygrip@~1.1.0:
   version "1.1.0"
   resolved "https://registry.npmjs.org/keygrip/-/keygrip-1.1.0.tgz"
@@ -6011,10 +6016,10 @@ unenv@^2.0.0-rc.24, unenv@2.0.0-rc.24:
   dependencies:
     pathe "^2.0.3"
 
-unhead@2.1.12:
-  version "2.1.12"
-  resolved "https://registry.npmjs.org/unhead/-/unhead-2.1.12.tgz"
-  integrity sha512-iTHdWD9ztTunOErtfUFk6Wr11BxvzumcYJ0CzaSCBUOEtg+DUZ9+gnE99i8QkLFT2q1rZD48BYYGXpOZVDLYkA==
+unhead@2.1.13:
+  version "2.1.13"
+  resolved "https://registry.npmjs.org/unhead/-/unhead-2.1.13.tgz"
+  integrity sha512-jO9M1sI6b2h/1KpIu4Jeu+ptumLmUKboRRLxys5pYHFeT+lqTzfNHbYUX9bxVDhC1FBszAGuWcUVlmvIPsah8Q==
   dependencies:
     hookable "^6.0.1"
 
@@ -6342,9 +6347,9 @@ vite@*, vite@^2.4.0, vite@^2.5.10, "vite@^2.6.0 || ^3.0.0 || ^4.0.0 || ^5.0.0-0 
     fsevents "~2.3.2"
 
 "vite@^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0", vite@^7.3.1, vite@>=5.4.21:
-  version "7.3.1"
-  resolved "https://registry.npmjs.org/vite/-/vite-7.3.1.tgz"
-  integrity sha512-w+N7Hifpc3gRjZ63vYBXA56dvvRlNWRczTdmCBBa+CotUzAPf5b7YMdMR/8CQoeYE5LX3W4wj6RYTgonm1b9DA==
+  version "7.3.2"
+  resolved "https://registry.npmjs.org/vite/-/vite-7.3.2.tgz"
+  integrity sha512-Bby3NOsna2jsjfLVOHKes8sGwgl4TT0E6vvpYgnAYDIF/tie7MRaFthmKuHx1NSXjiTueXH3do80FMQgvEktRg==
   dependencies:
     esbuild "^0.27.0"
     fdir "^6.5.0"
@@ -6356,9 +6361,9 @@ vite@*, vite@^2.4.0, vite@^2.5.10, "vite@^2.6.0 || ^3.0.0 || ^4.0.0 || ^5.0.0-0 
     fsevents "~2.3.3"
 
 "vite@^6.0.0 || ^7.0.0", "vite@^6.0.0 || ^7.0.0-0", vite@>=6.0:
-  version "7.3.1"
-  resolved "https://registry.npmjs.org/vite/-/vite-7.3.1.tgz"
-  integrity sha512-w+N7Hifpc3gRjZ63vYBXA56dvvRlNWRczTdmCBBa+CotUzAPf5b7YMdMR/8CQoeYE5LX3W4wj6RYTgonm1b9DA==
+  version "7.3.2"
+  resolved "https://registry.npmjs.org/vite/-/vite-7.3.2.tgz"
+  integrity sha512-Bby3NOsna2jsjfLVOHKes8sGwgl4TT0E6vvpYgnAYDIF/tie7MRaFthmKuHx1NSXjiTueXH3do80FMQgvEktRg==
   dependencies:
     esbuild "^0.27.0"
     fdir "^6.5.0"
