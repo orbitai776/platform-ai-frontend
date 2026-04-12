@@ -46,7 +46,7 @@ onMounted(() => {
 
   onAuthStateChanged(auth, async (user) => {
     if (!user) {
-      await navigateTo('/loginAdmin')
+      await navigateTo('/Login')
       return
     }
     await fetchServices()

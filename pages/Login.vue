@@ -1,6 +1,13 @@
 <template>
   <div class="min-h-screen flex items-center justify-center bg-white px-6">
-    <div class="w-full max-w-sm">
+    <div class="w-full max-w-sm relative">
+      <NuxtLink to="/" class="absolute -top-12 left-0 inline-flex items-center text-sm font-medium text-gray-500 hover:text-gray-700 transition">
+        <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+        </svg>
+        Back to home
+      </NuxtLink>
+
       <h2 class="mb-10 text-center text-2xl/9 font-bold tracking-tight text-black">
         Sign in to your account
       </h2>
@@ -88,9 +95,11 @@ const handleBackendAuth = async (firebaseIdToken) => {
 
       // Phân quyền điều hướng
       if (userRoles.includes('admin')) {
-        navigateTo('/admin');
+        window.location.href = '/admin';
+      } else if (userRoles.includes('partner')) {
+        window.location.href = '/partner';
       } else {
-        navigateTo('/'); // User và Partner về trang chủ
+        window.location.href = '/'; // User về trang chủ
       }
     }
   } catch (error) {

@@ -74,7 +74,7 @@ onMounted(async () => {
 
   // 1. Nếu không có token -> đá về trang Login chung
   if (!token) {
-    return navigateTo('/login');
+    return navigateTo('/Login');
   }
 
   try {
@@ -100,7 +100,7 @@ onMounted(async () => {
     console.error("Lỗi xác thực Token:", error);
     localStorage.removeItem('accessToken');
     localStorage.removeItem('userRoles');
-    return navigateTo('/login');
+    return navigateTo('/Login');
   }
 })
 
@@ -120,7 +120,7 @@ const handleLogout = async () => {
     }
     
     // Đá về trang Đăng nhập chung
-    await navigateTo('/login');
+    await navigateTo('/Login');
   }
 }
 </script>
