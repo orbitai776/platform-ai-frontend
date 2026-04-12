@@ -72,6 +72,9 @@ const email = ref('');
 const password = ref('');
 const isLoading = ref(false);
 
+const accessTokenCookie = useCookie('accessToken', { maxAge: 86400 * 7 });
+const userRolesCookie = useCookie('userRoles', { maxAge: 86400 * 7 });
+
 const handleBackendAuth = async (firebaseIdToken) => {
   try {
     const response = await fetch(`${import.meta.env.VITE_GATEWAY_URL}/v1/api/auth`, {
@@ -87,10 +90,13 @@ const handleBackendAuth = async (firebaseIdToken) => {
 
     // Lưu Token và Roles
     if (process.client) {
+      accessTokenCookie.value = backendAccessToken;
       localStorage.setItem('accessToken', backendAccessToken);
       
       const decodedToken = jwtDecode(backendAccessToken);
       const userRoles = decodedToken.roles;
+      
+      userRolesCookie.value = JSON.stringify(userRoles);
       localStorage.setItem('userRoles', JSON.stringify(userRoles));
 
       // Phân quyền điều hướng
