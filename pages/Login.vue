@@ -67,7 +67,7 @@ const isLoading = ref(false);
 
 const handleBackendAuth = async (firebaseIdToken) => {
   try {
-    const response = await fetch(`${import.meta.env.VITE_GATEWAY_URL}/n/v1/api/auth`, {
+    const response = await fetch(`${import.meta.env.VITE_GATEWAY_URL}/v1/api/auth`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ idToken: firebaseIdToken }),
