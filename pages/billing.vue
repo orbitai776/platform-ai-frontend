@@ -29,18 +29,7 @@
 <script setup>
 import { ref } from 'vue'
 
-// Middleware check Auth
-definePageMeta({
-  middleware: [
-    async function (to, from) {
-      const token = useCookie('token')
-      if (!token.value) {
-        return navigateTo('/') 
-      }
-    }
-  ]
-})
-
+// Authentication middleware has been removed so anyone can view billing
 const token = useCookie('token')
 const showModal = ref(false)
 const isProcessing = ref(false)

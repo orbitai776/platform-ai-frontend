@@ -15,15 +15,14 @@
           <NuxtLink to="#" class="text-white/65 no-underline text-sm transition-colors duration-200 hover:text-white">Tính năng</NuxtLink>
         </li>
         <li>
-          <NuxtLink to="/billing" class="text-white/65 no-underline text-sm transition-colors duration-200 hover:text-white">Báo giá</NuxtLink>
-        </li>
-        <li>
           <NuxtLink to="#" class="text-white/65 no-underline text-sm transition-colors duration-200 hover:text-white">Demo</NuxtLink>
         </li>
         <li>
           <NuxtLink to="/news" class="text-white/65 no-underline text-sm transition-colors duration-200 hover:text-white">Tin tức</NuxtLink>
         </li>
-         
+         <li>
+          <NuxtLink to="/billing" class="text-white/65 no-underline text-sm transition-colors duration-200 hover:text-white">Báo giá</NuxtLink>
+        </li>
       </ul>
 
       <div class="flex items-center gap-3">
@@ -38,19 +37,10 @@
           Partner Portal
         </NuxtLink>
 
-        <template v-if="isLoggedIn">
-          <NuxtLink to="/profile" class="hidden sm:inline-block text-white/65 text-[0.8rem] px-[0.9rem] py-[0.4rem] border border-white/20 rounded-sm font-['Sora'] tracking-[0.04em] transition-all duration-200 hover:text-white hover:border-white/50 no-underline">
-            Profile
-          </NuxtLink>
-          <button @click="handleLogout" class="hidden sm:inline-block text-white/65 text-[0.8rem] px-[0.9rem] py-[0.4rem] border border-red-500/50 text-red-400 rounded-sm font-['Sora'] tracking-[0.04em] transition-all duration-200 hover:text-red-300 hover:border-red-400 hover:bg-red-500/10 no-underline cursor-pointer">
-            Logout
-          </button>
-        </template>
-        <template v-else>
-          <NuxtLink to="/user/login" class="hidden sm:inline-block text-white/65 text-[0.8rem] px-[0.9rem] py-[0.4rem] border border-white/20 rounded-sm font-['Sora'] tracking-[0.04em] transition-all duration-200 hover:text-white hover:border-white/50 no-underline">
-            Login
-          </NuxtLink>
-        </template>
+        <!-- Nút Login đồng bộ (trỏ tới trang /login của dev) -->
+        <NuxtLink to="/login" class="hidden sm:inline-block text-white/65 text-[0.8rem] px-[0.9rem] py-[0.4rem] border border-white/20 rounded-sm font-['Sora'] tracking-[0.04em] transition-all duration-200 hover:text-white hover:border-white/50 no-underline">
+          Login
+        </NuxtLink>
 
         <NuxtLink to="#" class="bg-[#e8604c] text-white px-5 py-2 rounded-sm text-[0.8rem] font-semibold font-['Sora'] tracking-[0.06em] uppercase no-underline transition-all duration-200 hover:bg-[#d94e3a] hover:-translate-y-px">
           Tư vấn miễn phí →
@@ -62,8 +52,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
-import { useCookie, useRouter } from '#imports';
+import { ref, onMounted } from 'vue';
 
 // --- Partner logic from DEV ---
 const isPartner = ref(false);
@@ -89,35 +78,5 @@ onMounted(() => {
   }
 });
 
-// --- Auth logic from HEAD ---
 
-// Import Firebase auth directly if possible, or gracefully handle errors finding it
-const logoutFirebase = async () => {
-  try {
-    const { auth, signOut } = await import('~/src/auth/firebase.js');
-    if (auth && signOut) {
-      await signOut(auth);
-    }
-  } catch (err) {
-    console.warn("Could not load Firebase auth module for logout:", err);
-  }
-};
-
-const token = useCookie('token');
-const isLoggedIn = computed(() => !!token.value);
-const router = useRouter();
-
-const handleLogout = async () => {
-  // Clear token
-  token.value = null;
-  // Clear local storage
-  if (process.client) {
-    localStorage.removeItem('partnerAuthUser');
-  }
-  // Call Firebase signout
-  await logoutFirebase();
-  
-  // Navigate home
-  router.push('/');
-};
 </script>
