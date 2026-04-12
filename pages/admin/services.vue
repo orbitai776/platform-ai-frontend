@@ -52,4 +52,8 @@ onMounted(() => {
     await fetchServices()
   })
 })
+
+definePageMeta({
+  layout: 'layout-admin' 
+})
 </script>
