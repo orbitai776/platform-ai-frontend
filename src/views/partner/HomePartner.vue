@@ -16,12 +16,12 @@
         </div>
 
         <div>
-          <h1 class="text-2xl font-bold text-slate-900">HomePartner</h1>
+          <h1 class="text-2xl font-bold text-slate-900">Partner Dashboard</h1>
           <p class="mt-1 text-sm text-slate-600">
             Welcome, {{ profile.displayName || 'Partner User' }}
           </p>
           <p class="mt-1 text-xs uppercase tracking-wide text-slate-400">
-            Login provider: {{ profile.provider || 'unknown' }}
+            Vai trò: Đối tác phân phối
           </p>
         </div>
       </div>
@@ -32,18 +32,18 @@
           <p class="mt-1 font-medium text-slate-900">{{ profile.email || 'N/A' }}</p>
         </div>
         <div>
-          <p class="text-xs uppercase tracking-wide text-slate-400">Last Login</p>
-          <p class="mt-1 font-medium text-slate-900">{{ formattedLastLogin }}</p>
+          <p class="text-xs uppercase tracking-wide text-slate-400">Mã Đối Tác (UID)</p>
+          <p class="mt-1 font-medium text-slate-900 text-xs break-all">{{ profile.uid || 'N/A' }}</p>
         </div>
       </div>
 
       <div class="mt-8">
         <button
           type="button"
-          class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
+          class="rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-100"
           @click="handleLogout"
         >
-          Logout
+          Đăng xuất
         </button>
       </div>
     </div>
@@ -52,15 +52,14 @@
 
 <script setup>
 import { computed, onMounted, ref } from 'vue'
+import { jwtDecode } from "jwt-decode"
 import { auth, signOut } from '~/src/auth/firebase.js'
 
 const profile = ref({
   uid: '',
   email: '',
   displayName: '',
-  photoURL: '',
-  provider: '',
-  lastLoginAt: ''
+  photoURL: ''
 })
 
 const initials = computed(() => {
@@ -68,45 +67,60 @@ const initials = computed(() => {
   return name.trim().charAt(0).toUpperCase()
 })
 
-const formattedLastLogin = computed(() => {
-  if (!profile.value.lastLoginAt) {
-    return 'Unknown'
-  }
-
-  return new Date(profile.value.lastLoginAt).toLocaleString()
-})
-
 onMounted(async () => {
-  if (!process.client) {
-    return
-  }
+  if (!process.client) return;
 
-  const raw = localStorage.getItem('partnerAuthUser')
+  const token = localStorage.getItem('accessToken');
 
-  if (!raw) {
-    await navigateTo('/partner/loginPartner')
-    return
+  // 1. Nếu không có token -> đá về trang Login chung
+  if (!token) {
+    return navigateTo('/login');
   }
 
   try {
-    profile.value = JSON.parse(raw)
+    // 2. Giải mã token để lấy thông tin user
+    const decoded = jwtDecode(token);
+    
+    // 3. Kiểm tra xem có đúng là role partner không? (Bảo mật 2 lớp)
+    if (!decoded.roles || !decoded.roles.includes('partner')) {
+      alert("Bạn không có quyền truy cập trang Đối tác!");
+      return navigateTo('/'); // Đá về trang chủ thường
+    }
+
+    // 4. Cập nhật thông tin profile từ cục token
+    profile.value = {
+      uid: decoded.uid || '',
+      email: decoded.email || '',
+      displayName: decoded.name || decoded.full_name || '',
+      // Tạm thời nếu token không chứa ảnh, dùng ảnh mặc định. Bạn có thể lấy từ db sau.
+      photoURL: decoded.picture || '' 
+    }
+
   } catch (error) {
-    localStorage.removeItem('partnerAuthUser')
-    await navigateTo('/partner/loginPartner')
+    console.error("Lỗi xác thực Token:", error);
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('userRoles');
+    return navigateTo('/login');
   }
 })
 
 const handleLogout = async () => {
   try {
-    await signOut(auth)
+    // Xóa session Firebase
+    await signOut(auth);
   } catch (error) {
-    // Ignore logout errors and still clear local session.
+    console.error("Lỗi khi đăng xuất Firebase", error);
   } finally {
+    // Luôn luôn dọn sạch LocalStorage khi đăng xuất
     if (process.client) {
-      localStorage.removeItem('partnerAuthUser')
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('userRoles');
+      // Nếu code cũ của bạn có lưu các biến này thì xoá luôn cho sạch
+      localStorage.removeItem('partnerAuthUser'); 
     }
-    await navigateTo('/partner/loginPartner')
+    
+    // Đá về trang Đăng nhập chung
+    await navigateTo('/login');
   }
 }
 </script>
-
