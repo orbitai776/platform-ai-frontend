@@ -115,7 +115,7 @@ const handleLogout = async () => {
 
     await signOut(auth)
     // Sử dụng navigateTo của Nuxt hoặc window.location
-    window.location.href = '/loginAdmin'
+    window.location.href = '/Login'
   } catch (error) {
     console.error('Logout failed:', error)
   }
