@@ -58,12 +58,15 @@ import { jwtDecode } from "jwt-decode";
 
 // Đặt layout. Tuỳ bạn muốn dùng layout nào thì điền tên vào đây (ví dụ: 'default' hoặc 'authAdmin')
 definePageMeta({
-  layout: 'authAdmin'  
+  layout: 'authAdmin'
 });
 
 const email = ref('');
 const password = ref('');
 const isLoading = ref(false);
+
+const accessTokenCookie = useCookie('accessToken', { maxAge: 86400 * 7 });
+const userRolesCookie = useCookie('userRoles', { maxAge: 86400 * 7 });
 
 const handleBackendAuth = async (firebaseIdToken) => {
   try {
@@ -80,11 +83,14 @@ const handleBackendAuth = async (firebaseIdToken) => {
 
     // Lưu Token và Roles
     if (process.client) {
-      localStorage.setItem('accessToken', backendAccessToken);
-      
+
+      accessTokenCookie.value = backendAccessToken;
+    
       const decodedToken = jwtDecode(backendAccessToken);
       const userRoles = decodedToken.roles;
-      localStorage.setItem('userRoles', JSON.stringify(userRoles));
+      
+      userRolesCookie.value = JSON.stringify(userRoles);
+     
 
       // Phân quyền điều hướng
       if (userRoles.includes('admin')) {
