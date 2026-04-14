@@ -1,4 +1,4 @@
- <template>
+<template>
   <section class="min-h-screen bg-slate-50 p-8">
     <div
       class="max-w-5xl mx-auto bg-white rounded-3xl shadow-xl border border-slate-200 overflow-hidden"
