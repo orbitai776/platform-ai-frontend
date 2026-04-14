@@ -25,12 +25,17 @@
 </template>
 
 <script setup>
-// Nhận data từ file cha truyền xuống (Props)
-defineProps({
-  balance: { type: Number, default: 0 },
-  partnerName: { type: String, default: 'Đang tải...' }
-})
+import { computed } from 'vue'
 
 // Khai báo sự kiện để bắn lên cha (Emits)
 defineEmits(['open-modal'])
+
+// Gọi API trực tiếp từ Component
+const headers = useRequestHeaders(['cookie'])
+const { data: balanceData } = await useFetch('/api/partner/billing/balance', { headers })
+const { data: profileData } = await useFetch('/api/auth/login', { headers })
+
+// Map dữ liệu
+const balance = computed(() => balanceData.value?.data?.balance ?? balanceData.value?.balance ?? 0)
+const partnerName = computed(() => balanceData.value?.data?.partnerName ?? profileData.value?.user?.username ?? profileData.value?.user?.name ?? 'Partner')
 </script>

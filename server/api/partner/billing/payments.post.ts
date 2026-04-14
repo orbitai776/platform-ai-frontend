@@ -23,9 +23,14 @@ export default defineEventHandler(async (event) => {
     })
     return response
   } catch (error: any) {
+    console.error('[GATEWAY ERROR] Payments POST Endpoint:', {
+      url: `${process.env.VITE_GATEWAY_URL}/v1/api/partner/billing/payments`,
+      statusCode: error?.response?.status,
+      backendMessage: error?.response?._data
+    })
     throw createError({
       statusCode: error?.response?.status || 500,
-      statusMessage: error?.message || 'Error creating payment'
+      statusMessage: error?.response?._data?.message || error?.message || 'Error creating payment'
     })
   }
 })

@@ -66,21 +66,26 @@ const handleTopup = async () => {
     const rawPrice = parseInt(pkg.price.replace(/\D/g, ''))
     const rawTokens = parseInt(pkg.tokens.replace(/\D/g, ''))
 
-    await $fetch('/api/partner/billing/payments', {
+    const response = await $fetch('/api/partner/billing/payments', {
       method: 'POST',
       body: {
-        packageId: pkg.id,
+        package_id: pkg.id,
         amount: rawPrice,
-        tokens: rawTokens
+        tokens: rawTokens,
+        payment_method: 'payos' // Dùng phương thức đã test thành công
       }
     })
-    alert('Đã xử lý nạp thanh toán thành công!')
-    emit('close-modal') // Tắt modal sau khi bấm xong
-    // reload web if necessary
-    window.location.reload()
+    
+    if (response?.payment_url) {
+       // Chuyển hướng người dùng sang trang thanh toán của PayOS
+       window.location.href = response.payment_url
+    } else {
+       alert('Tạo đơn hàng thành công, nhưng không tìm thấy link thanh toán!')
+    }
+
   } catch (error) {
-    console.error(error)
-    alert('Đã xảy ra lỗi khi tạo yêu cầu thanh toán!')
+    console.error('Lỗi thanh toán:', error)
+    alert(error?.response?._data?.message || error?.message || 'Đã xảy ra lỗi khi tạo yêu cầu thanh toán!')
   } finally {
     isLoading.value = false
   }
