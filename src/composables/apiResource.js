@@ -3,7 +3,7 @@ import useRequestsWrapper from './useRequestsWrapper.js';
 const apiUrl = import.meta.env.VITE_GATEWAY_URL;
 
 export default function apiResource() {
-    const { get, post } = useRequestsWrapper();
+    const { get, post, patch, deleteRequest } = useRequestsWrapper();
 
     const authenticateFirebaseToken = async (data) => {
         try {
@@ -16,6 +16,10 @@ export default function apiResource() {
     }
 
     return {
+        get,
+        post,
+        patch,
+        deleteRequest,
         authenticateFirebaseToken,
     }
 }
