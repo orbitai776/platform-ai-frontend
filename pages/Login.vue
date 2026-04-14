@@ -94,7 +94,7 @@ const handleBackendAuth = async (firebaseIdToken) => {
       userRolesCookie.value = JSON.stringify(userRoles);
       localStorage.setItem('userRoles', JSON.stringify(userRoles));
 
-
+      window.location.href = '/admin';
       // Phân quyền điều hướng
       if (userRoles.includes('admin')) {
         window.location.href = '/admin';
