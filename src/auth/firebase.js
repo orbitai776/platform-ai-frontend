@@ -1,35 +1,33 @@
-import { initializeApp } from "firebase/app";
+
+import { initializeApp, getApps, getApp } from "firebase/app";
 import {
-    getAuth,
-    GoogleAuthProvider,
-    signInWithPopup,
-    signOut
+  getAuth,
+  GoogleAuthProvider,
+  signInWithPopup,
+  signOut
 } from "firebase/auth";
 
-const firebaseConfig = {
-    apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-    authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-    projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-    storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-    messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-    appId: import.meta.env.VITE_FIREBASE_APP_ID,
+export const useFirebase = () => {
+  const config = useRuntimeConfig();
+ console.log("API KEY:", config.public.FIREBASE_API_KEY);
+  console.log("AUTH DOMAIN:", config.public.FIREBASE_AUTH_DOMAIN);
+  const firebaseConfig = {
+    apiKey: config.public.FIREBASE_API_KEY,
+    authDomain: config.public.FIREBASE_AUTH_DOMAIN,
+    projectId: config.public.FIREBASE_PROJECT_ID,
+    storageBucket: config.public.FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: config.public.FIREBASE_MESSAGING_SENDER_ID,
+    appId: config.public.FIREBASE_APP_ID,
+  };
+
+  const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+
+  const auth = getAuth(app);
+  const provider = new GoogleAuthProvider();
+
+  provider.setCustomParameters({
+    prompt: "select_account"
+  });
+
+  return { auth, provider, signInWithPopup, signOut };
 };
-
-// Kiểm tra cấu hình
-if (!firebaseConfig.apiKey) {
-    console.error("Firebase configuration is missing!");
-    throw new Error("Firebase configuration is not properly set in environment variables");
-}
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-
-// Initialize Firebase Authentication
-const auth = getAuth(app);
-const provider = new GoogleAuthProvider();
-
-provider.setCustomParameters({
-    prompt: "select_account" // This will prompt the user to select an account
-});
-
-export { auth, provider, signInWithPopup, signOut };

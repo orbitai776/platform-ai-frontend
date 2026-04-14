@@ -44,13 +44,13 @@
   </div>
 </template>
 
+
 <script setup>
 import { ref } from 'vue';
-import { useRouter } from 'vue-router';
 import { EnvelopeIcon, KeyIcon } from '@heroicons/vue/24/outline';
 
 const email = ref('');
-const router = useRouter();
+
 
 const handleForgot = () => {
   if (!email.value) {
@@ -62,7 +62,7 @@ const handleForgot = () => {
 };
 
 const goLogin = () => {
-  router.push("/user/Login");
+  navigateTo("/user/login");
 };
 </script>
 
