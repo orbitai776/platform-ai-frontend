@@ -77,24 +77,18 @@ const userRolesCookie = useCookie('userRoles', { maxAge: 86400 * 7 });
 
 const handleBackendAuth = async (firebaseIdToken) => {
   try {
-    const response = await fetch(`${import.meta.env.VITE_GATEWAY_URL}/v1/api/auth`, {
+    // Gọi qua server Nuxt (api/auth/login.post.ts) để nó set Cookie HttpOnly hộ mình
+    const { data, error } = await useFetch('/api/auth/login', {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ idToken: firebaseIdToken }),
+      body: { idToken: firebaseIdToken },
     });
 
-    if (!response.ok) throw new Error("Xác thực Backend thất bại");
+    if (error.value || !data.value) throw new Error("Xác thực Backend thất bại");
 
-    const data = await response.json();
-    const backendAccessToken = data.accessToken;
-
-    // Lưu Token và Roles
+    // Token thật nằm trong Cookie rồi, ở đây ta lấy roles để điều hướng
     if (process.client) {
-      accessTokenCookie.value = backendAccessToken;
-      localStorage.setItem('accessToken', backendAccessToken);
-      
-      const decodedToken = jwtDecode(backendAccessToken);
-      const userRoles = decodedToken.roles;
+      // Lưu roles vào localStorage và cookie thường để Client dùng nếu cần
+      const userRoles = data.value.user?.roles || [];
       
       userRolesCookie.value = JSON.stringify(userRoles);
       localStorage.setItem('userRoles', JSON.stringify(userRoles));
@@ -105,12 +99,12 @@ const handleBackendAuth = async (firebaseIdToken) => {
       } else if (userRoles.includes('partner')) {
         window.location.href = '/partner';
       } else {
-        window.location.href = '/'; // User về trang chủ
+        window.location.href = '/'; 
       }
     }
   } catch (error) {
     console.error("Lỗi Backend:", error);
-    alert("Đăng nhập thất bại do lỗi máy chủ!");
+    alert("Đăng nhập thất bại do lỗi phía Gateway hoặc tài khoản!");
   }
 };
 

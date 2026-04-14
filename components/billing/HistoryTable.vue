@@ -47,8 +47,34 @@
 </template>
 
 <script setup>
-// Nhận mảng lịch sử từ file cha truyền xuống
-defineProps({
-  history: { type: Array, default: () => [] }
+import { computed } from 'vue'
+
+// Tự động gọi API lấy danh sách payments
+const headers = useRequestHeaders(['cookie'])
+const { data: paymentsData } = await useFetch('/api/partner/billing/payments/list', { headers })
+
+// Map dữ liệu cẩn thận phòng khi backend thay đổi keys (id -> _id, date -> createdAt...)
+const history = computed(() => {
+  const rawList = paymentsData.value?.data?.list ?? paymentsData.value?.data ?? paymentsData.value ?? []
+  
+  // Đảm bảo là Array
+  if (!Array.isArray(rawList)) return []
+
+  return rawList.map(tx => {
+    // Xác định loại giao dịch
+    const rawType = tx.type || tx.transactionType || ''
+    const isDeposit = rawType === 'Nạp' || rawType.toLowerCase() === 'deposit' || (tx.token_amount && tx.token_amount > 0) || (tx.amount && tx.amount > 0)
+    
+    return {
+      id: tx.transaction_id || tx.id || tx._id || '---',
+      type: isDeposit ? 'Nạp' : 'Trừ',
+      // Ưu tiên hiển thị token_amount, nếu không có thì lấy amount
+      amount: Math.abs(tx.token_amount || tx.amount || tx.totalAmount || 0),
+      // Hiển thị thêm số tiền VNĐ nếu có (tùy chọn UI)
+      money: tx.amount ? `${tx.amount.toLocaleString()} VNĐ` : '',
+      date: tx.created_at || tx.createdAt || tx.date || new Date().toLocaleString('vi-VN'),
+      status: tx.status || 'Thành công'
+    }
+  })
 })
 </script>
