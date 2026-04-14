@@ -3,12 +3,10 @@
     <main class="pt-12 px-4 md:px-8 max-w-5xl mx-auto space-y-10">
       
       <BillingBalanceCard 
-        :balance="profileData?.wallet?.balance" 
-        :partnerName="profileData?.user?.username"
         @open-modal="showModal = true" 
       />
 
-      <BillingHistoryTable :history="profileData?.history" />
+      <BillingHistoryTable />
 
       <hr class="border-slate-800 my-16 opacity-50">
 
@@ -33,7 +31,7 @@ definePageMeta({
   middleware: [
     async function (to, from) {
       // Gọi API check auth. Nếu có token HttpOnly, Server sẽ tự đính kèm vào request này
-      const { data } = await useFetch('/api/user/auth')
+      const { data } = await useFetch('/api/auth/login')
       
       // Nếu không có dữ liệu (token sai/hết hạn/không có) -> Đá văng về trang chủ
       if (!data.value) {
@@ -43,10 +41,6 @@ definePageMeta({
   ]
 })
 
-// 📦 BƯỚC 2: LẤY DỮ LIỆU ĐỂ HIỂN THỊ
-// Dùng useFetch ở đây đảm bảo SSR: Trang có sẵn data khi vừa load xong
-const { data: profileData } = await useFetch('/api/user/auth')
-
-// Quản lý đóng mở Modal
+// Quản lý đóng mở Modal cho Topup
 const showModal = ref(false)
 </script>

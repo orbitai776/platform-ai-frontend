@@ -34,8 +34,8 @@
       </div>
 
       <div class="p-6 pt-2">
-        <button @click="handleTopup" class="w-full py-4 bg-blue-600 hover:bg-blue-500 text-white font-bold text-lg rounded-xl transition-all shadow-[0_0_20px_rgba(37,99,235,0.3)] hover:shadow-[0_0_30px_rgba(37,99,235,0.5)] active:scale-95">
-          Thanh toán ngay
+        <button @click="handleTopup" :disabled="isLoading" class="w-full py-4 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-bold text-lg rounded-xl transition-all shadow-[0_0_20px_rgba(37,99,235,0.3)] hover:shadow-[0_0_30px_rgba(37,99,235,0.5)] active:scale-95">
+          {{ isLoading ? 'Đang xử lý...' : 'Thanh toán ngay' }}
         </button>
       </div>
 
@@ -50,14 +50,44 @@ import { ref } from 'vue'
 const emit = defineEmits(['close-modal'])
 
 const selectedPackage = ref(1)
+const isLoading = ref(false)
 const tokenPackages = [
   { id: 1, tokens: '1,000', price: '100.000 VNĐ', bonus: '0' },
   { id: 2, tokens: '5,500', price: '500.000 VNĐ', bonus: '+10%' },
   { id: 3, tokens: '12,000', price: '1.000.000 VNĐ', bonus: '+20%' },
 ]
 
-const handleTopup = () => {
-  alert('Đã ghi nhận yêu cầu nạp Token! Đang chờ tích hợp VNPay...')
-  emit('close-modal') // Tắt modal sau khi bấm xong
+const handleTopup = async () => {
+  const pkg = tokenPackages.find(p => p.id === selectedPackage.value)
+  if (!pkg) return
+
+  isLoading.value = true
+  try {
+    const rawPrice = parseInt(pkg.price.replace(/\D/g, ''))
+    const rawTokens = parseInt(pkg.tokens.replace(/\D/g, ''))
+
+    const response = await $fetch('/api/partner/billing/payments', {
+      method: 'POST',
+      body: {
+        package_id: pkg.id,
+        amount: rawPrice,
+        tokens: rawTokens,
+        payment_method: 'payos' // Dùng phương thức đã test thành công
+      }
+    })
+    
+    if (response?.payment_url) {
+       // Chuyển hướng người dùng sang trang thanh toán của PayOS
+       window.location.href = response.payment_url
+    } else {
+       alert('Tạo đơn hàng thành công, nhưng không tìm thấy link thanh toán!')
+    }
+
+  } catch (error) {
+    console.error('Lỗi thanh toán:', error)
+    alert(error?.response?._data?.message || error?.message || 'Đã xảy ra lỗi khi tạo yêu cầu thanh toán!')
+  } finally {
+    isLoading.value = false
+  }
 }
 </script>
