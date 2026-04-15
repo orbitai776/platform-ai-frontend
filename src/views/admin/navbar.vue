@@ -90,6 +90,7 @@ const route = useRoute()
 
 // CHỈ CHỈNH TẠI ĐÂY: Thêm link đến users
 const navigation = computed(() => [
+  { name: 'Home', href: '/', current: route.path === '/' },
   { name: 'Dashboard', href: '/admin', current: route.path === '/admin' },
   { name: 'Users', href: '/admin/users', current: route.path === '/admin/users' },
   { name: 'Partners', href: '/admin/partners', current: route.path === '/admin/partners' },
@@ -114,10 +115,13 @@ const handleLogout = async () => {
     const { signOut } = await import('firebase/auth')
 
     await signOut(auth)
-    // Sử dụng navigateTo của Nuxt hoặc window.location
-    window.location.href = '/Login'
+    await $fetch('/api/auth/logout', {
+      method: "GET",
+    });
   } catch (error) {
     console.error('Logout failed:', error)
+  } finally {
+    window.location.href = '/login'
   }
 }
 </script>

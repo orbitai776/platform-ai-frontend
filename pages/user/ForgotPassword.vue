@@ -62,7 +62,7 @@ const handleForgot = () => {
 };
 
 const goLogin = () => {
-  router.push("/Login");
+  router.push("/login");
 };
 </script>
 

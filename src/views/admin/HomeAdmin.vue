@@ -270,7 +270,33 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { computed, onMounted, ref } from 'vue'
+const isPartner = ref(true);
+
+onMounted(async () => {
+  if (!process.client) return;
+
+  try {
+    console.log("Calling API with $fetch");
+    
+    // Dùng $fetch thay vì useFetch
+    const userRoles = await $fetch('/api/auth/user-roles', {
+      method: "GET",
+    });
+    if (Array.isArray(userRoles) && userRoles.includes('admin')) {
+      isPartner.value = true;
+    } else {
+      isPartner.value = false;
+    }
+    if (!isPartner.value) {
+      console.log('Không có quyền admin');
+      return navigateTo('/login');
+    }
+  } catch (error) {
+    console.error("Lỗi xác thực Token:", error);
+    return navigateTo('/login');
+  }
+})
 
 // ── Date ──────────────────────────────────────────
 const today = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })

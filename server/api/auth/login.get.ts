@@ -2,23 +2,33 @@ import { defineEventHandler, getCookie, createError } from 'h3'
 
 export default defineEventHandler(async (event) => {
   // 1. Lấy token từ Cookie HttpOnly
-  const token = getCookie(event, 'accessToken')
+  const accessTokenCookie = getCookie(event, 'accessToken')
+  const userRolesCookie = getCookie(event, 'userRoles')
 
   // Nếu không có Token
-  if (!token) {
+  if (!accessTokenCookie) {
     throw createError({
       statusCode: 401,
-      statusMessage: 'Vui lòng đăng nhập!'
+      statusMessage: 'Miss Access Token Vui lòng đăng nhập!'
+    })
+  }
+
+  if (!userRolesCookie) {
+    throw createError({
+      statusCode: 401,
+      statusMessage: 'Miss User Roles Vui lòng đăng nhập!'
     })
   }
 
   try {
     // 2. Decode token để lấy thông tin người dùng
-    const payloadBase64 = token.split('.')[1]
+    const payloadBase64 = accessTokenCookie.split('.')[1]
     const decoded = JSON.parse(Buffer.from(payloadBase64, 'base64').toString())
 
     return {
       success: true,
+      accessTokenCookie,
+      userRolesCookie,
       user: { 
         name: decoded.name || decoded.full_name || 'User', 
         email: decoded.email || 'no-email@orbitai.fun',
