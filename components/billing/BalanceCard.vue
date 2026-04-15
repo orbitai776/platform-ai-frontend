@@ -9,7 +9,7 @@
             ĐỐI TÁC: {{ partnerName }}
           </p>
           <h1 class="text-6xl md:text-8xl font-black tracking-tight text-white">
-            {{ balance }} <span class="text-3xl md:text-4xl font-medium text-slate-600">TKN</span>
+            {{ data.balance }} <span class="text-3xl md:text-4xl font-medium text-slate-600">TKN</span>
           </h1>
         </div>
         
@@ -26,6 +26,9 @@
 
 <script setup>
 import { computed } from 'vue'
+const data = ref({
+  balance: 0
+})
 
 // Khai báo sự kiện để bắn lên cha (Emits)
 defineEmits(['open-modal'])
@@ -33,9 +36,13 @@ defineEmits(['open-modal'])
 // Gọi API trực tiếp từ Component
 const headers = useRequestHeaders(['cookie'])
 const { data: balanceData } = await useFetch('/api/partner/billing/balance', { headers })
-const { data: profileData } = await useFetch('/api/auth/login', { headers })
+
+const availableTokens = balanceData.value?.available_tokens ?? 0
+const totalUsed = balanceData.value?.total_used ?? 0
+
+data.value.balance = availableTokens - totalUsed
+
 
 // Map dữ liệu
 const balance = computed(() => balanceData.value?.data?.balance ?? balanceData.value?.balance ?? 0)
-const partnerName = computed(() => balanceData.value?.data?.partnerName ?? profileData.value?.user?.username ?? profileData.value?.user?.name ?? 'Partner')
 </script>
