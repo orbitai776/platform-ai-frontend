@@ -153,41 +153,9 @@
 
 <script setup>
 import { ref, onMounted } from "vue";
-import { auth, provider, signInWithPopup, signOut } from "../../src/auth/firebase";
-import apiResource from "../../src/composables/apiResource";
-import { getAuth } from "firebase/auth";
-const { authenticateFirebaseToken } = apiResource();
+import { auth, signOut } from "../../src/auth/firebase";
 const user = ref(null);
 
-const getFirebaseToken = async () => {
-  const authInstance = getAuth();
-  let user = authInstance.currentUser;
-
-  if (!user) {
-    await new Promise((resolve) => {
-      const unsubscribe = authInstance.onAuthStateChanged((u) => {
-        user = u;
-        unsubscribe();
-        resolve();
-      });
-    });
-  }
-
-  if (!user) {
-    try {
-      const result = await signInWithPopup(auth, provider);
-      user = result.user;
-      console.log("LOGIN SUCCESS:", user);
-    } catch (err) {
-      console.error("LOGIN FAIL:", err);
-      return null;
-    }
-  }
-
-  if (!user) return null;
-
-  return await user.getIdToken(true);
-};
 const showEditModal = ref(false);
 const profileForm = ref({
   name: "",
@@ -219,40 +187,43 @@ const saveProfile = async () => {
 };
 
 const setupAuthListener = async () => {
-  try {
-    const authUser = await new Promise((resolve, reject) => {
-      const unsubscribe = auth.onAuthStateChanged(
-        user => { unsubscribe(); resolve(user); },
-        error => { unsubscribe(); reject(error); }
-      );
-    });
-    user.value = authUser;
-    if (authUser) {
-      emitUsername(user.value.displayName);
-      console.log('User data loaded:', JSON.stringify(user.value));
-    }
-  } catch (error) {
-    console.error('Auth state error:', error);
-  }
+
+  const userRoles = await $fetch('/api/auth/user-roles', {
+    method: "GET",
+  });
+  if (!Array.isArray(userRoles) || (userRoles.length < 1)) {
+    console.log('Không có quyền vào profile, chuyển hướng về login');
+    return navigateTo('/login');
+  }
+
+  const userProfileData = await $fetch('/api/auth/user-profile', {
+    method: "GET",
+  });
+  
+  // console.log("User profile data:", JSON.stringify(userProfileData));
+  user.value = userProfileData;
 };
 
 const signOutUser = async () => {
   try {
     await signOut(auth);
-    user.value = null;
-    emitUsername(null);
-    useCookie("userRoles").value = null;
-    await useFetch("/api/auth/logout", {
+    await $fetch('/api/auth/logout', {
       method: "GET",
     });
-    navigateTo("/");
+    user.value = null;
+    // emitUsername(null);
+    // useCookie("userRoles").value = null;
+    // await useFetch("/api/auth/logout", {
+    //   method: "GET",
+    // });
+    navigateTo("/login");
     console.log("Đăng xuất thành công");
   } catch (error) {
     console.error("Lỗi đăng xuất:", error);
   }
 };
 
-onMounted(() => {
-  setupAuthListener();
+onMounted(async () => {
+  await setupAuthListener();
 });
 </script>
