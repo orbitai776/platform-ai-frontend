@@ -127,8 +127,18 @@ const fetchServices = async () => {
 }
 
 // Hàm này để đảm bảo Firebase đã login xong rồi mới gọi API đồng đội
-const initData = () => {
-  onAuthStateChanged(auth, async (user) => {
+const initData = async () => {
+  await onAuthStateChanged(auth, async (user) => {
+
+    const userRoles = await $fetch('/api/auth/user-roles', {
+      method: "GET",
+    });
+
+    if (!Array.isArray(userRoles) || (!userRoles.includes('partner') && !userRoles.includes('admin'))) {
+      console.warn("User chưa đăng nhập hoặc không có roles, chuyển hướng về login");
+      return navigateTo('/login');
+    }
+
     if (user) {
       console.log("User đã sẵn sàng, bắt đầu gọi API...");
       
@@ -175,7 +185,7 @@ const deleteService = async (id) => {
   }
 }
 
-onMounted(() => {
-  initData() // Gọi hàm khởi tạo có check Auth
+onMounted(async () => {
+  await initData() // Gọi hàm khởi tạo có check Auth
 })
 </script>
