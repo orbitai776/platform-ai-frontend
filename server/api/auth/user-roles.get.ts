@@ -7,11 +7,17 @@ export default defineEventHandler(async (event) => {
   
   if (userRolesString) {
     try {
-      // Thử parse như JSON
-      userRoles = JSON.parse(userRolesString);
+      if (typeof userRolesString === 'string' && userRolesString.startsWith('[')) {
+        userRoles = JSON.parse(userRolesString);
+      } else if (typeof userRolesString === 'string') {
+        userRoles = userRolesString.split(',').map(role => role.trim());
+      } else if (Array.isArray(userRolesString)) {
+        userRoles = userRolesString;
+      }
     } catch (error) {
-      // Nếu lỗi, xử lý như string thường "user,partner"
-      userRoles = userRolesString.split(',').map(role => role.trim());
+      console.warn('Error parsing userRoles cookie:', error);
+      // Fallback to empty array
+      userRoles = [];
     }
   }
   

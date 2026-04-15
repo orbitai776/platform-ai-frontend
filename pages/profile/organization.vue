@@ -115,9 +115,14 @@
             <div class="bg-slate-50 rounded-2xl p-5 border md:col-span-2">
               <p class="text-sm text-slate-500">Created At</p>
               <p class="text-base font-medium">
-                {{ new Date(user?.created_at).toLocaleString() }}
+                {{ user?.created_at ? new Date(user.created_at).toLocaleString() : 'N/A' }}
               </p>
             </div>
+          </div>
+
+          <!-- LOADING OVERLAY -->
+          <div v-if="loading" class="mt-8 flex justify-center">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
           </div>
         </div>
       </div>
@@ -222,10 +227,8 @@
 
 <script setup>
 import { ref, onMounted, watch } from "vue";
-import apiResource from "../../src/composables/apiResource";
 import { auth } from "../../src/auth/firebase";
 import { getAuth } from "firebase/auth";
-const { authenticateFirebaseToken } = apiResource();
 const user = ref(null);
 const organization = ref(null);
 const showEditModal = ref(false);
@@ -277,25 +280,15 @@ const closeEditModal = () => {
 
 const saveProfile = async (method) => {
   try {
-    const gatewayLogin = await authenticateFirebaseToken({
-      idToken: await getFirebaseToken(),
+    const result = await $fetch("/api/partner/organization", {
+      method: method,
+      body: profileForm.value,
     });
-    const res = await fetch(
-      `${import.meta.env.VITE_GATEWAY_URL}/v1/api/partner/organization`,
-      {
-        method: method,
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${gatewayLogin.accessToken}`,
-        },
-        body: JSON.stringify(profileForm.value),
-      },
-    );
-    const data = await res.json();
-    console.log("Update thành công:", data);
+    console.log("Update thành công:", result);
     showEditModal.value = false;
   } catch (error) {
     console.error("Update thất bại:", error);
+    alert("Lỗi khi cập nhật thông tin: " + (error.data?.message || error.message));
   }
 };
 
@@ -309,37 +302,34 @@ const loadOrganization = async () => {
       organization.value = false;
       return;
     }
-    user.value = {   };
-    const gatewayLogin = await authenticateFirebaseToken({
-      idToken: await currentUser.getIdToken(),
-    });
-    const res = await fetch(
-      `${import.meta.env.VITE_GATEWAY_URL}/v1/api/partner/organization`,
-      {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${gatewayLogin.accessToken}`,
-        },
-      }
-    );
-    if (!res.ok) {
-      organization.value = false;
-      return;
-    }
-    const result = await res.json();
-    const data = result.data;
+
+    // Set default user info from Firebase
     user.value = {
-      id: data.id,
-      displayName: data.name,
-      description: data.description,
-      address: data.address,
-      email: data.email,
-      status: data.status,
-      created_at: data.created_at,
-      phoneNumber: data.phone,
+      displayName: currentUser.displayName || "User",
+      email: currentUser.email,
       photoURL: currentUser.photoURL,
+      phoneNumber: currentUser.phoneNumber,
     };
-    organization.value = true;
+
+    const result = await $fetch("/api/partner/organization");
+    const data = result.data;
+
+    if (data) {
+      user.value = {
+        id: data.id,
+        displayName: data.name,
+        description: data.description,
+        address: data.address,
+        email: data.email,
+        status: data.status,
+        created_at: data.created_at,
+        phoneNumber: data.phone,
+        photoURL: currentUser.photoURL,
+      };
+      organization.value = true;
+    } else {
+      organization.value = false;
+    }
   } catch (error) {
     console.error("loadOrganization error:", error);
     organization.value = false;
