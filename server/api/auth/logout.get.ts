@@ -1,13 +1,16 @@
-import { defineEventHandler, deleteCookie } from 'h3'
+import { defineEventHandler, setCookie } from 'h3'
+import { jwtDecode } from "jwt-decode";
 
 export default defineEventHandler(async (event) => {
-  deleteCookie(event, 'accessToken', {
-    path: '/',
-    secure: true,
-    sameSite: 'strict'
-  })
+  
+  setCookie(event, 'firebaseIdToken', '', { maxAge: 0, path: '/' });
+  setCookie(event, 'accessToken', '', { maxAge: 0, path: '/' });
+  setCookie(event, 'userRoles', '', { maxAge: 0, path: '/' });
+  setCookie(event, 'userProfile', '', { maxAge: 0, path: '/' });
 
+  // Trả về data user (không có token)
   return {
-    success: true
+    success: true,
+    message: "Logout successful"
   }
 })

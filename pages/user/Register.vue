@@ -87,11 +87,11 @@ const handleRegister = () => {
   }
 
   alert("Registration successful (mock)");
-  router.push("/Login");
+  router.push("/login");
 };
 
 const goLogin = () => {
-  router.push("/Login");
+  router.push("/login");
 };
 </script>
 

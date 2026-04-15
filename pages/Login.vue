@@ -72,35 +72,30 @@ const email = ref('');
 const password = ref('');
 const isLoading = ref(false);
 
-const accessTokenCookie = useCookie('accessToken', { maxAge: 86400 * 7 });
-const userRolesCookie = useCookie('userRoles', { maxAge: 86400 * 7 });
-
 const handleBackendAuth = async (firebaseIdToken) => {
   try {
     // Gọi qua server Nuxt (api/auth/login.post.ts) để nó set Cookie HttpOnly hộ mình
-    const { data, error } = await useFetch('/api/auth/login', {
+    await useFetch('/api/auth/login', {
       method: "POST",
       body: { idToken: firebaseIdToken },
     });
 
-    if (error.value || !data.value) throw new Error("Xác thực Backend thất bại");
+    const { data: userRolesData, error: userRolesError } = await useFetch('/api/auth/user-roles', {
+      method: "GET",
+    });
 
-    // Token thật nằm trong Cookie rồi, ở đây ta lấy roles để điều hướng
-    if (process.client) {
-      // Lưu roles vào localStorage và cookie thường để Client dùng nếu cần
-      const userRoles = data.value.user?.roles || [];
-      
-      userRolesCookie.value = JSON.stringify(userRoles);
-      localStorage.setItem('userRoles', JSON.stringify(userRoles));
+    const userRoles = userRolesData.value || [];
+    console.log(userRoles); // ['user', 'partner']
+    console.log(Array.isArray(userRoles)); // true
+    console.log(userRoles.includes('partner')); // true
 
-      // Phân quyền điều hướng
-      if (userRoles.includes('admin')) {
-        window.location.href = '/admin';
-      } else if (userRoles.includes('partner')) {
-        window.location.href = '/partner';
-      } else {
-        window.location.href = '/'; 
-      }
+    // Phân quyền điều hướng
+    if (userRoles.includes('admin')) {
+      window.location.href = '/admin';
+    } else if (userRoles.includes('partner')) {
+      window.location.href = '/partner';
+    } else {
+      window.location.href = '/'; 
     }
   } catch (error) {
     console.error("Lỗi Backend:", error);

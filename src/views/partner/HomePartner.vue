@@ -52,8 +52,8 @@
 
 <script setup>
 import { computed, onMounted, ref } from 'vue'
-import { jwtDecode } from "jwt-decode"
 import { auth, signOut } from '~/src/auth/firebase.js'
+const isPartner = ref(true);
 
 const profile = ref({
   uid: '',
@@ -70,57 +70,47 @@ const initials = computed(() => {
 onMounted(async () => {
   if (!process.client) return;
 
-  const token = localStorage.getItem('accessToken');
-
-  // 1. Nếu không có token -> đá về trang Login chung
-  if (!token) {
-    return navigateTo('/Login');
-  }
-
   try {
-    // 2. Giải mã token để lấy thông tin user
-    const decoded = jwtDecode(token);
+    console.log("Calling API with $fetch");
+
+    const userRoles = await $fetch('/api/auth/user-roles', {
+      method: "GET",
+    });
+
+    if (Array.isArray(userRoles) && userRoles.includes('partner')) {
+      isPartner.value = true;
+    } else {
+      isPartner.value = false;
+    }
+
+    if (!isPartner.value) {
+      console.log('Không có quyền partner, chuyển hướng về login');
+      return navigateTo('/login');
+    }
     
-    // 3. Kiểm tra xem có đúng là role partner không? (Bảo mật 2 lớp)
-    if (!decoded.roles || !decoded.roles.includes('partner')) {
-      alert("Bạn không có quyền truy cập trang Đối tác!");
-      return navigateTo('/'); // Đá về trang chủ thường
-    }
-
-    // 4. Cập nhật thông tin profile từ cục token
-    profile.value = {
-      uid: decoded.uid || '',
-      email: decoded.email || '',
-      displayName: decoded.name || decoded.full_name || '',
-      // Tạm thời nếu token không chứa ảnh, dùng ảnh mặc định. Bạn có thể lấy từ db sau.
-      photoURL: decoded.picture || '' 
-    }
-
+    // Dùng $fetch thay vì useFetch
+    const userProfileData = await $fetch('/api/auth/user-profile', {
+      method: "GET",
+    });
+    
+    profile.value = userProfileData;
+    
   } catch (error) {
     console.error("Lỗi xác thực Token:", error);
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('userRoles');
-    return navigateTo('/Login');
+    return navigateTo('/login');
   }
 })
 
 const handleLogout = async () => {
   try {
-    // Xóa session Firebase
     await signOut(auth);
+    await $fetch('/api/auth/logout', {
+      method: "GET",
+    });
   } catch (error) {
     console.error("Lỗi khi đăng xuất Firebase", error);
   } finally {
-    // Luôn luôn dọn sạch LocalStorage khi đăng xuất
-    if (process.client) {
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('userRoles');
-      // Nếu code cũ của bạn có lưu các biến này thì xoá luôn cho sạch
-      localStorage.removeItem('partnerAuthUser'); 
-    }
-    
-    // Đá về trang Đăng nhập chung
-    await navigateTo('/Login');
+    await navigateTo('/login');
   }
 }
 </script>
