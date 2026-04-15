@@ -72,7 +72,55 @@
 </template>
 
 <script setup>
+import { onMounted,ref } from 'vue';
+import { auth } from '../src/auth/firebase'
+
+const accessToken = ref('')
+onMounted(async () => {
+  try {
+   const user = auth.currentUser;
+    if (!user) {
+      console.error('Chưa đăng nhập Firebase')
+      return
+    }
+    const idToken = await user.getIdToken()
+    const authRes = await fetch(
+      'https://platform-gateway-dev.orbitai.fun/v1/api/auth',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ idToken })
+      }
+    )
+    const authData = await authRes.json()
+    accessToken.value = authData.accessToken
+    const updateRes = await fetch(
+      'https://platform-gateway-dev.orbitai.fun/v1/api/partner/organization',
+      {
+        method: 'PATCH',
+        headers: {
+          Authorization: `Bearer ${accessToken.value}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          name: 'New Organization Name',
+          phone: '1234567890',
+          address: '123 New Address, City, Country'
+        })
+      }
+    )
+    const updateData = await updateRes.json()
+    console.log('Cập nhật tổ chức thành công:', updateData)
+  } catch (err) {
+    console.error('Lỗi API:', err)
+  }
+})
+
+
 const route = useRoute();
+
 const newsList = [
   {
     _id: {
