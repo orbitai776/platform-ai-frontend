@@ -21,15 +21,12 @@
           >
             ?
           </div>
-
           <h2 class="mt-5 text-2xl font-bold text-slate-800">
             {{ user?.displayName || "Guest User" }}
           </h2>
-
           <p class="text-slate-500 text-sm mt-1">
             {{ user?.email || "No email" }}
           </p>
-
           <div class="mt-6 flex flex-col gap-3 w-full">
             <div class="mt-6 flex flex-col gap-3 w-full">
               <button
@@ -61,7 +58,6 @@
             >
               User Profile
             </NuxtLink>
-
             <NuxtLink
               to="/profile/organization"
               class="px-5 py-2 rounded-xl font-medium bg-blue-600 text-white hover:bg-blue-700 transition"
@@ -69,11 +65,9 @@
               Organization Profile
             </NuxtLink>
           </div>
-
           <h1 class="text-3xl font-bold text-slate-800 mb-8">
             Organization Information
           </h1>
-
           <div class="grid md:grid-cols-2 gap-6">
             <div class="bg-slate-50 rounded-2xl p-5 border">
               <p class="text-sm text-slate-500">Organization Name</p>
@@ -81,35 +75,30 @@
                 {{ user?.displayName || "N/A" }}
               </p>
             </div>
-
             <div class="bg-slate-50 rounded-2xl p-5 border">
               <p class="text-sm text-slate-500">Email</p>
               <p class="text-lg font-semibold">
                 {{ user?.email || "N/A" }}
               </p>
             </div>
-
             <div class="bg-slate-50 rounded-2xl p-5 border md:col-span-2">
               <p class="text-sm text-slate-500">Description</p>
               <p class="text-base font-medium text-slate-700">
                 {{ user?.description || "N/A" }}
               </p>
             </div>
-
             <div class="bg-slate-50 rounded-2xl p-5 border md:col-span-2">
               <p class="text-sm text-slate-500">Address</p>
               <p class="text-base font-medium text-slate-700">
                 {{ user?.address || "N/A" }}
               </p>
             </div>
-
             <div class="bg-slate-50 rounded-2xl p-5 border">
               <p class="text-sm text-slate-500">Phone</p>
               <p class="text-base font-medium">
                 {{ user?.phoneNumber || "N/A" }}
               </p>
             </div>
-
             <div class="bg-slate-50 rounded-2xl p-5 border">
               <p class="text-sm text-slate-500">Status</p>
               <p
@@ -123,7 +112,6 @@
                 {{ user?.status || "unknown" }}
               </p>
             </div>
-
             <div class="bg-slate-50 rounded-2xl p-5 border md:col-span-2">
               <p class="text-sm text-slate-500">Created At</p>
               <p class="text-base font-medium">
@@ -148,7 +136,6 @@
         <h2 class="text-2xl font-bold mb-6 text-slate-800">
           Edit Organization Profile
         </h2>
-
         <div class="grid md:grid-cols-2 gap-4">
           <div>
             <label class="block text-sm text-slate-600 mb-2">
@@ -160,7 +147,6 @@
               class="w-full border rounded-lg px-4 py-3"
             />
           </div>
-
           <div>
             <label class="block text-sm text-slate-600 mb-2">Email</label>
             <input
@@ -169,7 +155,6 @@
               class="w-full border rounded-lg px-4 py-3"
             />
           </div>
-
           <div>
             <label class="block text-sm text-slate-600 mb-2">Phone</label>
             <input
@@ -178,7 +163,6 @@
               class="w-full border rounded-lg px-4 py-3"
             />
           </div>
-
           <div>
             <label class="block text-sm text-slate-600 mb-2">Status</label>
             <select
@@ -190,7 +174,6 @@
               <option value="pending">Pending</option>
             </select>
           </div>
-
           <div class="md:col-span-2">
             <label class="block text-sm text-slate-600 mb-2">
               Description
@@ -201,7 +184,6 @@
               class="w-full border rounded-lg px-4 py-3"
             />
           </div>
-
           <div class="md:col-span-2">
             <label class="block text-sm text-slate-600 mb-2">Address</label>
             <textarea
@@ -211,7 +193,6 @@
             />
           </div>
         </div>
-
         <div class="flex justify-end gap-3 mt-6">
           <button
             @click="closeEditModal"
@@ -219,7 +200,6 @@
           >
             Cancel
           </button>
-
           <button
             v-if="organization"
             @click="() => saveProfile('PATCH')"
@@ -232,7 +212,7 @@
             @click="() => saveProfile('POST')"
             class="px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
           >
-            Create Organization
+        Create Organization
           </button>
         </div>
       </div>
@@ -244,6 +224,7 @@
 import { ref, onMounted, watch } from "vue";
 import apiResource from "../../src/composables/apiResource";
 import { auth } from "../../src/auth/firebase";
+import { getAuth } from "firebase/auth";
 const { authenticateFirebaseToken } = apiResource();
 const user = ref(null);
 const organization = ref(null);
@@ -253,7 +234,6 @@ const loading = ref(true);
 const getFirebaseToken = async () => {
   const authInstance = getAuth();
   let user = authInstance.currentUser;
-
   if (!user) {
     await new Promise((resolve) => {
       const unsubscribe = authInstance.onAuthStateChanged((u) => {
@@ -263,9 +243,7 @@ const getFirebaseToken = async () => {
       });
     });
   }
-
   if (!user) return null;
-
   return await user.getIdToken(true);
 };
 const profileForm = ref({
@@ -313,7 +291,6 @@ const saveProfile = async (method) => {
         body: JSON.stringify(profileForm.value),
       },
     );
-
     const data = await res.json();
     console.log("Update thành công:", data);
     showEditModal.value = false;
@@ -324,27 +301,18 @@ const saveProfile = async (method) => {
 
 const loadOrganization = async () => {
   loading.value = true;
-
   try {
-    // đợi firebase restore session sau F5
     await auth.authStateReady();
-
     const currentUser = auth.currentUser;
-
-    // chưa login
     if (!currentUser) {
       user.value = null;
       organization.value = false;
       return;
     }
-    user.value = {
-      
-    };
-
+    user.value = {   };
     const gatewayLogin = await authenticateFirebaseToken({
       idToken: await currentUser.getIdToken(),
     });
-
     const res = await fetch(
       `${import.meta.env.VITE_GATEWAY_URL}/v1/api/partner/organization`,
       {
@@ -358,10 +326,8 @@ const loadOrganization = async () => {
       organization.value = false;
       return;
     }
-
     const result = await res.json();
     const data = result.data;
-
     user.value = {
       id: data.id,
       displayName: data.name,
@@ -373,7 +339,6 @@ const loadOrganization = async () => {
       phoneNumber: data.phone,
       photoURL: currentUser.photoURL,
     };
-
     organization.value = true;
   } catch (error) {
     console.error("loadOrganization error:", error);
@@ -387,5 +352,10 @@ onMounted(() => {
   loadOrganization();
 });
 
+watch(showEditModal, async (isOpen, wasOpen) => {
+  if (wasOpen && !isOpen) {
+    await loadOrganization();
+  }
+});
 
 </script>
