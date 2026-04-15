@@ -95,20 +95,8 @@ onMounted(async () => {
       } else {
         isAdmin.value = false;
       }
-      
-      // const rolesString = localStorage.getItem('userRoles');
-      
-      // if (rolesString) {
-      //   // Dịch chuỗi JSON thành mảng
-      //   const rolesArray = JSON.parse(rolesString);
-        
-      //   // Nếu trong mảng có chứa chữ 'partner', bật biến isPartner lên true
-      //   if (Array.isArray(rolesArray) && rolesArray.includes('partner')) {
-      //     isPartner.value = true;
-      //   }
-      // }
     } catch (error) {
-      console.error("Lỗi khi đọc phân quyền từ localStorage:", error);
+      console.error("Lỗi khi đọc phân quyền từ API:", error);
     }
   }
 });
