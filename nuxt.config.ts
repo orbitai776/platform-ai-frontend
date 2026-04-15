@@ -1,15 +1,17 @@
-import { defineNuxtConfig } from 'nuxt/config'
-
 export default defineNuxtConfig({
   ssr: true,
-  
-  // Nuxt modules
+
+  runtimeConfig: {
+    public: {
+      gatewayUrl: process.env.VITE_GATEWAY_URL
+    }
+  },
+
   modules: [
     '@nuxt/devtools',
     '@nuxtjs/tailwindcss',
   ],
-   
-  // App config
+
   app: {
     head: {
       title: 'Orbit AI',
@@ -22,30 +24,15 @@ export default defineNuxtConfig({
       ]
     }
   },
-  
-  // Alias cho dễ import
-  alias: {
-    '@': '.',
-    '@components': './components',
-    '@pages': './pages',
-    '@server': './server'
-  },
 
   nitro: {
-    preset: 'vercel',  // Quan trọng: set preset cho Vercel
+    preset: 'vercel',
     compressPublicAssets: true,
     minify: true,
     vercel: {
       functions: {
-        maxDuration: 10  // Tối đa 10 giây cho serverless functions
+        maxDuration: 10
       }
     }
-  },
-
-  build: {
-    transpile: [],
-    analyze: false
-  },
-
-  devtools: { enabled: true }
+  }
 })
