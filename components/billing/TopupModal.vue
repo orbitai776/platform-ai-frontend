@@ -166,7 +166,13 @@ const handleTopup = async () => {
   
   try {
     const rawPrice = parseInt(pkg.price.replace(/\D/g, ''))
-    const rawTokens = parseInt(pkg.tokens.replace(/\D/g, ''))
+    const baseTokens = parseInt(pkg.tokens.replace(/\D/g, ''))
+    
+    // Tính toán số lượng Token bao gồm cả Bonus
+    const bonusPercent = parseInt(pkg.bonus.replace(/\D/g, '') || '0')
+    const finalTokens = baseTokens + Math.floor(baseTokens * bonusPercent / 100)
+
+    console.log(`📦 Finalizing topup: ${baseTokens} tokens + ${bonusPercent}% bonus = ${finalTokens} token_amount`)
 
     // Gửi yêu cầu nạp tiền với dữ liệu đã được map đúng từ UI
     const response = await $fetch('/api/partner/billing/payments', {
@@ -174,7 +180,7 @@ const handleTopup = async () => {
       body: {
         package_id: pkg.id,
         amount: rawPrice,
-        tokens: rawTokens,
+        token_amount: finalTokens, // Chuyển từ tokens sang token_amount
         payment_method: selectedMethodId.value
       }
     })

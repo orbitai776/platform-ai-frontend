@@ -11,7 +11,7 @@ export const useAIChatAPI = () => {
   const partnerServices = ref([])
 
   const BASE_URL = 'https://platform-gateway-dev.orbitai.fun'
-  const ORG_ID = 'e3845d6c-9bf8-4a2e-a766-33e67f23db22'
+  const activeOrgId = ref('e3845d6c-9bf8-4a2e-a766-33e67f23db22') // ID mặc định dự phòng
   const accessTokenCookie = useCookie('accessToken')
 
   const getFirebaseToken = async () => {
@@ -80,7 +80,7 @@ export const useAIChatAPI = () => {
     const headers = {
       "Content-Type": "application/json",
       "Authorization": `Bearer ${token}`,
-      "x-org-id": ORG_ID,
+      "x-org-id": activeOrgId.value,
       ...(options.headers || {})
     }
 
@@ -187,8 +187,16 @@ export const useAIChatAPI = () => {
   }
 
   const loadConversationHistory = async (id) => {
+    if (!id) return
     try {
       const res = await callAPI(`/v1/api/chat/conversations/${id}/messages`)
+      
+      if (!res) {
+        console.warn("⚠️ Không thể tải lịch sử cuộc trò chuyện. Có thể phiên đã hết hạn hoặc không có quyền.")
+        resetChat()
+        return
+      }
+
       messages.value = (res?.data || []).map((m, i) => ({
         id: i,
         role: m.role,
@@ -197,6 +205,7 @@ export const useAIChatAPI = () => {
       }))
     } catch (e) {
       console.error("Load history error:", e)
+      resetChat()
     }
   }
 
@@ -209,10 +218,25 @@ export const useAIChatAPI = () => {
     }
   }
 
+  const loadOrganization = async () => {
+    try {
+      const res = await $fetch('/api/partner/organization')
+      if (res?.data?.id) {
+        activeOrgId.value = res.data.id
+        console.log("🏢 Cập nhật Org ID mới:", activeOrgId.value)
+      }
+    } catch (err) {
+      console.warn("⚠️ Không lấy được Org ID từ Profile, dùng mặc định")
+    }
+  }
+
   const resetChat = () => {
     localStorage.removeItem('current_conversation_id')
+    localStorage.removeItem('guest_session_id')
     currentConversationId.value = null
+    guestSessionId.value = ''
     messages.value = []
+    console.log("🧹 Đã xóa sạch dữ liệu chat phiên cũ")
   }
 
   return {
@@ -222,6 +246,7 @@ export const useAIChatAPI = () => {
     conversationsList,
     partnerServices,
     loadPartnerServices,
+    loadOrganization,
     createConversation,
     sendMessage,
     loadConversationHistory,

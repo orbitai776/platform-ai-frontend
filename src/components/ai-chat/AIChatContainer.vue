@@ -96,7 +96,11 @@
       <div v-else>
         <div v-if="messages.length === 0 && !isLoading">
           <AIChatEmptyState />
-          <AIChatWelcome @suggest="handleSendMessage" />
+          <AIChatWelcome 
+            :service-name="currentService?.name" 
+            :service-type="currentService?.type || currentService?.category"
+            @suggest="handleSendMessage" 
+          />
         </div>
 
         <div v-else class="space-y-4 p-4">
@@ -135,7 +139,7 @@
 </template>
 
 <script setup>
-import { ref, nextTick, watch, onMounted } from 'vue'
+import { ref, nextTick, watch, onMounted, computed } from 'vue'
 import { useAIChatAPI } from '../../composables/useAIChatAPI'
 
 import AITabs from './AITabs.vue'
@@ -159,9 +163,26 @@ const {
   loadConversationHistory,
   loadConversations,
   loadPartnerServices,
+  loadOrganization,
   partnerServices,
+  conversationsList,
   currentConversationId
 } = useAIChatAPI()
+
+const currentService = computed(() => {
+  if (selectedServiceId.value) {
+    return partnerServices.value.find(s => s.id === selectedServiceId.value)
+  }
+  
+  if (currentConversationId.value && conversationsList.value.length > 0) {
+    const conv = conversationsList.value.find(c => c.conversation_id === currentConversationId.value)
+    if (conv) {
+      return partnerServices.value.find(s => s.id === conv.partner_service_id)
+    }
+  }
+  
+  return null
+})
 
 const scrollToBottom = async () => {
   await nextTick()
@@ -177,10 +198,32 @@ watch(() => messages.value.length, () => {
   scrollToBottom()
 })
 
+const accessToken = useCookie('accessToken')
+watch(accessToken, (newVal, oldVal) => {
+  if (newVal !== oldVal) {
+    console.log("🔄 Phát hiện thay đổi phiên làm việc, đang reset chat...")
+    resetChat()
+    loadOrganization()
+    loadPartnerServices()
+  }
+})
+
 onMounted(async () => {
+  // Ưu tiên xác định ID tổ chức của tài khoản hiện tại
+  await loadOrganization()
   await loadPartnerServices()
   await loadConversations()
+
   const savedConvId = localStorage.getItem('current_conversation_id')
+  const token = useCookie('accessToken').value
+
+  // Nếu không có token (đã logout) nhưng vẫn còn ID cũ -> dọn sạch
+  if (!token && savedConvId) {
+    console.log("🚫 Không tìm thấy Token, đang dọn sạch phiên cũ...")
+    resetChat()
+    return
+  }
+
   if (savedConvId) {
     currentConversationId.value = savedConvId
     await loadConversationHistory(savedConvId)
