@@ -178,7 +178,6 @@ const closeEditModal = () => {
 
 const saveProfile = async () => {
   try {
-    
     console.log("Update thành công:", data);
     showEditModal.value = false;
   } catch (error) {
@@ -187,19 +186,18 @@ const saveProfile = async () => {
 };
 
 const setupAuthListener = async () => {
-
-  const userRoles = await $fetch('/api/auth/user-roles', {
+  const userRoles = await $fetch("/api/auth/user-roles", {
     method: "GET",
   });
-  if (!Array.isArray(userRoles) || (userRoles.length < 1)) {
-    console.log('Không có quyền vào profile, chuyển hướng về login');
-    return navigateTo('/login');
+  if (!Array.isArray(userRoles) || userRoles.length < 1) {
+    console.log("Không có quyền vào profile, chuyển hướng về login");
+    return navigateTo("/login");
   }
 
-  const userProfileData = await $fetch('/api/auth/user-profile', {
+  const userProfileData = await $fetch("/api/auth/user-profile", {
     method: "GET",
   });
-  
+
   // console.log("User profile data:", JSON.stringify(userProfileData));
   user.value = userProfileData;
 };
@@ -207,7 +205,7 @@ const setupAuthListener = async () => {
 const signOutUser = async () => {
   try {
     await signOut(auth);
-    await $fetch('/api/auth/logout', {
+    await $fetch("/api/auth/logout", {
       method: "GET",
     });
     user.value = null;
@@ -225,5 +223,17 @@ const signOutUser = async () => {
 
 onMounted(async () => {
   await setupAuthListener();
+  try {
+    const userRoles = await $fetch("/api/auth/user-roles", {
+      method: "GET",
+    });
+    if (Array.isArray(userRoles) && userRoles.includes("admin")) {
+      console.log("User has admin role");
+    } else {
+      return navigateTo("/");
+    }
+  } catch (error) {
+    console.error("Error fetching user roles:", error);
+  }
 });
 </script>

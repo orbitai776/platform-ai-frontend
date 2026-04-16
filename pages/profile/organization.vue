@@ -338,8 +338,21 @@ const loadOrganization = async () => {
   }
 };
 
-onMounted(() => {
+onMounted(async() => {
   loadOrganization();
+
+  try{
+    const userRoles = await $fetch('/api/auth/user-roles', {
+      method: "GET",
+  });
+  if (Array.isArray(userRoles) && userRoles.includes('admin')) {
+      console.log("User has admin role");
+    } else {
+      return navigateTo('/');
+    }
+  } catch (error) {
+    console.error("Error fetching user roles:", error);
+  }
 });
 
 watch(showEditModal, async (isOpen, wasOpen) => {
