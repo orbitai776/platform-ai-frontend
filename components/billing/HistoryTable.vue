@@ -202,8 +202,17 @@ const history = computed(() => {
 })
 
 // Utilities
-const formatNumber = (val) => new Intl.NumberFormat('vi-VN').format(val)
-const formatCurrency = (val) => new Intl.NumberFormat('vi-VN').format(val)
+const formatNumber = (val) => {
+  if (val === undefined || val === null) return '0'
+  // Đảm bảo ép kiểu về số và làm tròn để tránh lỗi định dạng chuỗi từ backend
+  const num = Math.floor(Number(val))
+  return new Intl.NumberFormat('vi-VN').format(num)
+}
+const formatCurrency = (val) => {
+  if (val === undefined || val === null) return '0'
+  const num = Number(val)
+  return new Intl.NumberFormat('vi-VN').format(num)
+}
 
 const formatDate = (dateStr) => {
   if (!dateStr) return '---'
