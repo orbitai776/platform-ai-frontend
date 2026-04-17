@@ -1,48 +1,92 @@
 <template>
-  <div class="p-4 space-y-4 max-w-2xl mx-auto">
-    <div v-for="news in newsList" :key="news.id" class="bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
-      <div class="flex items-start gap-3">
-        <span class="text-2xl">{{ news.icon }}</span>
-        <div class="flex-1">
-          <h3 class="font-semibold text-gray-800">{{ news.title }}</h3>
-          <p class="text-gray-500 text-sm mt-1">{{ news.date }}</p>
-          <p class="text-gray-700 mt-2">{{ news.description }}</p>
-          
-          <!-- Chi tiết tour -->
-          <div class="mt-3 p-3 bg-gray-50 rounded-lg">
-            <div class="flex items-center gap-2 text-sm text-gray-600">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
-              </svg>
-              <span>{{ news.location }}</span>
+  <div class="space-y-4">
+    <section class="overflow-hidden rounded-[24px] border border-white/70 bg-white/85 p-5 shadow-[0_20px_40px_rgba(15,23,42,0.08)]">
+      <div class="flex items-start gap-4">
+        <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-[18px] bg-amber-100 text-amber-700">
+          <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M19 5H5a2 2 0 00-2 2v10a2 2 0 002 2h14a2 2 0 002-2V7a2 2 0 00-2-2zm-8 4h6m-6 4h6M7 9h.01M7 13h.01" />
+          </svg>
+        </div>
+
+        <div>
+          <p class="text-[11px] font-semibold uppercase tracking-[0.24em] text-amber-600">News Feed</p>
+          <h3 class="mt-2 text-xl font-semibold text-slate-900">Tin nổi bật ngay trong chatbox</h3>
+          <p class="mt-2 text-sm leading-6 text-slate-500">
+            Chọn một tin để đẩy nội dung quay lại khung chat mà không làm thay đổi dữ liệu hiện có.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <article
+      v-for="news in newsList"
+      :key="news.id"
+      class="group overflow-hidden rounded-[24px] border border-white/70 bg-white/85 p-5 shadow-[0_18px_40px_rgba(15,23,42,0.08)] transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_22px_48px_rgba(15,23,42,0.12)]"
+    >
+      <div class="flex items-start gap-4">
+        <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-[20px] bg-slate-100 text-2xl">
+          {{ news.icon }}
+        </div>
+
+        <div class="min-w-0 flex-1">
+          <div class="flex flex-wrap items-start justify-between gap-3">
+            <div class="min-w-0">
+              <h4 class="text-base font-semibold leading-6 text-slate-900">{{ news.title }}</h4>
+              <p class="mt-1 text-xs font-medium uppercase tracking-[0.2em] text-slate-400">{{ news.date }}</p>
             </div>
-            <div class="flex items-center gap-2 text-sm text-gray-600 mt-1">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-              </svg>
-              <span>{{ news.duration }}</span>
+
+            <span class="inline-flex rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-500">
+              Gợi ý nhanh
+            </span>
+          </div>
+
+          <p class="mt-3 text-sm leading-6 text-slate-500">{{ news.description }}</p>
+
+          <div class="mt-4 grid gap-2 sm:grid-cols-3">
+            <div class="rounded-2xl bg-slate-50 px-3 py-3">
+              <div class="flex items-center gap-2 text-xs font-medium uppercase tracking-[0.16em] text-slate-400">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                Điểm đến
+              </div>
+              <p class="mt-2 text-sm font-medium text-slate-700">{{ news.location }}</p>
             </div>
-            <div class="flex items-center gap-2 text-sm text-red-600 font-semibold mt-1">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-              </svg>
-              <span>{{ news.price }}</span>
+
+            <div class="rounded-2xl bg-slate-50 px-3 py-3">
+              <div class="flex items-center gap-2 text-xs font-medium uppercase tracking-[0.16em] text-slate-400">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Thời gian
+              </div>
+              <p class="mt-2 text-sm font-medium text-slate-700">{{ news.duration }}</p>
+            </div>
+
+            <div class="rounded-2xl bg-rose-50 px-3 py-3">
+              <div class="flex items-center gap-2 text-xs font-medium uppercase tracking-[0.16em] text-rose-400">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Giá ưu đãi
+              </div>
+              <p class="mt-2 text-sm font-semibold text-rose-600">{{ news.price }}</p>
             </div>
           </div>
-          
-          <button 
+
+          <button
+            class="mt-4 inline-flex items-center gap-2 rounded-full bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-950"
             @click="$emit('askNews', news)"
-            class="mt-3 text-blue-600 text-sm font-medium hover:text-blue-700 transition flex items-center gap-1"
           >
             Đặt câu hỏi về tour này
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
             </svg>
           </button>
         </div>
       </div>
-    </div>
+    </article>
   </div>
 </template>
 

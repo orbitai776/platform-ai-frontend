@@ -1,20 +1,23 @@
 <template>
-  <div class="border-b px-4 py-2 flex gap-6 bg-white">
-    <button 
-      @click="$emit('update:modelValue', 'messages')" 
-      class="pb-2 text-sm font-medium transition-colors"
-      :class="modelValue === 'messages' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700'"
-    >
-      Tin nhắn
-    </button>
-    <button 
-      @click="$emit('update:modelValue', 'news')" 
-      class="pb-2 text-sm font-medium transition-colors relative"
-      :class="modelValue === 'news' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700'"
-    >
-      Tin tức
-      <span class="absolute -top-1 -right-3 w-2 h-2 bg-red-500 rounded-full"></span>
-    </button>
+  <div class="border-b border-slate-200/70 bg-white/75 px-4 py-3 backdrop-blur-xl">
+    <div class="grid grid-cols-2 gap-2 rounded-[18px] bg-slate-100/90 p-1">
+      <button
+        class="rounded-2xl px-3 py-2.5 text-sm font-medium transition"
+        :class="modelValue === 'messages' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'"
+        @click="$emit('update:modelValue', 'messages')"
+      >
+        Tin nhắn
+      </button>
+
+      <button
+        class="relative rounded-2xl px-3 py-2.5 text-sm font-medium transition"
+        :class="modelValue === 'news' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'"
+        @click="$emit('update:modelValue', 'news')"
+      >
+        <span>Tin tức</span>
+        <span class="absolute right-3 top-2.5 h-2 w-2 rounded-full bg-rose-400"></span>
+      </button>
+    </div>
   </div>
 </template>
 
