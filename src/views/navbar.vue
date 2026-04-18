@@ -26,6 +26,24 @@
         <li>
           <NuxtLink to="/billing" class="text-white/65 no-underline text-sm transition-colors duration-200 hover:text-white">Billing</NuxtLink>
         </li>
+        <li>
+  <NuxtLink 
+    v-if="isPartner || isAdmin" 
+    to="/partner" 
+    class="text-white/65 no-underline text-sm transition-colors duration-200 hover:text-white"
+  >
+    Partner
+  </NuxtLink>
+  
+  <a 
+    v-else 
+    href="javascript:void(0)" 
+    @click="alert('Bạn chưa đăng ký dịch vụ Partner!')"
+    class="text-white/30 no-underline text-sm cursor-not-allowed"
+  >
+    Partner (Chưa đăng ký)
+  </a>
+</li>
       </ul>
 
       <div class="flex items-center gap-3">
