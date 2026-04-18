@@ -1,256 +1,133 @@
 import { ref } from 'vue'
-import { getAuth } from "firebase/auth"
-import { auth, provider, signInWithPopup } from "../auth/firebase"
+
+// ✅ IMPORT MODEL Ở TRÊN CÙNG
+import { tourModel } from './ai-models/tourModel'
+import { villaModel } from './ai-models/villaModel'
+import { flightModel } from './ai-models/flightModel'
+import { productModel } from './ai-models/productModel'
+import { comboModel } from './ai-models/comboModel'
+
+const USE_FAKE = true
 
 export const useAIChatAPI = () => {
   const messages = ref([])
   const isLoading = ref(false)
-  const currentConversationId = ref(localStorage.getItem('current_conversation_id'))
-  const guestSessionId = ref(localStorage.getItem('guest_session_id') || '')
-  const conversationsList = ref([])
-  const partnerServices = ref([])
 
-  const BASE_URL = 'https://platform-gateway-dev.orbitai.fun'
-  const activeOrgId = ref('e3845d6c-9bf8-4a2e-a766-33e67f23db22') // ID mặc định dự phòng
-  const accessTokenCookie = useCookie('accessToken')
+  const currentConversationId = ref(null)
+  const currentServiceId = ref(null) // ✅ FIX: lưu riêng service
 
-  const getFirebaseToken = async () => {
-    const authInstance = getAuth()
-    let user = authInstance.currentUser
+  const partnerServices = ref([
+    { id: 'tour', name: 'AI Du Lịch', type: 'tour', status: 'active' },
+    { id: 'villa', name: 'AI Khách Sạn', type: 'villa', status: 'active' },
+    { id: 'flight', name: 'AI Vé Máy Bay', type: 'flight', status: 'active' },
+    { id: 'product', name: 'AI Đặc Sản', type: 'product', status: 'active' },
+    { id: 'combo', name: 'AI Combo', type: 'combo', status: 'active' }
+  ])
 
-    if (!user) {
-      await new Promise((resolve) => {
-        const unsubscribe = authInstance.onAuthStateChanged((u) => {
-          user = u
-          unsubscribe()
-          resolve()
-        })
-      })
-    }
+  // =========================
+  // CREATE CONVERSATION
+  // =========================
+  const createConversation = async (serviceId) => {
+    currentServiceId.value = serviceId
 
-    if (!user) {
-      try {
-        console.log("🔐 Đang login Firebase...")
-        const result = await signInWithPopup(auth, provider)
-        user = result.user
-      } catch (err) {
-        console.error("❌ LOGIN FAIL:", err)
-        return null
-      }
-    }
+    const fakeId = serviceId + '_' + Date.now()
+    currentConversationId.value = fakeId
+    messages.value = []
 
-    const token = await user.getIdToken(true)
-    console.log("✅ Firebase token OK")
-    return token
+    return fakeId
   }
 
-  const getBackendToken = async () => {
-    try {
-      if (accessTokenCookie.value) return accessTokenCookie.value
+  // =========================
+  // SEND MESSAGE
+  // =========================
+  const sendMessage = async (text) => {
+    if (!text?.trim()) return
 
-      const firebaseToken = await getFirebaseToken()
-      if (!firebaseToken) return null
-
-      const res = await fetch(`${BASE_URL}/v1/api/auth`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ idToken: firebaseToken })
-      })
-
-      const data = await res.json()
-
-      const token = data?.data?.access_token || data?.accessToken
-
-      if (token) {
-        accessTokenCookie.value = token
-      }
-
-      return token
-    } catch (err) {
-      console.error("Auth error:", err)
-      return null
-    }
-  }
-
-  const callAPI = async (url, options = {}) => {
-    const token = await getBackendToken()
-
-    if (!token) throw new Error("Unauthorized")
-
-    const headers = {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${token}`,
-      "x-org-id": activeOrgId.value,
-      ...(options.headers || {})
-    }
-
-    const res = await fetch(BASE_URL + url, {
-      ...options,
-      headers
+    messages.value.push({
+      id: Date.now(),
+      role: 'user',
+      content: text
     })
 
-    const result = await res.json().catch(() => ({}))
-
-    if (!res.ok) {
-      console.warn("API ERROR:", url, result)
-      return null
-    }
-
-    return result
-  }
-
-  const loadPartnerServices = async () => {
-    try {
-      const res = await callAPI('/v1/api/partner/ai-services')
-      partnerServices.value = res?.data || []
-      return partnerServices.value
-    } catch (error) {
-      console.error('Lỗi load partner services:', error)
-      partnerServices.value = []
-      return []
-    }
-  }
-
-  const createConversation = async (partnerServiceId) => {
-    if (!partnerServiceId) return null
+    isLoading.value = true
 
     try {
-      let guestId = guestSessionId.value
+      await new Promise(r => setTimeout(r, 800))
 
-      if (!guestId) {
-        guestId = crypto.randomUUID?.() || `guest_${Date.now()}`
-        guestSessionId.value = guestId
-        localStorage.setItem('guest_session_id', guestId)
-      }
-
-      const res = await callAPI('/v1/api/chat/conversations', {
-        method: 'POST',
-        body: JSON.stringify({
-          partner_service_id: partnerServiceId,
-          guest_session_id: guestId
-        })
-      })
-
-      const convId = res?.data?.conversation_id
-
-      if (convId) {
-        currentConversationId.value = convId
-        localStorage.setItem('current_conversation_id', convId)
-        messages.value = []
-      }
-
-      return convId
-    } catch (error) {
-      console.error('Create conversation error:', error)
-      return null
-    }
-  }
-
-  const sendMessage = async (text) => {
-    if (!text?.trim() || !currentConversationId.value) return
-
-    try {
-      isLoading.value = true
-
-      messages.value.push({
-        id: Date.now(),
-        role: 'user',
-        content: text
-      })
-
-      const res = await callAPI(
-        `/v1/api/chat/conversations/${currentConversationId.value}/messages`,
-        {
-          method: 'POST',
-          body: JSON.stringify({ content: text })
-        }
+      const service = partnerServices.value.find(
+        s => s.id === currentServiceId.value
       )
 
-      const ai = res?.data || {}
+      let reply = ''
+      let products = null
+
+      switch (service?.type) {
+        case 'tour':
+          reply = tourModel(text)
+          break
+
+        case 'villa':
+          reply = villaModel(text)
+          break
+
+        case 'flight':
+          reply = flightModel(text)
+          break
+
+        case 'product': {
+          const result = productModel(text)
+          reply = result.text
+          products = result.products
+          break
+        }
+
+        case 'combo': {
+          reply = comboModel(text)
+          break
+        }
+
+        default:
+          reply = '🤖 Bạn muốn hỏi gì thêm?'
+      }
 
       messages.value.push({
         id: Date.now() + 1,
         role: 'assistant',
-        content: ai.content || "AI không phản hồi.",
-        products: ai.products || []
+        content: reply,
+        products,
+        isCompleted: true
       })
 
     } catch (err) {
+      console.error(err)
+
       messages.value.push({
-        id: Date.now() + 2,
+        id: Date.now() + 1,
         role: 'assistant',
-        content: `Lỗi: ${err.message}`
+        content: '⚠️ Có lỗi xảy ra',
+        isCompleted: true
       })
     } finally {
       isLoading.value = false
     }
   }
 
-  const loadConversationHistory = async (id) => {
-    if (!id) return
-    try {
-      const res = await callAPI(`/v1/api/chat/conversations/${id}/messages`)
-      
-      if (!res) {
-        console.warn("⚠️ Không thể tải lịch sử cuộc trò chuyện. Có thể phiên đã hết hạn hoặc không có quyền.")
-        resetChat()
-        return
-      }
-
-      messages.value = (res?.data || []).map((m, i) => ({
-        id: i,
-        role: m.role,
-        content: m.content,
-        products: m.products || []
-      }))
-    } catch (e) {
-      console.error("Load history error:", e)
-      resetChat()
-    }
-  }
-
-  const loadConversations = async () => {
-    try {
-      const res = await callAPI('/v1/api/chat/conversations')
-      conversationsList.value = res?.data || []
-    } catch (e) {
-      console.error("Load conversations error:", e)
-    }
-  }
-
-  const loadOrganization = async () => {
-    try {
-      const res = await $fetch('/api/partner/organization')
-      if (res?.data?.id) {
-        activeOrgId.value = res.data.id
-        console.log("🏢 Cập nhật Org ID mới:", activeOrgId.value)
-      }
-    } catch (err) {
-      console.warn("⚠️ Không lấy được Org ID từ Profile, dùng mặc định")
-    }
-  }
-
+  // =========================
+  // RESET CHAT
+  // =========================
   const resetChat = () => {
-    localStorage.removeItem('current_conversation_id')
-    localStorage.removeItem('guest_session_id')
     currentConversationId.value = null
-    guestSessionId.value = ''
+    currentServiceId.value = null
     messages.value = []
-    console.log("🧹 Đã xóa sạch dữ liệu chat phiên cũ")
   }
 
   return {
     messages,
     isLoading,
-    currentConversationId,
-    conversationsList,
     partnerServices,
-    loadPartnerServices,
-    loadOrganization,
+    currentConversationId,
     createConversation,
     sendMessage,
-    loadConversationHistory,
-    loadConversations,
     resetChat
   }
 }

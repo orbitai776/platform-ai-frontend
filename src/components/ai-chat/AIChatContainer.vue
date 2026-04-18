@@ -25,24 +25,20 @@
         </div>
       </div>
       <div class="flex items-center gap-1">
-        <button 
-          @click="refreshChat" 
-          class="p-1.5 hover:bg-white/20 rounded-lg transition"
-          title="Đổi trợ lý"
-        >
+        <button @click="backToServices" class="p-1.5 hover:bg-white/20 rounded-lg">
+          ←
+        </button>
+        <button @click="refreshChat" class="p-1.5 hover:bg-white/20 rounded-lg">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15">
+            </path>
           </svg>
         </button>
-        <button 
-          @click="isOpen = false" 
-          class="p-1.5 hover:bg-white/20 rounded-lg transition"
-          title="Đóng"
-        >
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-          </svg>
+        <button @click="isOpen = false" class="p-1.5 hover:bg-white/20 rounded-lg">
+          ✕
         </button>
+
       </div>
     </div>
 
@@ -103,22 +99,30 @@
           />
         </div>
 
-        <div v-else class="space-y-4 p-4">
+        <div v-for="msg in messages" :key="msg.id">
           <AIChatMessage 
-            v-for="msg in messages" 
-            :key="msg.id"
             :role="msg.role"
             :content="msg.content"
             :products="msg.products"
-            :is-completed="msg.isCompleted"
           />
-          
-          <div v-if="isLoading" class="flex justify-start">
-            <div class="bg-white rounded-2xl rounded-bl-sm px-4 py-2 shadow-sm border border-gray-100">
-              <div class="flex gap-1">
-                <span class="w-2 h-2 bg-[#6c4de6] rounded-full animate-bounce" style="animation-delay: 0ms"></span>
-                <span class="w-2 h-2 bg-[#6c4de6] rounded-full animate-bounce" style="animation-delay: 150ms"></span>
-                <span class="w-2 h-2 bg-[#6c4de6] rounded-full animate-bounce" style="animation-delay: 300ms"></span>
+
+          <!-- HIỂN THỊ SẢN PHẨM NGAY SAU TIN NHẮN -->
+          <div v-if="msg.products && msg.products.length" class="mt-2 space-y-2">
+            <div 
+              v-for="(p, i) in msg.products" 
+              :key="i"
+              class="bg-white border rounded-lg p-3 shadow-sm"
+            >
+              <div class="font-semibold text-sm text-gray-800">
+                {{ p.name }}
+              </div>
+
+              <div class="text-xs text-gray-500">
+                {{ p.desc }}
+              </div>
+
+              <div class="text-sm font-bold text-[#6c4de6] mt-1">
+                {{ p.price }}
               </div>
             </div>
           </div>
@@ -138,7 +142,7 @@
   </div>
 </template>
 
-<script setup>
+<!-- <script setup>
 import { ref, nextTick, watch, onMounted, computed } from 'vue'
 import { useAIChatAPI } from '../../composables/useAIChatAPI'
 
@@ -148,6 +152,7 @@ import AIChatInput from './AIChatInput.vue'
 import AIChatWelcome from './AIChatWelcome.vue'
 import AIChatEmptyState from './AIChatEmptyState.vue'
 import AINewsList from './AINewsList.vue'
+import { useAIChat } from '../../composables/useAIChat'
 
 const isOpen = ref(true)
 const activeTab = ref('messages')
@@ -210,9 +215,9 @@ watch(accessToken, (newVal, oldVal) => {
 
 onMounted(async () => {
   // Ưu tiên xác định ID tổ chức của tài khoản hiện tại
-  await loadOrganization()
-  await loadPartnerServices()
-  await loadConversations()
+  // await loadOrganization()
+  // await loadPartnerServices()
+  // await loadConversations()
 
   const savedConvId = localStorage.getItem('current_conversation_id')
   const token = useCookie('accessToken').value
@@ -275,6 +280,76 @@ const handleAskNews = (news) => {
 
 const refreshChat = async () => {
   if (confirm('Bạn có muốn kết thúc cuộc trò chuyện này để chọn trợ lý khác?')) {
+    resetChat()
+  }
+}
+</script> -->
+<script setup>
+import { ref, nextTick, watch, computed } from 'vue'
+import { useAIChat } from '../../composables/useAIChat'
+
+import AITabs from './AITabs.vue'
+import AIChatMessage from './AIChatMessage.vue'
+import AIChatInput from './AIChatInput.vue'
+import AIChatWelcome from './AIChatWelcome.vue'
+import AIChatEmptyState from './AIChatEmptyState.vue'
+import AINewsList from './AINewsList.vue'
+
+const isOpen = ref(true)
+const activeTab = ref('messages')
+const messagesContainer = ref(null)
+
+const {
+  messages,
+  isLoading,
+  sendMessage,
+  resetChat,
+  createConversation,
+  partnerServices,
+  currentConversationId
+} = useAIChat()
+
+const selectedServiceId = ref(null)
+
+const currentService = computed(() =>
+  partnerServices.value.find(s => s.id === selectedServiceId.value)
+)
+
+const scrollToBottom = async () => {
+  await nextTick()
+  if (messagesContainer.value) {
+    messagesContainer.value.scrollTop =
+      messagesContainer.value.scrollHeight
+  }
+}
+
+watch(() => messages.value.length, scrollToBottom)
+
+const handleSelectService = async (serviceId) => {
+  selectedServiceId.value = serviceId
+  await createConversation(serviceId)
+}
+
+const handleSendMessage = async (text) => {
+  if (!text.trim()) return
+  await sendMessage(text)
+}
+
+const handleAskNews = (news) => {
+  activeTab.value = 'messages'
+  setTimeout(() => {
+    handleSendMessage(`Tôi muốn hỏi về: ${news.title}`)
+  }, 200)
+}
+
+const refreshChat = () => {
+  if (confirm('Xóa toàn bộ tin nhắn?')) {
+    messages.value = []
+  }
+}
+
+const backToServices = () => {
+  if (confirm('Quay lại chọn trợ lý?')) {
     resetChat()
   }
 }
