@@ -7,10 +7,10 @@
       AI
     </div>
 
-    <div class="max-w-[88%] min-w-0">
+    <div class="max-w-[85%] min-w-0">
       <div class="mb-2 flex items-center gap-2" :class="isUser ? 'justify-end' : 'justify-start'">
         <span
-          class="text-[11px] font-semibold uppercase tracking-[0.22em]"
+          class="text-[10px] font-bold uppercase tracking-[0.1em]"
           :class="isUser ? 'text-slate-400' : 'text-sky-600'"
         >
           {{ isUser ? 'Bạn' : 'Trợ lý AI' }}
@@ -25,10 +25,10 @@
       </div>
 
       <div
-        class="overflow-hidden rounded-[24px] border px-4 py-3 shadow-[0_18px_40px_rgba(15,23,42,0.08)]"
+        class="overflow-hidden rounded-[22px] border px-4 py-2.5 shadow-[0_12px_30px_rgba(15,23,42,0.06)]"
         :class="bubbleClass"
       >
-        <p class="whitespace-pre-wrap break-words text-sm leading-6">{{ content }}</p>
+        <p class="whitespace-pre-wrap break-words text-[13px] leading-relaxed">{{ content }}</p>
       </div>
     </div>
 

@@ -1,13 +1,13 @@
 <template>
-  <div class="border-t border-slate-200/70 bg-white/80 px-4 pb-4 pt-3 backdrop-blur-xl">
-    <div class="rounded-[24px] border border-slate-200 bg-white p-3 shadow-[0_18px_40px_rgba(15,23,42,0.08)]">
+  <div class="border-t border-slate-200/70 bg-white/80 px-3 pb-3 pt-2 backdrop-blur-xl">
+    <div class="rounded-[22px] border border-slate-200 bg-white p-2 shadow-[0_12px_30px_rgba(15,23,42,0.08)]">
       <div class="flex items-end gap-3">
         <button
-          class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-slate-100 text-slate-500 transition hover:bg-slate-900 hover:text-white"
+          class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-500 transition hover:bg-slate-900 hover:text-white"
           title="Nhập giọng nói"
           @click="startVoiceInput"
         >
-          <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
           </svg>
         </button>
@@ -18,28 +18,28 @@
             v-model="inputText"
             :disabled="loading"
             rows="1"
-            class="composer-textarea min-h-[48px] w-full resize-none bg-transparent px-1 py-2 text-sm leading-6 text-slate-700 outline-none placeholder:text-slate-400"
+            class="composer-textarea min-h-[40px] w-full resize-none bg-transparent px-1 py-1.5 text-[13px] leading-relaxed text-slate-700 outline-none placeholder:text-slate-400"
             placeholder="Nhập câu hỏi của bạn..."
             @input="resizeTextarea"
             @keydown.enter.prevent="handleSend"
           ></textarea>
 
-          <div class="mt-2 flex items-center justify-between gap-3 text-[11px]">
+          <div class="mt-1 flex items-center justify-between gap-3 text-[10px]">
             <span class="text-slate-400">
-              {{ loading ? 'Trợ lý đang phản hồi...' : 'Nhấn Enter để gửi nhanh' }}
+              {{ loading ? 'Đang phản hồi...' : 'Nhấn Enter để gửi' }}
             </span>
             <span class="font-medium text-slate-300">{{ inputText.trim().length }}/1000</span>
           </div>
         </div>
 
         <button
-          class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl text-white shadow-lg transition"
+          class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-white shadow-lg transition"
           :class="inputText.trim() && !loading ? 'bg-slate-900 hover:-translate-y-0.5 hover:bg-slate-950' : 'bg-slate-300'"
           :disabled="!inputText.trim() || loading"
           title="Gửi tin nhắn"
           @click="handleSend"
         >
-          <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14m-6-6l6 6-6 6" />
           </svg>
         </button>

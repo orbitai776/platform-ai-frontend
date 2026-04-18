@@ -1,21 +1,6 @@
 <template>
   <div class="pointer-events-none fixed inset-x-3 bottom-3 z-[9999] sm:inset-x-auto sm:bottom-6 sm:right-6">
-    <div class="pointer-events-auto ml-auto flex w-full max-w-[430px] flex-col items-end gap-3">
-      <button
-        class="group flex items-center gap-3 rounded-full bg-slate-900/95 px-4 py-3 text-white shadow-[0_20px_60px_rgba(15,23,42,0.28)] ring-1 ring-white/10 backdrop-blur-xl transition hover:-translate-y-0.5 hover:bg-slate-950"
-        @click="isOpen = !isOpen"
-      >
-        <span class="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 ring-1 ring-white/15">
-          <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-          </svg>
-        </span>
-        <div class="text-left">
-          <div class="text-[11px] uppercase tracking-[0.24em] text-slate-300">AI Chat</div>
-          <div class="text-sm font-semibold">{{ isOpen ? 'Thu gọn cửa sổ chat' : 'Mở trợ lý ngay' }}</div>
-        </div>
-      </button>
-
+    <div class="pointer-events-auto ml-auto flex w-full max-w-[400px] flex-col items-end gap-3">
       <Transition
         enter-active-class="transition duration-200 ease-out"
         enter-from-class="translate-y-3 opacity-0 scale-[0.98]"
@@ -26,66 +11,42 @@
       >
         <div
           v-if="isOpen"
-          class="chat-shell relative flex h-[calc(100vh-6.5rem)] max-h-[720px] w-full flex-col overflow-hidden rounded-[28px] border border-white/70 bg-white/90 shadow-[0_30px_90px_rgba(15,23,42,0.18)] backdrop-blur-xl sm:h-[720px]"
+          class="chat-shell relative flex h-[calc(100vh-6.5rem)] max-h-[550px] w-full flex-col overflow-hidden rounded-[28px] border border-white/70 bg-white/90 shadow-[0_30px_90px_rgba(15,23,42,0.18)] backdrop-blur-xl sm:h-[550px]"
           style="isolation: isolate;"
         >
           <div class="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(14,165,233,0.18),transparent_34%),radial-gradient(circle_at_bottom_left,rgba(15,23,42,0.08),transparent_40%)]"></div>
 
-          <div class="relative border-b border-slate-200/70 bg-white/75 px-5 pb-4 pt-5 backdrop-blur-xl">
-            <div class="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.7),rgba(241,245,249,0.35))]"></div>
-
-            <div class="relative flex items-start justify-between gap-4">
-              <div class="min-w-0 flex-1">
-                <div class="flex items-center gap-3">
-                  <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-[18px] bg-slate-900 text-white shadow-lg shadow-slate-900/15">
-                    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9.75 3.75h4.5m-7.5 5.5h10.5m-13 0h.75m11.5 0h.75m-10 5.5a2.75 2.75 0 015.5 0v.25h-5.5v-.25zm8 0a2.75 2.75 0 015.5 0v.25h-5.5v-.25zM8 7.5a1.25 1.25 0 11-2.5 0A1.25 1.25 0 018 7.5zm10.5 0A1.25 1.25 0 1116 7.5a1.25 1.25 0 012.5 0zM12 3.75v3" />
-                    </svg>
-                  </div>
-
-                  <div class="min-w-0">
-                    <div class="flex flex-wrap items-center gap-2">
-                      <span class="text-[11px] font-semibold uppercase tracking-[0.22em] text-sky-600">AI Assistant</span>
-                      <span class="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-1 text-[11px] font-medium text-emerald-700">
-                        <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
-                        Online 24/7
-                      </span>
-                    </div>
-
-                    <h2 class="mt-2 text-lg font-semibold text-slate-900">Chat hỗ trợ thông minh</h2>
-                    <p class="mt-1 text-sm leading-6 text-slate-500">
-                      {{ headerSubtitle }}
-                    </p>
-                  </div>
+          <!-- Slim Header -->
+          <div class="relative border-b border-slate-200/50 bg-white/80 px-4 py-2.5 backdrop-blur-xl">
+            <div class="flex items-center justify-between gap-4">
+              <div class="flex items-center gap-2.5 min-w-0">
+                <div class="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-slate-900 text-white shadow-sm">
+                  <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                  </svg>
                 </div>
-
-                <div class="mt-4 flex flex-wrap gap-2">
-                  <span class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/85 px-3 py-1.5 text-xs font-medium text-slate-600 shadow-sm">
-                    <span class="h-2 w-2 rounded-full bg-sky-500"></span>
-                    {{ currentService?.name || 'Chọn trợ lý để bắt đầu' }}
-                  </span>
-                  <span class="inline-flex items-center rounded-full bg-slate-900 px-3 py-1.5 text-xs font-medium text-white shadow-sm">
-                    {{ activeTab === 'messages' ? 'Trò chuyện trực tiếp' : 'Tin tức nổi bật' }}
-                  </span>
+                <div class="flex items-center gap-2 truncate">
+                  <h2 class="text-[14px] font-bold text-slate-900 truncate">Chat hỗ trợ</h2>
+                  <span class="flex h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></span>
                 </div>
               </div>
 
-              <div class="flex shrink-0 items-center gap-2">
+              <div class="flex shrink-0 items-center gap-1.5">
                 <button
-                  class="flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 bg-white/85 text-slate-600 shadow-sm transition hover:border-sky-200 hover:text-sky-600"
+                  class="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white/50 text-slate-500 transition hover:bg-slate-50 hover:text-sky-600"
                   title="Đổi trợ lý"
                   @click="refreshChat"
                 >
-                  <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                   </svg>
                 </button>
                 <button
-                  class="flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 bg-white/85 text-slate-600 shadow-sm transition hover:border-rose-200 hover:text-rose-500"
+                  class="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white/50 text-slate-500 transition hover:bg-rose-50 hover:text-rose-500"
                   title="Đóng chat"
                   @click="isOpen = false"
                 >
-                  <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>
@@ -110,10 +71,10 @@
                   </div>
 
                   <div class="min-w-0">
-                    <p class="text-[11px] font-semibold uppercase tracking-[0.24em] text-sky-600">Bắt đầu nhanh</p>
-                    <h3 class="mt-2 text-xl font-semibold text-slate-900">Chọn trợ lý phù hợp với nhu cầu của bạn</h3>
-                    <p class="mt-2 text-sm leading-6 text-slate-500">
-                      Mỗi chatbox có vai trò riêng. Chọn đúng trợ lý để nhận câu trả lời sát ngữ cảnh hơn mà không cần thay đổi dữ liệu hiện tại.
+                    <p class="text-[10px] font-bold uppercase tracking-[0.14em] text-sky-600">Bắt đầu nhanh</p>
+                    <h3 class="mt-1 text-lg font-bold text-slate-900">Chọn trợ lý phù hợp với nhu cầu</h3>
+                    <p class="mt-1.5 text-[13px] leading-relaxed text-slate-500">
+                      Mỗi chatbox có vai trò riêng. Chọn đúng trợ lý để nhận câu trả lời sát ngữ cảnh hơn.
                     </p>
                   </div>
                 </div>
@@ -140,8 +101,8 @@
                     <div class="min-w-0 flex-1">
                       <div class="flex flex-wrap items-start justify-between gap-3">
                         <div class="min-w-0">
-                          <h4 class="truncate text-base font-semibold text-slate-900">{{ service.name }}</h4>
-                          <p class="mt-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-400">
+                          <h4 class="truncate text-sm font-bold text-slate-900">{{ service.name }}</h4>
+                          <p class="mt-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-400">
                             {{ getServiceTypeLabel(service) }}
                           </p>
                         </div>
@@ -243,6 +204,24 @@
           />
         </div>
       </Transition>
+
+      <button
+        class="group flex items-center gap-2.5 rounded-full bg-slate-900/95 px-3.5 py-2 text-white shadow-[0_20px_60px_rgba(15,23,42,0.28)] ring-1 ring-white/10 backdrop-blur-xl transition hover:-translate-y-0.5 hover:bg-slate-950"
+        @click="isOpen = !isOpen"
+      >
+        <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/10 ring-1 ring-white/15">
+          <svg v-if="!isOpen" class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+          </svg>
+          <svg v-else class="h-4 w-4 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+          </svg>
+        </span>
+        <div class="flex flex-col text-left leading-none">
+          <div class="mb-0.5 text-[9px] font-bold uppercase tracking-[0.08em] text-slate-400/80">AI Chat</div>
+          <div class="text-[12px] font-bold tracking-tight text-white">{{ isOpen ? 'Thu gọn' : 'Chat ngay' }}</div>
+        </div>
+      </button>
     </div>
   </div>
 </template>
