@@ -1,2 +1,0 @@
-const a=["@keyframes blob-580122d3{0%{transform:translate(0) scale(1)}33%{transform:translate(30px,-50px) scale(1.1)}66%{transform:translate(-20px,20px) scale(.9)}to{transform:translate(0) scale(1)}}.animate-blob[data-v-580122d3]{animation:blob-580122d3 7s infinite}.animation-delay-2000[data-v-580122d3]{animation-delay:2s}"];export{a as default};
-//# sourceMappingURL=Register-styles.Db-MQOCB.mjs.map

@@ -1,2 +1,0 @@
-import{d as t,a as r}from"../../../_/nitro.mjs";import"node:http";import"node:https";import"node:events";import"node:buffer";import"node:fs";import"node:path";import"node:crypto";const o=t(async t=>{const o=r(t,"userRoles");let e=[];if(o)try{"string"==typeof o&&o.startsWith("[")?e=JSON.parse(o):"string"==typeof o?e=o.split(",").map(t=>t.trim()):Array.isArray(o)&&(e=o)}catch(t){console.warn("Error parsing userRoles cookie:",t),e=[]}return e});export{o as default};
-//# sourceMappingURL=user-roles.get.mjs.map

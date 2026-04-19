@@ -1,2 +1,0 @@
-import{d as e,s as o}from"../../../_/nitro.mjs";import"node:http";import"node:https";import"node:events";import"node:buffer";import"node:fs";import"node:path";import"node:crypto";const s=e(async e=>(o(e,"firebaseIdToken","",{maxAge:0,path:"/"}),o(e,"accessToken","",{maxAge:0,path:"/"}),o(e,"userRoles","",{maxAge:0,path:"/"}),o(e,"userProfile","",{maxAge:0,path:"/"}),{success:!0,message:"Logout successful"}));export{s as default};
-//# sourceMappingURL=logout.get.mjs.map
