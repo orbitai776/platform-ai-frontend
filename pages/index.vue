@@ -1,7 +1,6 @@
 <template>
   <div class="font-['DM_Sans'] bg-[#f5f2ec] text-[#0d0d12] overflow-x-hidden">
 
-    <!-- HERO -->
     <section class="max-w-[1280px] mx-auto px-8 pt-20 pb-12 grid grid-cols-1 md:grid-cols-2 gap-16 items-center relative z-[1]">
       <div>
         <div class="inline-flex items-center gap-2 text-[0.7rem] font-semibold tracking-[0.15em] uppercase text-[#e8604c] mb-6 before:content-[''] before:block before:w-5 before:h-px before:bg-[#e8604c]">
@@ -32,10 +31,8 @@
       </div>
     </section>
 
-    <!-- PORTAL TABS -->
     <div class="max-w-[1280px] mx-auto mb-12 px-8 relative z-[1]">
 
-      <!-- Tab buttons -->
       <div class="flex border-b-2 border-[rgba(13,13,18,0.12)] mb-8">
         <button
           v-for="tab in tabs" :key="tab.id"
@@ -47,9 +44,7 @@
         </button>
       </div>
 
-      <!-- TAB: PUBLIC -->
       <div v-if="activeTab === 'public'">
-        <!-- Filter -->
         <div class="flex gap-2 flex-wrap mb-6">
           <button
             v-for="f in filters" :key="f.value"
@@ -61,10 +56,14 @@
           </button>
         </div>
 
-        <!-- Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-[1.5px] bg-[rgba(13,13,18,0.12)] border-[1.5px] border-[rgba(13,13,18,0.12)] rounded-xl overflow-hidden">
+        <div v-if="loading" class="py-12 text-center text-[#555] font-['Sora'] flex justify-center items-center gap-3">
+          <svg class="animate-spin h-5 w-5 text-[#6c4de6]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+          Đang tải danh sách dịch vụ AI...
+        </div>
+
+        <div v-else class="grid grid-cols-1 md:grid-cols-3 gap-[1.5px] bg-[rgba(13,13,18,0.12)] border-[1.5px] border-[rgba(13,13,18,0.12)] rounded-xl overflow-hidden">
           <div
-            v-for="card in filteredCards" :key="card.num"
+            v-for="card in filteredCards" :key="card.id"
             class="bg-[#f5f2ec] p-8 cursor-pointer relative overflow-hidden flex flex-col gap-4 transition-colors duration-200 hover:bg-white"
           >
             <div class="w-full h-40 rounded-md overflow-hidden relative bg-[#e0ddd6]">
@@ -82,7 +81,10 @@
               </li>
             </ul>
             <div class="flex items-center justify-between pt-3 border-t border-[rgba(13,13,18,0.08)]">
-              <button class="inline-flex items-center gap-1 font-['Sora'] text-[0.75rem] font-bold tracking-[0.06em] uppercase text-[#6c4de6] bg-none border-none cursor-pointer p-0 transition-all duration-200 hover:gap-3">
+              <button 
+                @click="handleDemoClick(card.id)"
+                class="inline-flex items-center gap-1 font-['Sora'] text-[0.75rem] font-bold tracking-[0.06em] uppercase text-[#6c4de6] bg-none border-none cursor-pointer p-0 transition-all duration-200 hover:gap-3"
+              >
                 Demo ngay
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
               </button>
@@ -90,7 +92,6 @@
           </div>
         </div>
 
-        <!-- Public Features -->
         <div class="mt-8">
           <div class="font-['Sora'] text-[0.7rem] font-bold tracking-[0.12em] uppercase text-[#aaa] mb-4">Tính năng public portal</div>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-[1px] bg-[rgba(13,13,18,0.1)] rounded-[10px] overflow-hidden border border-[rgba(13,13,18,0.1)]">
@@ -105,10 +106,8 @@
         </div>
       </div>
 
-      <!-- TAB: PARTNER -->
       <div v-if="activeTab === 'partner'">
         <div class="grid grid-cols-1 lg:grid-cols-[220px_1fr] gap-8">
-          <!-- Sidebar -->
           <div class="bg-[#0d0d12] rounded-lg p-5 lg:sticky lg:top-20 h-fit">
             <div v-for="section in partnerMenu" :key="section.label" class="mb-6">
               <div class="font-['Sora'] text-[0.6rem] font-bold tracking-[0.15em] uppercase text-white/35 mb-2 px-2">{{ section.label }}</div>
@@ -117,7 +116,6 @@
               </button>
             </div>
           </div>
-          <!-- Stats -->
           <div>
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
               <div v-for="stat in partnerStats" :key="stat.label" class="bg-white border border-[rgba(13,13,18,0.1)] rounded-lg p-5 flex flex-col gap-1">
@@ -153,7 +151,6 @@
         </div>
       </div>
 
-      <!-- TAB: ADMIN -->
       <div v-if="activeTab === 'admin'">
         <div class="grid grid-cols-1 lg:grid-cols-[220px_1fr] gap-8">
           <div class="bg-[#0d0d12] rounded-lg p-5 lg:sticky lg:top-20 h-fit">
@@ -200,22 +197,22 @@
       </div>
 
     </div>
-    <!-- ===== AI CHAT FLOAT ===== -->
     <ClientOnly>
-      <AIChatContainer />
+      <AIChatContainer ref="chatRef"/>
     </ClientOnly>
-    <!-- ===== END AI CHAT ===== -->
-  </div>
+    </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import AIChatContainer from '../src/components/ai-chat/AIChatContainer.vue'
+import {usePartnerServices} from '../src/composables/usePartnerService'
+
+const { services, loading, loadPublicServices } = usePartnerServices()
 
 definePageMeta({
   layout: 'default'
 })
-
 
 const activeTab = ref('public')
 const activeFilter = ref('all')
@@ -250,45 +247,64 @@ const filters = [
   { value: 'inventory', label: 'Sản phẩm tồn kho' },
 ]
 
-const cards = [
-  {
-    num: '01', category: 'tour',
-    image: 'https://images.unsplash.com/photo-1530521954074-e64f6810b32d?w=600&q=80',
-    tags: [
-      { label: 'Tour', class: 'bg-[#e1f5ee] text-[#0f6e56] border border-[#5dcaa5]' },
-      { label: 'Public', class: 'bg-[#eef4ff] text-[#3b6fe8] border border-[#bdd0f7]' },
-    ],
-    title: 'Trợ lý ảo tư vấn tour du lịch',
-    desc: 'Tự động tư vấn lịch trình, điểm đến, giá tour theo ngân sách; hỗ trợ đặt chỗ và xác nhận booking tức thì 24/7.',
-    features: ['Gợi ý tour theo sở thích & ngân sách', 'So sánh gói tour, thời điểm tốt nhất', 'Booking và xác nhận tự động'],
-  },
-  {
-    num: '02', category: 'villa',
-    image: 'https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?w=600&q=80',
-    tags: [
-      { label: 'Villa', class: 'bg-[#f3eeff] text-[#6c4de6] border border-[#c4aff5]' },
-      { label: 'Public', class: 'bg-[#eef4ff] text-[#3b6fe8] border border-[#bdd0f7]' },
-    ],
-    title: 'Trợ lý ảo tư vấn villa & lưu trú',
-    desc: 'Giới thiệu villa, resort, homestay theo tiêu chí khách hàng; kiểm tra lịch trống, báo giá và đặt phòng trực tiếp.',
-    features: ['Lọc theo vị trí, sức chứa, tiện nghi', 'Kiểm tra phòng trống theo ngày', 'Báo giá và xác nhận đặt phòng'],
-  },
-  {
-    num: '03', category: 'inventory',
-    image: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600&q=80',
-    tags: [
-      { label: 'Tồn kho', class: 'bg-[#fff8e6] text-[#c4841a] border border-[#f0d895]' },
-      { label: 'Public', class: 'bg-[#eef4ff] text-[#3b6fe8] border border-[#bdd0f7]' },
-    ],
-    title: 'Trợ lý ảo tư vấn sản phẩm tồn kho',
-    desc: 'Tự động tra cứu kho hàng du lịch (phụ kiện, quà lưu niệm, combo dịch vụ), gợi ý và chốt đơn theo thời gian thực.',
-    features: ['Tra cứu tồn kho theo danh mục', 'Gợi ý upsell & bundle sản phẩm', 'Đặt hàng và cập nhật tồn ngay'],
-  },
-]
+const chatRef = ref(null)
+
+// Fetch data on server to populate the useState-backed 'services'
+await useAsyncData('public-services', () => loadPublicServices())
+
+// Fallback: Nếu SSR không lấy được dữ liệu (ví dụ 401 trên server), thử lại trên client
+onMounted(() => {
+  if (!services.value || services.value.length === 0) {
+    loadPublicServices()
+  }
+})
+
+const dynamicCards = computed(() => {
+  if (!services.value || services.value.length === 0) return []
+  
+  return services.value.map((item, index) => {
+    let category = (item.type || 'tour').toLowerCase()
+    let tagColorClass = 'bg-[#e1f5ee] text-[#0f6e56] border border-[#5dcaa5]'
+    let image = 'https://images.unsplash.com/photo-1530521954074-e64f6810b32d?w=600&q=80'
+
+    if (category.includes('villa')) {
+      tagColorClass = 'bg-[#f3eeff] text-[#6c4de6] border border-[#c4aff5]'
+      image = 'https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?w=600&q=80'
+    } else if (category.includes('inventory') || category.includes('kho')) {
+      category = 'inventory'
+      tagColorClass = 'bg-[#fff8e6] text-[#c4841a] border border-[#f0d895]'
+      image = 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600&q=80'
+    } else {
+      category = 'tour'
+    }
+
+    return {
+      id: item.id,
+      num: String(index + 1).padStart(2, '0'),
+      category: category,
+      image: image,
+      tags: [
+        { label: (item.type || 'Tour').toUpperCase(), class: tagColorClass },
+        { label: 'Public', class: 'bg-[#eef4ff] text-[#3b6fe8] border border-[#bdd0f7]' },
+      ],
+      title: item.name,
+      desc: item.description || 'Trợ lý AI hỗ trợ tự động 24/7.',
+      features: item.features || ['Hỗ trợ tư vấn 24/7', 'Tự động báo giá', 'Chăm sóc khách hàng'],
+    }
+  })
+})
 
 const filteredCards = computed(() =>
-  activeFilter.value === 'all' ? cards : cards.filter(c => c.category === activeFilter.value)
+  activeFilter.value === 'all' 
+    ? dynamicCards.value 
+    : dynamicCards.value.filter(c => c.category === activeFilter.value)
 )
+
+const handleDemoClick = (cardId) => {
+  if (chatRef.value) {
+    chatRef.value.openChatWithService(cardId)
+  }
+}
 
 const publicFeatures = [
   { icon: '📰', iconBg: 'bg-[#f3eeff]', title: 'Trang tin tức', desc: 'Cập nhật xu hướng du lịch, khuyến mãi mới, tin tức ngành theo thời gian thực.' },

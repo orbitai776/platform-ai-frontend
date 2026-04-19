@@ -238,7 +238,7 @@ import AIChatWelcome from './AIChatWelcome.vue'
 import AIChatEmptyState from './AIChatEmptyState.vue'
 import AINewsList from './AINewsList.vue'
 
-const isOpen = ref(true)
+const isOpen = ref(false)
 const activeTab = ref('messages')
 const messagesContainer = ref(null)
 const selectedServiceId = ref(null)

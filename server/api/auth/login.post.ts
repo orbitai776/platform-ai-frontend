@@ -3,13 +3,13 @@ import { jwtDecode } from "jwt-decode";
 
 export default defineEventHandler(async (event) => {
   const { idToken } = await readBody(event)
-  
+
   const response: any = await $fetch(`${process.env.VITE_GATEWAY_URL}/v1/api/auth`, {
     method: 'POST',
     body: { idToken }
   })
-  
-  
+
+
   setCookie(event, 'firebaseIdToken', idToken, {
     httpOnly: true,
     secure: true,
@@ -41,7 +41,7 @@ export default defineEventHandler(async (event) => {
     sameSite: 'strict',
     maxAge: 24 * 60 * 1000
   })
-  
+
   // Trả về data user (không có token)
   return {
     success: true,

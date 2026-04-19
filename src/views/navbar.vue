@@ -70,8 +70,8 @@
 import { ref, onMounted } from 'vue';
 
 // Biến kiểm soát việc hiển thị nút Partner
-const isPartner = ref(true);
-const isAdmin = ref(true);
+const isPartner = ref(false);
+const isAdmin = ref(false);
 
 onMounted(async () => {
   // Vì Navbar chạy trên Client, ta cần kiểm tra localStorage an toàn
@@ -96,7 +96,13 @@ onMounted(async () => {
         isAdmin.value = false;
       }
     } catch (error) {
-      console.error("Lỗi khi đọc phân quyền từ API:", error);
+      console.error('Lỗi khi đọc phân quyền từ API:', error.message);
+      if (error.statusCode === 401) {
+        // Có thể redirect hoặc thông báo ở đây nếu cần cho user session
+        console.warn("Session expired or unauthorized for AI services");
+      }
+      isPartner.value = false;
+      isAdmin.value = false;
     }
   }
 });
