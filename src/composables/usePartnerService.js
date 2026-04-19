@@ -18,5 +18,28 @@ export const usePartnerServices = () => {
     }
   }
 
-  return { services, loading, loadServices }
+    const loadPublicServices = async () => {
+        if (process.server) return;
+
+        loading.value = true;
+
+        try {
+            const res = await fetch(
+                `${import.meta.env.VITE_GATEWAY_URL}/v1/api/partner/ai-services-all` 
+            );
+
+            if (!res.ok) {
+                throw new Error("Lỗi khi lấy danh sách dịch vụ public");
+            }
+
+            const data = await res.json();
+            services.value = data.data || [];
+
+        } catch (error) {
+            console.error('Fetch public services error:', error);
+        } finally {
+            loading.value = false;
+        }
+    }
+  return { services, loading, loadServices, loadPublicServices }
 }

@@ -410,6 +410,18 @@ const refreshChat = async () => {
     activeTab.value = 'messages'
   }
 }
+  const openChatWithService = async (serviceId) => {
+  isOpen.value = true
+  activeTab.value = 'messages'
+  
+  if (serviceId && selectedServiceId.value !== serviceId) {
+    await handleSelectService(serviceId)
+  }
+}
+
+defineExpose({
+  openChatWithService
+})
 </script>
 
 <style scoped>
