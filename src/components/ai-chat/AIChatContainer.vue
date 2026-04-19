@@ -35,7 +35,7 @@
                 <button
                   class="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white/50 text-slate-500 transition hover:bg-slate-50 hover:text-sky-600"
                   title="Đổi trợ lý"
-                  @click="refreshChat"
+                  @click="backToServices"
                 >
                   <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -61,6 +61,7 @@
             ref="messagesContainer"
             class="chat-scroll relative flex-1 overflow-y-auto px-4 pb-4 pt-4"
           >
+            <!-- Service Selection when no conversation is active -->
             <div v-if="!currentConversationId" class="relative space-y-4">
               <section class="overflow-hidden rounded-[24px] border border-white/70 bg-white/85 p-5 shadow-[0_20px_40px_rgba(15,23,42,0.08)]">
                 <div class="flex items-start gap-4">
@@ -74,7 +75,7 @@
                     <p class="text-[10px] font-bold uppercase tracking-[0.14em] text-sky-600">Bắt đầu nhanh</p>
                     <h3 class="mt-1 text-lg font-bold text-slate-900">Chọn trợ lý phù hợp với nhu cầu</h3>
                     <p class="mt-1.5 text-[13px] leading-relaxed text-slate-500">
-                      Mỗi chatbox có vai trò riêng. Chọn đúng trợ lý để nhận câu trả lời sát ngữ cảnh hơn.
+                      Mỗi trợ lý có vai trò và kiến thức riêng biệt. Chọn đúng trợ lý để nhận câu trả lời sát thực tế nhất.
                     </p>
                   </div>
                 </div>
@@ -115,14 +116,9 @@
                         </span>
                       </div>
 
-                      <p class="mt-3 line-clamp-3 text-sm leading-6 text-slate-500">
-                        {{ service.config?.system_prompt || 'Trợ lý AI hỗ trợ bạn.' }}
+                      <p class="mt-3 line-clamp-2 text-[13px] leading-relaxed text-slate-500">
+                        {{ service.config?.system_prompt || 'Trợ lý AI hỗ trợ bạn thông minh và chính xác.' }}
                       </p>
-
-                      <div class="mt-4 flex items-center justify-between gap-3 text-xs">
-                        <span class="text-slate-400">Nhấn để mở cuộc trò chuyện mới</span>
-                        <span class="font-medium text-sky-600">Kết nối ngay</span>
-                      </div>
                     </div>
                   </div>
                 </button>
@@ -136,6 +132,7 @@
               </div>
             </div>
 
+            <!-- Messages List -->
             <div v-else class="relative">
               <div v-if="messages.length === 0 && !isLoading" class="space-y-4">
                 <AIChatEmptyState />
@@ -173,6 +170,7 @@
                   :is-completed="msg.isCompleted"
                 />
 
+                <!-- Loading State -->
                 <div v-if="isLoading" class="flex justify-start">
                   <div class="flex items-end gap-3">
                     <div class="hidden h-10 w-10 items-center justify-center rounded-2xl bg-slate-900 text-xs font-semibold text-white shadow-sm sm:flex">
@@ -193,10 +191,12 @@
             </div>
           </div>
 
+          <!-- News Tab -->
           <div v-else class="chat-scroll relative flex-1 overflow-y-auto px-4 pb-4 pt-4">
             <AINewsList @askNews="handleAskNews" />
           </div>
 
+          <!-- Chat Input -->
           <AIChatInput
             v-if="activeTab === 'messages' && currentConversationId"
             :loading="isLoading"
@@ -205,6 +205,7 @@
         </div>
       </Transition>
 
+      <!-- Floating Button -->
       <button
         class="group flex items-center gap-2.5 rounded-full bg-slate-900/95 px-3.5 py-2 text-white shadow-[0_20px_60px_rgba(15,23,42,0.28)] ring-1 ring-white/10 backdrop-blur-xl transition hover:-translate-y-0.5 hover:bg-slate-950"
         @click="isOpen = !isOpen"
@@ -227,8 +228,8 @@
 </template>
 
 <script setup>
-import { computed, nextTick, onMounted, ref, watch } from 'vue'
-import { useAIChatAPI } from '../../composables/useAIChatAPI'
+import { ref, nextTick, watch, onMounted, computed } from 'vue'
+import { useAIChat } from '../../composables/useAIChat'
 
 import AITabs from './AITabs.vue'
 import AIChatMessage from './AIChatMessage.vue'
@@ -255,7 +256,7 @@ const {
   partnerServices,
   conversationsList,
   currentConversationId
-} = useAIChatAPI()
+} = useAIChat()
 
 const currentService = computed(() => {
   if (selectedServiceId.value) {
@@ -264,7 +265,6 @@ const currentService = computed(() => {
 
   if (currentConversationId.value && conversationsList.value.length > 0) {
     const conversation = conversationsList.value.find(item => item.conversation_id === currentConversationId.value)
-
     if (conversation) {
       return partnerServices.value.find(service => service.id === conversation.partner_service_id)
     }
@@ -273,21 +273,12 @@ const currentService = computed(() => {
   return null
 })
 
-const headerSubtitle = computed(() => {
-  if (currentService.value?.name) {
-    return `Đang kết nối với ${currentService.value.name}. Bạn có thể tiếp tục hỏi đáp trong cùng một cửa sổ chat.`
-  }
-
-  return 'Chọn một trợ lý bên dưới để bắt đầu cuộc trò chuyện theo đúng nhu cầu.'
-})
-
+// === UI Helpers ===
 const getServiceIcon = (service) => {
   const source = `${service?.type || ''} ${service?.category || ''} ${service?.name || ''}`.toLowerCase()
-
   if (source.includes('tour') || source.includes('travel')) return '✈'
   if (source.includes('villa') || source.includes('hotel') || source.includes('room')) return '⌂'
   if (source.includes('inventory') || source.includes('product') || source.includes('shop')) return '◫'
-
   return 'AI'
 }
 
@@ -308,7 +299,6 @@ const getServiceStatusClass = (status) => {
 
 const scrollToBottom = async () => {
   await nextTick()
-
   if (messagesContainer.value) {
     messagesContainer.value.scrollTo({
       top: messagesContainer.value.scrollHeight,
@@ -317,69 +307,17 @@ const scrollToBottom = async () => {
   }
 }
 
-watch(() => messages.value.length, () => {
-  scrollToBottom()
-})
-
-watch(() => currentConversationId.value, (value) => {
-  if (!value) {
-    selectedServiceId.value = null
-  }
-})
-
-const accessToken = useCookie('accessToken')
-
-watch(accessToken, (newVal, oldVal) => {
-  if (newVal !== oldVal) {
-    console.log('Phát hiện thay đổi phiên làm việc, đang reset chat...')
-    resetChat()
-    selectedServiceId.value = null
-    loadOrganization()
-    loadPartnerServices()
-  }
-})
-
-onMounted(async () => {
-  await loadOrganization()
-  await loadPartnerServices()
-  await loadConversations()
-
-  const savedConvId = localStorage.getItem('current_conversation_id')
-  const token = useCookie('accessToken').value
-
-  if (!token && savedConvId) {
-    console.log('Không tìm thấy token, đang dọn sạch phiên cũ...')
-    resetChat()
-    return
-  }
-
-  if (savedConvId) {
-    currentConversationId.value = savedConvId
-    await loadConversationHistory(savedConvId)
-    scrollToBottom()
-  }
-})
-
+// === Interaction Handlers ===
 const handleSelectService = async (serviceId) => {
   if (!serviceId) return
-
-  console.log('Selected partner_service_id:', serviceId)
-
   selectedServiceId.value = serviceId
   isLoading.value = true
-
   try {
     const convId = await createConversation(serviceId)
-
-    console.log('Conversation ID:', convId)
-
-    if (!convId) {
-      console.error('Không tạo được conversation')
-      return
+    if (convId) {
+      await loadConversationHistory(convId)
+      scrollToBottom()
     }
-
-    await loadConversationHistory(convId)
-    await scrollToBottom()
   } catch (err) {
     console.error('Error createConversation:', err)
   } finally {
@@ -389,14 +327,12 @@ const handleSelectService = async (serviceId) => {
 
 const handleSendMessage = async (text) => {
   if (!text || !text.trim() || isLoading.value) return
-
   await sendMessage(text)
   scrollToBottom()
 }
 
 const handleAskNews = (news) => {
   activeTab.value = 'messages'
-
   setTimeout(() => {
     const prompt = `Tôi muốn hỏi về: ${news.title}. Bạn tư vấn thêm được không?`
     handleSendMessage(prompt)
@@ -410,17 +346,32 @@ const refreshChat = async () => {
     activeTab.value = 'messages'
   }
 }
-  const openChatWithService = async (serviceId) => {
-  isOpen.value = true
-  activeTab.value = 'messages'
-  
-  if (serviceId && selectedServiceId.value !== serviceId) {
-    await handleSelectService(serviceId)
+
+const backToServices = () => {
+  if (confirm('Quay lại danh sách trợ lý?')) {
+    resetChat()
+    selectedServiceId.value = null
   }
 }
 
-defineExpose({
-  openChatWithService
+// === Lifecycle & Watchers ===
+watch(() => messages.value.length, scrollToBottom)
+
+watch(() => currentConversationId.value, (value) => {
+  if (!value) selectedServiceId.value = null
+})
+
+onMounted(async () => {
+  await loadOrganization()
+  await loadPartnerServices()
+  await loadConversations()
+
+  const savedConvId = localStorage.getItem('current_conversation_id')
+  if (savedConvId) {
+    currentConversationId.value = savedConvId
+    await loadConversationHistory(savedConvId)
+    scrollToBottom()
+  }
 })
 </script>
 
