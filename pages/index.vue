@@ -248,10 +248,14 @@ const filters = [
 
 const chatRef = ref(null)
 
-const { services, loading, loadServices, loadPublicServices } = usePartnerServices()
+// Fetch data on server to populate the useState-backed 'services'
+await useAsyncData('public-services', () => loadPublicServices())
 
+// Fallback: Nếu SSR không lấy được dữ liệu (ví dụ 401 trên server), thử lại trên client
 onMounted(() => {
-  loadPublicServices()
+  if (!services.value || services.value.length === 0) {
+    loadPublicServices()
+  }
 })
 
 const dynamicCards = computed(() => {

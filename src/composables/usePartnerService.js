@@ -1,6 +1,8 @@
+import { ref } from 'vue'
+
 export const usePartnerServices = () => {
-  const services = ref([])
-  const loading = ref(false)
+  const services = useState('ai_public_services', () => [])
+  const loading = useState('ai_public_services_loading', () => false)
 
   const loadServices = async () => {
     loading.value = true
@@ -19,24 +21,23 @@ export const usePartnerServices = () => {
   }
 
     const loadPublicServices = async () => {
-        if (process.server) return;
-
+        const config = useRuntimeConfig();
+        const headers = useRequestHeaders(['cookie', 'authorization']);
         loading.value = true;
 
         try {
-            const res = await fetch(
-                `${import.meta.env.VITE_GATEWAY_URL}/v1/api/partner/ai-services-all` 
+            const res = await $fetch(
+                `${config.public.gatewayUrl}/v1/api/partner/ai-services-all`,
+                { headers }
             );
-
-            if (!res.ok) {
-                throw new Error("Lỗi khi lấy danh sách dịch vụ public");
-            }
-
-            const data = await res.json();
-            services.value = data.data || [];
-
+            
+            const data = res.data || res || [];
+            services.value = Array.isArray(data) ? data : (data.data || []);
+            return services.value;
         } catch (error) {
-            console.error('Fetch public services error:', error);
+            console.error('Fetch public services error:', error.message);
+            // Nếu lỗi 401 ở server, ta sẽ để client fetch lại sau
+            return [];
         } finally {
             loading.value = false;
         }
