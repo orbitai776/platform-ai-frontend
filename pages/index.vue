@@ -206,8 +206,9 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import AIChatContainer from '../src/components/ai-chat/AIChatContainer.vue'
-import useServices from '../src/composables/useServices'
 import {usePartnerServices} from '../src/composables/usePartnerService'
+
+const { services, loading, loadPublicServices } = usePartnerServices()
 
 definePageMeta({
   layout: 'default'
