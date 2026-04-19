@@ -228,7 +228,7 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
-import { auth, provider, signInWithPopup, signOut } from "../auth/firebase";
+import { auth, provider, signInWithPopup, signOut } from "~/src/auth/firebase";
 import { getAuth } from "firebase/auth";
 
 const toast = useToast()
