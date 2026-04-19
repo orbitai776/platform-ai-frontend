@@ -99,7 +99,7 @@ const handleBackendAuth = async (firebaseIdToken) => {
     }
   } catch (error) {
     console.error("Lỗi Backend:", error);
-    alert("Đăng nhập thất bại do lỗi phía Gateway hoặc tài khoản!");
+    toast.error("Đăng nhập thất bại do lỗi phía Gateway hoặc tài khoản!");
   }
 };
 
@@ -117,7 +117,7 @@ const handleEmailLogin = async () => {
     await handleBackendAuth(idToken);
   } catch (error) {
     console.error("Login failed:", error);
-    alert("Sai email hoặc mật khẩu!");
+    toast.error("Sai email hoặc mật khẩu!");
   } finally {
     isLoading.value = false;
   }

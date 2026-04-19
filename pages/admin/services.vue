@@ -25,7 +25,7 @@
           <thead class="bg-gray-50 border-b border-gray-100">
             <tr>
               <th class="p-4 text-[11px] font-black text-gray-400 uppercase tracking-wider">Thông tin dịch vụ</th>
-              <th class="p-4 text-[11px] font-black text-gray-400 uppercase tracking-wider">ID Hệ thống</th>
+              <!-- <th class="p-4 text-[11px] font-black text-gray-400 uppercase tracking-wider">ID Hệ thống</th> -->
               <th class="p-4 text-[11px] font-black text-gray-400 uppercase tracking-wider">Hạn mức Token</th>
               <th class="p-4 text-[11px] font-black text-gray-400 uppercase tracking-wider text-center">Trạng thái</th>
               <th class="p-4 text-[11px] font-black text-gray-400 uppercase tracking-wider text-center">Thao tác</th>
@@ -36,25 +36,27 @@
               v-for="item in services" 
               :key="item.id" 
               class="hover:bg-gray-50/50 transition-colors"
-              :class="{'opacity-60 grayscale-[0.5] bg-gray-50/30': item.active === false}"
+              :class="{'opacity-60 grayscale-[0.5] bg-gray-50/30': item.active === false || item.active === 0 || item.active === '0'}"
             >
               <td class="p-4">
                 <div class="font-bold text-gray-800 font-['Sora'] text-sm">{{ item.name }}</div>
-                <div class="text-[10px] text-gray-400 mt-0.5 uppercase font-medium tracking-tighter">Loại: {{ item.service_id }}</div>
+                <div class="text-[10px] text-gray-400 mt-0.5 uppercase font-medium tracking-tighter">
+                  Loại: {{ catalog.find(c => c.id === item.service_id)?.name || item.service_id }}
+                </div>
               </td>
-              <td class="p-4">
+              <!-- <td class="p-4">
                 <span class="font-mono text-[10px] bg-gray-100 px-2 py-1 rounded text-gray-500">#{{ item.id }}</span>
-              </td>
+              </td> -->
               <td class="p-4">
                 <div class="text-sm font-bold text-gray-700">{{ item.token_limit?.toLocaleString() }}</div>
                 <div class="text-[10px] text-gray-400 italic">Đã dùng: {{ item.token_used?.toLocaleString() }}</div>
               </td>
               <td class="p-4 text-center">
                 <span 
-                  :class="item.active !== false ? 'bg-green-100 text-green-600 border-green-200' : 'bg-red-100 text-red-600 border-red-200'"
+                  :class="(item.active === false || item.active === 0 || item.active === '0') ? 'bg-red-100 text-red-600 border-red-200' : 'bg-green-100 text-green-600 border-green-200'"
                   class="px-3 py-1 rounded-full text-[10px] font-black uppercase border"
                 >
-                  {{ item.active !== false ? 'Đang chạy' : 'Đã ẩn' }}
+                  {{ (item.active === false || item.active === 0 || item.active === '0') ? 'Đã ẩn' : 'Đang chạy' }}
                 </span>
               </td>
               <td class="p-4">
@@ -137,6 +139,8 @@
 import { ref, onMounted } from 'vue'
 import useServices from '~/src/composables/useServices'
 
+const toast = useToast()
+
 // 1. STATE & CONFIG
 const { services: catalog, fetchServices: fetchCatalog } = useServices()
 const services = ref([])
@@ -172,7 +176,7 @@ const openModal = (type, item = null) => {
   modalType.value = type
   if (type === 'edit' && item) {
     // Clone dữ liệu để sửa
-    form.value = { ...item, active: item.active !== false }
+    form.value = { ...item, active: !(item.active === false || item.active === 0 || item.active === '0') }
   } else {
     // Reset form cho tạo mới
     form.value = { 
@@ -188,7 +192,7 @@ const openModal = (type, item = null) => {
 
 // 4. SUBMIT: CREATE (POST) & UPDATE (PATCH)
 const submitForm = async () => {
-  if (!form.value.name) return alert("Vui lòng nhập tên dịch vụ")
+  if (!form.value.name) return toast.warning("Vui lòng nhập tên dịch vụ")
   
   try {
     const isEdit = modalType.value === 'edit'
@@ -206,38 +210,38 @@ const submitForm = async () => {
     })
 
     if (res) {
-      alert(isEdit ? 'Cập nhật thành công!' : 'Kích hoạt dịch vụ thành công!')
+      toast.success(isEdit ? 'Cập nhật thành công!' : 'Kích hoạt dịch vụ thành công!')
       showModal.value = false
       await fetchData() // Refresh bảng dữ liệu
     }
   } catch (err) {
-    alert('Lỗi: ' + (err.data?.message || 'Không thể lưu dữ liệu'))
+    toast.error('Lỗi: ' + (err.data?.message || 'Không thể lưu dữ liệu'))
   }
 }
 
 // 5. XỬ LÝ XÓA MỀM (SOFT DELETE - GỌI METHOD DELETE)
 const handleSoftDelete = async (item) => {
-  const isHidden = item.active === false
+  const isHidden = (item.active === false || item.active === 0 || item.active === '0')
   const confirmMsg = isHidden ? 'Khôi phục hiển thị dịch vụ này?' : 'Bạn có chắc muốn ẩn dịch vụ này khỏi đối tác?'
   
-  if (!confirm(confirmMsg)) return
+  if (!(await toast.askConfirm(confirmMsg))) return
 
   try {
     if (!isHidden) {
       // TRƯỜNG HỢP ẨN: Gọi DELETE (Backend sẽ update active = 0)
       await $fetch(`${API_PATH}/${item.id}`, { method: 'DELETE' })
-      alert('Đã ẩn dịch vụ.')
+      toast.success('Đã ẩn dịch vụ.')
     } else {
       // TRƯỜNG HỢP KHÔI PHỤC: Gọi PATCH để bật lại active = 1
       await $fetch(`${API_PATH}/${item.id}`, { 
         method: 'PATCH',
         body: { active: true }
       })
-      alert('Đã khôi phục dịch vụ.')
+      toast.success('Đã khôi phục dịch vụ.')
     }
     await fetchData()
   } catch (err) {
-    alert('Thao tác thất bại.')
+    toast.error('Thao tác thất bại.')
   }
 }
 

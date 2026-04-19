@@ -27,29 +27,14 @@
           <NuxtLink to="/billing" class="text-white/65 no-underline text-sm transition-colors duration-200 hover:text-white">Billing</NuxtLink>
         </li>
         <li>
-  <NuxtLink 
-    v-if="isPartner || isAdmin" 
-    to="/partner" 
-    class="text-white/65 no-underline text-sm transition-colors duration-200 hover:text-white"
-  >
-    Partner
-  </NuxtLink>
-  
-  <a 
-    v-else 
-    href="javascript:void(0)" 
-    @click="alert('Bạn chưa đăng ký dịch vụ Partner!')"
-    class="text-white/30 no-underline text-sm cursor-not-allowed"
-  >
-    Partner (Chưa đăng ký)
-  </a>
+ 
 </li>
       </ul>
 
       <div class="flex items-center gap-3">
         <NuxtLink 
           v-if="isPartner" 
-          to="/partner" 
+          to="/partner/" 
           class="hidden sm:inline-flex items-center gap-2 text-[#e8604c] text-[0.8rem] px-[0.9rem] py-[0.4rem] border border-[#e8604c]/30 bg-[#e8604c]/10 rounded-sm font-['Sora'] tracking-[0.04em] transition-all duration-200 hover:bg-[#e8604c]/20 hover:border-[#e8604c]/50 no-underline"
         >
           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">

@@ -37,12 +37,12 @@
           <p class="text-xs uppercase tracking-wide text-slate-400">Email</p>
           <p class="mt-1 font-medium text-slate-900">{{ profile.email || 'N/A' }}</p>
         </div>
-        <div>
+        <!-- <div>
           <p class="text-xs uppercase tracking-wide text-slate-400">Mã Đối Tác (UID)</p>
           <p class="mt-1 font-medium text-slate-900 text-xs break-all">
             {{ profile.uid || 'N/A' }}
           </p>
-        </div>
+        </div> -->
       </div>
 
       <!-- SERVICES -->
