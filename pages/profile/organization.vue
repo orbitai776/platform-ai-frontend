@@ -226,9 +226,12 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from "vue";
-import { auth } from "../../src/auth/firebase";
+import { ref, onMounted, watch } from 'vue';
+import { useRouter } from 'vue-router';
+import { auth, provider, signInWithPopup, signOut } from "../auth/firebase";
 import { getAuth } from "firebase/auth";
+
+const toast = useToast()
 const user = ref(null);
 const organization = ref(null);
 const showEditModal = ref(false);
@@ -285,10 +288,11 @@ const saveProfile = async (method) => {
       body: profileForm.value,
     });
     console.log("Update thành công:", result);
+    toast.success("Cập nhật thông tin thành công!");
     showEditModal.value = false;
   } catch (error) {
     console.error("Update thất bại:", error);
-    alert("Lỗi khi cập nhật thông tin: " + (error.data?.message || error.message));
+    toast.error("Lỗi khi cập nhật thông tin: " + (error.data?.message || error.message));
   }
 };
 

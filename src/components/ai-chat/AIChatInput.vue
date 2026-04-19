@@ -51,6 +51,8 @@
 <script setup>
 import { nextTick, onMounted, ref } from 'vue'
 
+const toast = useToast()
+
 const inputText = ref('')
 const textareaRef = ref(null)
 
@@ -94,7 +96,7 @@ const startVoiceInput = () => {
 
     recognition.start()
   } else {
-    alert('Trình duyệt của bạn không hỗ trợ nhập giọng nói')
+    toast.error('Trình duyệt của bạn không hỗ trợ nhập giọng nói')
   }
 }
 

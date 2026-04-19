@@ -70,6 +70,8 @@ import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { EnvelopeIcon, LockClosedIcon, UserPlusIcon, ShieldCheckIcon } from '@heroicons/vue/24/outline';
 
+const toast = useToast()
+
 const email = ref('');
 const password = ref('');
 const confirmPassword = ref('');
@@ -77,16 +79,16 @@ const router = useRouter();
 
 const handleRegister = () => {
   if (!email.value || !password.value || !confirmPassword.value) {
-    alert("Please fill in all fields.");
+    toast.warning("Please fill in all fields.");
     return;
   }
 
   if (password.value !== confirmPassword.value) {
-    alert("Passwords do not match.");
+    toast.error("Passwords do not match.");
     return;
   }
 
-  alert("Registration successful (mock)");
+  toast.success("Registration successful (mock)");
   router.push("/login");
 };
 

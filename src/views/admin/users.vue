@@ -114,6 +114,8 @@
 import { ref, reactive, onMounted } from 'vue'
 import { useUserAdmin } from '~/src/composables/useUserAdmin.js'
 
+const toast = useToast()
+
 const { users, loading, fetchUsers, addUser, updateRole, toggleUserStatus, deleteUser } = useUserAdmin()
 
 const isModalOpen = ref(false)
@@ -122,7 +124,7 @@ const form = reactive({ name: '', password: '', role: 'user' })
 onMounted(() => fetchUsers())
 
 const handleSubmit = () => {
-  if (!form.name || !form.password) return alert("Thiếu thông tin!")
+  if (!form.name || !form.password) return toast.warning("Thiếu thông tin!")
   addUser({ ...form })
   form.name = ''; form.password = ''; form.role = 'user'; isModalOpen.value = false
 }

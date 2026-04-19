@@ -35,9 +35,10 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
 import { auth, provider, signInWithPopup, signOut } from "../auth/firebase";
 import apiResource from '../composables/apiResource';
+
+const toast = useToast()
 const router = useRouter();
 
 const {
@@ -148,7 +149,7 @@ const signOutUser = async () => {
 };
 
 const showErrorNotification = (message) => {
-  alert(message);
+  toast.error(message);
 };
 
 onMounted(() => {

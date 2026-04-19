@@ -1,6 +1,9 @@
 import { ref } from 'vue'
 
 export const usePartnerServices = () => {
+  const toast = useToast()
+  //const services = ref([])
+  //const loading = ref(false)
   const services = useState('ai_public_services', () => [])
   const loading = useState('ai_public_services_loading', () => false)
 
@@ -12,7 +15,7 @@ export const usePartnerServices = () => {
       services.value = res.data || res || []
     } catch (err) {
       if (err.statusCode === 401) {
-        alert("Phiên đăng nhập hết hạn, vui lòng login lại!")
+        toast.error("Phiên đăng nhập hết hạn, vui lòng login lại!")
         navigateTo('/login') 
       }
     } finally {

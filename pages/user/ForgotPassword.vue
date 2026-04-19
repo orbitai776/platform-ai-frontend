@@ -49,16 +49,18 @@ import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { EnvelopeIcon, KeyIcon } from '@heroicons/vue/24/outline';
 
+const toast = useToast()
+
 const email = ref('');
 const router = useRouter();
 
 const handleForgot = () => {
   if (!email.value) {
-    alert("Please enter your email address.");
+    toast.warning("Please enter your email address.");
     return;
   }
 
-  alert("Reset email sent (mock)");
+  toast.success("Reset email sent (mock)");
 };
 
 const goLogin = () => {

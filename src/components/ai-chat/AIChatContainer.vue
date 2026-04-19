@@ -231,6 +231,8 @@
 import { ref, nextTick, watch, onMounted, computed } from 'vue'
 import { useAIChat } from '../../composables/useAIChat'
 
+const toast = useToast()
+
 import AITabs from './AITabs.vue'
 import AIChatMessage from './AIChatMessage.vue'
 import AIChatInput from './AIChatInput.vue'
@@ -340,7 +342,7 @@ const handleAskNews = (news) => {
 }
 
 const refreshChat = async () => {
-  if (confirm('Bạn có muốn kết thúc cuộc trò chuyện này để chọn trợ lý khác?')) {
+  if (await toast.askConfirm('Bạn có muốn kết thúc cuộc trò chuyện này để chọn trợ lý khác?')) {
     resetChat()
     selectedServiceId.value = null
     activeTab.value = 'messages'

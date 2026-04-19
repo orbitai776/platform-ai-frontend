@@ -93,7 +93,7 @@ const navigation = computed(() => [
   { name: 'Home', href: '/', current: route.path === '/' },
   { name: 'Dashboard', href: '/admin', current: route.path === '/admin' },
   { name: 'Users', href: '/admin/users', current: route.path === '/admin/users' },
-  { name: 'Partners', href: '/admin/partners', current: route.path === '/admin/partners' },
+  // { name: 'Partners', href: '/admin/partners', current: route.path === '/admin/partners' },
   { name: 'Organizations', href: '/admin/organizations', current: route.path === '/admin/organizations' },
   { name: 'Services', href: '/admin/services', current: route.path === '/admin/services' },
 ])
