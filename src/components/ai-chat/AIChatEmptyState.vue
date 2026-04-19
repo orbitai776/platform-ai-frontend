@@ -1,10 +1,14 @@
 <template>
-  <div class="flex flex-col items-center justify-center text-center p-8">
-    <div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-3">
-      <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path>
+  <section class="rounded-[24px] border border-dashed border-slate-300 bg-white/75 px-6 py-8 text-center shadow-[0_12px_30px_rgba(15,23,42,0.05)]">
+    <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-slate-100 text-slate-500">
+      <svg class="h-7 w-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
       </svg>
     </div>
-    <h3 class="text-md font-medium text-gray-700">Không có tin nhắn</h3>
-  </div>
+
+    <h3 class="mt-4 text-lg font-semibold text-slate-800">Cuộc trò chuyện mới đã sẵn sàng</h3>
+    <p class="mt-2 text-sm leading-6 text-slate-500">
+      Chọn một gợi ý để bắt đầu nhanh hoặc gửi câu hỏi đầu tiên của bạn ngay bên dưới.
+    </p>
+  </section>
 </template>
