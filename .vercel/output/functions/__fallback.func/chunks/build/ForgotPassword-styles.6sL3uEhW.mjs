@@ -1,0 +1,2 @@
+const a=["@keyframes blob-5863ca81{0%{transform:translate(0) scale(1)}33%{transform:translate(30px,-50px) scale(1.1)}66%{transform:translate(-20px,20px) scale(.9)}to{transform:translate(0) scale(1)}}.animate-blob[data-v-5863ca81]{animation:blob-5863ca81 7s infinite}.animation-delay-2000[data-v-5863ca81]{animation-delay:2s}"];export{a as default};
+//# sourceMappingURL=ForgotPassword-styles.6sL3uEhW.mjs.map
