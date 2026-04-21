@@ -1,52 +1,127 @@
 import { ref } from 'vue'
+import { auth } from '~/src/auth/firebase'
+import { onAuthStateChanged } from 'firebase/auth'
 
-export const useUserAdmin = () => {
-  const users = useState('admin_users', () => [])
-  const loading = ref(false)
+let accessTokenCache = null;
 
-  const fetchUsers = async () => {
-    if (users.value.length > 0) return
-    loading.value = true
-    await new Promise(resolve => setTimeout(resolve, 400))
-    
-    // Đổ data mẫu theo đúng yêu cầu của bạn
-    users.value = [
-      { id: '5abc12345', title: "Admin", password: "admin_pass_99", role: "admin", completed: true },
-      { id: '1', title: "User 1", password: "user1_123", role: "user", completed: true },
-      { id: '2', title: "User 2", password: "user2_456", role: "editor", completed: false },
-      { id: '3', title: "User 3", password: "user3_789", role: "user", completed: false },
-      { id: '4', title: "User 4", password: "user4_000", role: "editor", completed: true },
-      { id: '5', title: "User 5", password: "user5_999", role: "user", completed: true },
-      { id: '6', title: "User 6", password: "user6_888", role: "user", completed: true }
-    ]
-    loading.value = false
-  }
+export default function useUserAdmin() {
+    const users = ref([]);
+    const originalUsers = ref([]); 
+    const currentUserDetail = ref(null);
+    const loading = ref(false);
+    const totalPages = ref(1);
 
-  const addUser = (userData) => {
-    // Tạo ID ngẫu nhiên cho giống mẫu của bạn (ví dụ #5abc...)
-    const randomId = Math.random().toString(36).substring(2, 9)
-    users.value.unshift({
-      id: randomId,
-      title: userData.name,
-      password: userData.password,
-      role: userData.role,
-      completed: true
-    })
-  }
+    const waitForAuth = () => {
+        return new Promise((resolve) => {
+            const unsubscribe = onAuthStateChanged(auth, (user) => {
+                unsubscribe();
+                resolve(user);
+            });
+        });
+    };
 
-  const updateRole = (id, newRole) => {
-    const user = users.value.find(u => u.id === id)
-    if (user) user.role = newRole
-  }
+    const getValidToken = async () => {
+        const user = await waitForAuth();
+        if (!user) return null;
+        if (accessTokenCache) return accessTokenCache;
+        try {
+            const idToken = await user.getIdToken(true);
+            const res = await fetch(`${import.meta.env.VITE_GATEWAY_URL}/v1/api/auth`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ idToken })
+            });
+            const data = await res.json();
+            accessTokenCache = data.accessToken;
+            return accessTokenCache;
+        } catch (e) { return null; }
+    };
 
-  const toggleUserStatus = (id) => {
-    const user = users.value.find(u => u.id === id)
-    if (user) user.completed = !user.completed
-  }
+    //  FILTER CLIENT + SUPPORT suspended
+    const fetchUsers = async (params = { page: 1, limit: 50, search: '', status: '' }) => {
+        loading.value = true;
+        try {
+            const token = await getValidToken();
 
-  const deleteUser = (id) => {
-    users.value = users.value.filter(u => u.id !== id)
-  }
+            const res = await fetch(`${import.meta.env.VITE_GATEWAY_URL}/v1/api/admin/users?page=1&limit=1000`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
 
-  return { users, loading, fetchUsers, addUser, updateRole, toggleUserStatus, deleteUser }
+            const result = await res.json();
+
+            originalUsers.value = result.data || [];
+
+            let filtered = [...originalUsers.value];
+            // SEARCH
+            if (params.search?.trim()) {
+                const keyword = params.search.toLowerCase();
+                filtered = filtered.filter(u =>
+                    (u.email && u.email.toLowerCase().includes(keyword)) ||
+                    (u.fullName && u.fullName.toLowerCase().includes(keyword))
+                );
+            }
+
+            // FILTER STATUS 
+            if (params.status) {
+                filtered = filtered.filter(u => {
+                    if (params.status === 'suspended') {
+                        return u.status === 'suspended'; 
+                    }
+                    return u.status === params.status;
+                });
+            }
+
+            users.value = filtered;
+            totalPages.value = 1;
+
+        } catch (e) {
+            console.error("Lỗi fetch:", e);
+        } finally {
+            loading.value = false;
+        }
+    };
+
+    const updateStatus = async (id, status) => {
+        try {
+            const token = await getValidToken();
+            const res = await fetch(`${import.meta.env.VITE_GATEWAY_URL}/v1/api/admin/users/${id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                body: JSON.stringify({ status })
+            });
+            if (res.ok) {
+                const idx = users.value.findIndex(u => u.id === id);
+                if (idx !== -1) users.value[idx].status = status;
+                return true;
+            }
+        } catch (e) { return false; }
+    };
+
+    const softDeleteUser = async (id) => {
+        if (!confirm("Xác nhận xóa người dùng này?")) return false;
+        try {
+            const token = await getValidToken();
+            const res = await fetch(`${import.meta.env.VITE_GATEWAY_URL}/v1/api/admin/users/${id}`, {
+                method: 'DELETE',
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            if (res.ok) {
+                const idx = users.value.findIndex(u => u.id === id);
+                if (idx !== -1) users.value[idx].status = 'deleted';
+                return true;
+            }
+        } catch (e) { return false; }
+    };
+
+    const fetchUserDetails = async (id) => {
+        try {
+            const token = await getValidToken();
+            const res = await fetch(`${import.meta.env.VITE_GATEWAY_URL}/v1/api/admin/users/${id}`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            currentUserDetail.value = await res.json();
+        } catch (e) { console.error(e); }
+    };
+
+    return { users, currentUserDetail, loading, totalPages, fetchUsers, fetchUserDetails, updateStatus, softDeleteUser };
 }
