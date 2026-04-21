@@ -11,7 +11,8 @@ export const useAIChatAPI = () => {
   const partnerServices = ref([])
 
   const BASE_URL = 'https://platform-gateway-dev.orbitai.fun'
-  const activeOrgId = ref('e3845d6c-9bf8-4a2e-a766-33e67f23db22') // ID mặc định dự phòng
+  const activeOrgId = ref('e3845d6c-9bf8-4a2e-a766-33e67f23db22')
+  const DEFAULT_SERVICE_ID = "1392a458-889d-4825-a2b9-9dc1bc4c6e69"
   const accessTokenCookie = useCookie('accessToken')
 
   const getFirebaseToken = async () => {
@@ -72,16 +73,25 @@ export const useAIChatAPI = () => {
     }
   }
 
-  const callAPI = async (url, options = {}) => {
-    const token = await getBackendToken()
-
-    if (!token) throw new Error("Unauthorized")
-
-    const headers = {
+  const callAPI = async (url, options = {}, isPublic = false) => {
+    let headers = {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${token}`,
-      "x-org-id": activeOrgId.value,
       ...(options.headers || {})
+    }
+
+    let token = null
+
+    if (!isPublic) {
+      token = await getBackendToken()
+    }
+
+    if (token) {
+      headers.Authorization = `Bearer ${token}`
+      headers["x-org-id"] = activeOrgId.value
+    }
+
+    if (isPublic && activeOrgId.value) {
+      headers["x-org-id"] = activeOrgId.value
     }
 
     const res = await fetch(BASE_URL + url, {
@@ -101,20 +111,55 @@ export const useAIChatAPI = () => {
 
   const loadPartnerServices = async () => {
     try {
-      const res = await callAPI('/v1/api/partner/ai-services')
-      partnerServices.value = res?.data || []
+      const token = accessTokenCookie.value
+
+      let res
+      if (token) {
+        res = await callAPI('/v1/api/partner/ai-services')
+        partnerServices.value = res?.data || []
+      }
+
+      else {
+        console.log("👤 Guest mode → dùng AI public")
+
+        partnerServices.value = [
+          {
+            id: "00000000-0000-0000-0000-000000000001",
+            name: "AI Public Assistant",
+            status: "active",
+            type: "public",
+            config: {
+              system_prompt: "Trợ lý AI hỗ trợ khách chưa đăng nhập"
+            }
+          }
+        ]
+      }
+
+      console.log("📦 partnerServices:", partnerServices.value)
+
       return partnerServices.value
+
     } catch (error) {
-      console.error('Lỗi load partner services:', error)
+      console.error('❌ Lỗi load partner services:', error)
       partnerServices.value = []
       return []
     }
   }
 
   const createConversation = async (partnerServiceId) => {
-    if (!partnerServiceId) return null
-
     try {
+      let serviceId = partnerServiceId
+      if (!serviceId) {
+        console.warn("⚠️ Không có service → dùng DEFAULT_SERVICE_ID")
+        serviceId = DEFAULT_SERVICE_ID
+      }
+
+      const isValidUUID = /^[0-9a-fA-F-]{36}$/.test(serviceId)
+      if (!isValidUUID) {
+        console.error("❌ serviceId không hợp lệ:", serviceId)
+        return null
+      }
+
       let guestId = guestSessionId.value
 
       if (!guestId) {
@@ -126,7 +171,7 @@ export const useAIChatAPI = () => {
       const res = await callAPI('/v1/api/chat/conversations', {
         method: 'POST',
         body: JSON.stringify({
-          partner_service_id: partnerServiceId,
+          partner_service_id: serviceId,
           guest_session_id: guestId
         })
       })
@@ -140,6 +185,7 @@ export const useAIChatAPI = () => {
       }
 
       return convId
+
     } catch (error) {
       console.error('Create conversation error:', error)
       return null
@@ -158,12 +204,15 @@ export const useAIChatAPI = () => {
         content: text
       })
 
+      const token = accessTokenCookie.value
+
       const res = await callAPI(
         `/v1/api/chat/conversations/${currentConversationId.value}/messages`,
         {
           method: 'POST',
           body: JSON.stringify({ content: text })
-        }
+        },
+        !token
       )
 
       const ai = res?.data || {}
@@ -190,7 +239,7 @@ export const useAIChatAPI = () => {
     if (!id) return
     try {
       const res = await callAPI(`/v1/api/chat/conversations/${id}/messages`)
-      
+
       if (!res) {
         console.warn("⚠️ Không thể tải lịch sử cuộc trò chuyện. Có thể phiên đã hết hạn hoặc không có quyền.")
         resetChat()

@@ -50,7 +50,7 @@
 
     <div ref="messagesContainer" v-if="activeTab === 'messages'" class="flex-1 overflow-y-auto bg-[#f5f2ec]">
       
-      <div v-if="!currentConversationId" class="p-6 space-y-4">
+      <div v-if="!currentConversationId && partnerServices.length > 0">
         <div class="text-center space-y-2">
           <h3 class="font-bold text-gray-800 text-lg">Chào mừng bạn!</h3>
           <p class="text-sm text-gray-500">Vui lòng chọn trợ lý ảo để bắt đầu hỗ trợ:</p>
@@ -209,26 +209,25 @@ watch(accessToken, (newVal, oldVal) => {
 })
 
 onMounted(async () => {
-  // Ưu tiên xác định ID tổ chức của tài khoản hiện tại
-  await loadOrganization()
-  await loadPartnerServices()
-  await loadConversations()
-
-  const savedConvId = localStorage.getItem('current_conversation_id')
   const token = useCookie('accessToken').value
 
-  // Nếu không có token (đã logout) nhưng vẫn còn ID cũ -> dọn sạch
-  if (!token && savedConvId) {
-    console.log("🚫 Không tìm thấy Token, đang dọn sạch phiên cũ...")
-    resetChat()
-    return
+  if (token) {
+    await loadOrganization()
+    await loadPartnerServices()
+    await loadConversations()
   }
+
+  const savedConvId = localStorage.getItem('current_conversation_id')
 
   if (savedConvId) {
     currentConversationId.value = savedConvId
     await loadConversationHistory(savedConvId)
-    scrollToBottom()
+  } else {
+    // ✅ FIX: auto tạo conversation (guest vẫn chạy)
+    await createConversation()
   }
+
+  scrollToBottom()
 })
 
 const handleSelectService = async (serviceId) => {
