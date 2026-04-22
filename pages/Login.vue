@@ -16,18 +16,30 @@
         <div>
           <label for="email" class="block text-sm/6 font-medium text-black">Email address</label>
           <div class="mt-2">
-            <input v-model="email" type="email" id="email" placeholder="Email" required
+            <input
+              id="email"
+              v-model="email"
+              type="email"
+              placeholder="Email"
+              required
               :disabled="isLoading"
-              class="block w-full rounded-md bg-white px-3 py-1.5 text-base text-black border border-black/30 placeholder:text-black/40 focus:outline-none focus:border-black sm:text-sm/6 disabled:opacity-50" />
+              class="block w-full rounded-md bg-white px-3 py-1.5 text-base text-black border border-black/30 placeholder:text-black/40 focus:outline-none focus:border-black sm:text-sm/6 disabled:opacity-50"
+            />
           </div>
         </div>
 
         <div>
           <label for="password" class="block text-sm/6 font-medium text-black">Password</label>
           <div class="mt-2">
-            <input v-model="password" type="password" id="password" placeholder="Password" required
+            <input
+              id="password"
+              v-model="password"
+              type="password"
+              placeholder="Password"
+              required
               :disabled="isLoading"
-              class="block w-full rounded-md bg-white px-3 py-1.5 text-base text-black border border-black/30 placeholder:text-black/40 focus:outline-none focus:border-black sm:text-sm/6 disabled:opacity-50" />
+              class="block w-full rounded-md bg-white px-3 py-1.5 text-base text-black border border-black/30 placeholder:text-black/40 focus:outline-none focus:border-black sm:text-sm/6 disabled:opacity-50"
+            />
           </div>
           <div class="mt-2 flex justify-end">
             <NuxtLink to="/user/ForgotPassword" class="text-sm font-semibold text-indigo-500 hover:text-indigo-400">Forgot password?</NuxtLink>
@@ -35,8 +47,11 @@
         </div>
 
         <div>
-          <button type="submit" :disabled="isLoading"
-            class="flex w-full justify-center rounded-md bg-black px-3 py-1.5 text-sm/6 font-semibold text-white hover:bg-gray-800 disabled:opacity-70">
+          <button
+            type="submit"
+            :disabled="isLoading"
+            class="flex w-full justify-center rounded-md bg-black px-3 py-1.5 text-sm/6 font-semibold text-white hover:bg-gray-800 disabled:opacity-70"
+          >
             {{ isLoading ? 'Signing in...' : 'Sign in' }}
           </button>
         </div>
@@ -49,75 +64,80 @@
       </div>
 
       <div class="mt-4">
-        <button type="button" @click="handleGoogleLogin" :disabled="isLoading"
-          class="flex w-full items-center justify-center gap-3 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-semibold text-black hover:bg-gray-100 disabled:opacity-50">
+        <button
+          type="button"
+          @click="handleGoogleLogin"
+          :disabled="isLoading"
+          class="flex w-full items-center justify-center gap-3 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-semibold text-black hover:bg-gray-100 disabled:opacity-50"
+        >
           <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" class="h-5 w-5" />
           Sign in with Google
         </button>
       </div>
+
+      <p class="mt-6 text-center text-sm text-gray-500">
+        Don’t have an account?
+        <NuxtLink to="/user/Register" class="font-semibold text-black hover:text-gray-700">
+          Create one
+        </NuxtLink>
+      </p>
     </div>
   </div>
 </template>
 
 <script setup>
 import { ref } from 'vue';
-import { jwtDecode } from "jwt-decode";
 
-// Đặt layout. Tuỳ bạn muốn dùng layout nào thì điền tên vào đây (ví dụ: 'default' hoặc 'authAdmin')
 definePageMeta({
-  layout: 'authAdmin'  
+  layout: 'authAdmin'
 });
 
+const toast = useToast();
 const email = ref('');
 const password = ref('');
 const isLoading = ref(false);
 
 const handleBackendAuth = async (firebaseIdToken) => {
   try {
-    // Gọi qua server Nuxt (api/auth/login.post.ts) để nó set Cookie HttpOnly hộ mình
     await useFetch('/api/auth/login', {
-      method: "POST",
+      method: 'POST',
       body: { idToken: firebaseIdToken },
     });
 
-    const { data: userRolesData, error: userRolesError } = await useFetch('/api/auth/user-roles', {
-      method: "GET",
+    const { data: userRolesData } = await useFetch('/api/auth/user-roles', {
+      method: 'GET',
     });
 
     const userRoles = userRolesData.value || [];
-    console.log(userRoles); // ['user', 'partner']
-    console.log(Array.isArray(userRoles)); // true
-    console.log(userRoles.includes('partner')); // true
 
-    // Phân quyền điều hướng
     if (userRoles.includes('admin')) {
       window.location.href = '/admin';
     } else if (userRoles.includes('partner')) {
       window.location.href = '/partner';
     } else {
-      window.location.href = '/'; 
+      window.location.href = '/';
     }
   } catch (error) {
-    console.error("Lỗi Backend:", error);
-    toast.error("Đăng nhập thất bại do lỗi phía Gateway hoặc tài khoản!");
+    console.error('Backend auth failed:', error);
+    toast.error('Đăng nhập thất bại do lỗi phía Gateway hoặc tài khoản.');
   }
 };
 
 const handleEmailLogin = async () => {
   if (!process.client) return;
   isLoading.value = true;
-  
+
   try {
-    const { signInWithEmailAndPassword } = await import("firebase/auth");
-    const { auth } = await import("~/src/auth/firebase.js");
+    const { signInWithEmailAndPassword } = await import('firebase/auth');
+    const { auth } = await import('~/src/auth/firebase.js');
 
     const result = await signInWithEmailAndPassword(auth, email.value, password.value);
     const idToken = await result.user.getIdToken();
-    
+
     await handleBackendAuth(idToken);
   } catch (error) {
-    console.error("Login failed:", error);
-    toast.error("Sai email hoặc mật khẩu!");
+    console.error('Login failed:', error);
+    toast.error('Sai email hoặc mật khẩu.');
   } finally {
     isLoading.value = false;
   }
@@ -128,15 +148,16 @@ const handleGoogleLogin = async () => {
   isLoading.value = true;
 
   try {
-    const { signInWithPopup } = await import("firebase/auth");
-    const { auth, provider } = await import("~/src/auth/firebase.js");
+    const { signInWithPopup } = await import('firebase/auth');
+    const { auth, provider } = await import('~/src/auth/firebase.js');
 
     const result = await signInWithPopup(auth, provider);
     const idToken = await result.user.getIdToken();
-    
+
     await handleBackendAuth(idToken);
   } catch (error) {
-    console.error("Login failed:", error);
+    console.error('Google login failed:', error);
+    toast.error('Đăng nhập với Google thất bại.');
   } finally {
     isLoading.value = false;
   }
