@@ -230,6 +230,7 @@
 <script setup>
 import { ref, nextTick, watch, onMounted, computed } from 'vue'
 import { useAIChat } from '../../composables/useAIChat'
+import { usePartnerServices } from '../../composables/usePartnerService'
 
 const toast = useToast()
 
@@ -244,6 +245,7 @@ const isOpen = ref(false)
 const activeTab = ref('messages')
 const messagesContainer = ref(null)
 const selectedServiceId = ref(null)
+const { loadPublicServices } = usePartnerServices()
 
 const {
   messages,
@@ -275,7 +277,6 @@ const currentService = computed(() => {
   return null
 })
 
-// === UI Helpers ===
 const getServiceIcon = (service) => {
   const source = `${service?.type || ''} ${service?.category || ''} ${service?.name || ''}`.toLowerCase()
   if (source.includes('tour') || source.includes('travel')) return '✈'
@@ -309,13 +310,39 @@ const scrollToBottom = async () => {
   }
 }
 
-// === Interaction Handlers ===
 const handleSelectService = async (serviceId) => {
-  if (!serviceId) return
+  const isGuest = !useCookie('access_token').value
+
   selectedServiceId.value = serviceId
   isLoading.value = true
+
   try {
-    const convId = await createConversation(serviceId)
+    let convId = null
+
+    if (isGuest) {
+     const guestSessionId =
+        localStorage.getItem('guest_session_id') || crypto.randomUUID()
+
+      localStorage.setItem('guest_session_id', guestSessionId)
+
+      const res = await $fetch(
+          'https://platform-gateway-dev.orbitai.fun/v1/api/chat/conversations',
+          {
+            method: 'POST',
+            body: {
+              partner_service_id: serviceId,
+              guest_session_id: guestSessionId
+            }
+          }
+        )
+
+      convId = res?.data?.conversation_id
+
+      localStorage.setItem('conversation_id', convId)
+    } else {
+      convId = await createConversation(serviceId)
+    }
+
     if (convId) {
       await loadConversationHistory(convId)
       scrollToBottom()
@@ -329,8 +356,49 @@ const handleSelectService = async (serviceId) => {
 
 const handleSendMessage = async (text) => {
   if (!text || !text.trim() || isLoading.value) return
-  await sendMessage(text)
-  scrollToBottom()
+
+  const isGuest = !useCookie('access_token').value
+
+  if (isGuest) {
+    const conversationId = localStorage.getItem('conversation_id')
+
+    if (!conversationId) {
+      toast.error('Chưa có cuộc hội thoại')
+      return
+    }
+
+    try {
+      isLoading.value = true
+
+      const res = await $fetch('/api/chat-messages', {
+        method: 'POST',
+        query: {
+          conversationId
+        },
+        body: {
+          message: text
+        }
+      })
+
+      messages.value.push({
+        role: 'user',
+        content: text
+      })
+
+      messages.value.push({
+        role: 'assistant',
+        content: res?.data?.response || 'Không có phản hồi'
+      })
+    } catch (err) {
+      console.error(err)
+    } finally {
+      isLoading.value = false
+      scrollToBottom()
+    }
+  } else {
+    await sendMessage(text)
+    scrollToBottom()
+  }
 }
 
 const handleAskNews = (news) => {
@@ -356,7 +424,6 @@ const backToServices = () => {
   }
 }
 
-// === Lifecycle & Watchers ===
 watch(() => messages.value.length, scrollToBottom)
 
 watch(() => currentConversationId.value, (value) => {
@@ -364,15 +431,18 @@ watch(() => currentConversationId.value, (value) => {
 })
 
 onMounted(async () => {
-  await loadOrganization()
-  await loadPartnerServices()
-  await loadConversations()
+  const isGuest = !useCookie('access_token').value
 
-  const savedConvId = localStorage.getItem('current_conversation_id')
-  if (savedConvId) {
-    currentConversationId.value = savedConvId
-    await loadConversationHistory(savedConvId)
-    scrollToBottom()
+  await loadOrganization()
+
+  if (!isGuest) {
+    await loadPartnerServices()
+    await loadConversations()
+  } else {
+    console.warn('🚫 Guest mode → skip protected APIs')
+
+    const publicServices = await loadPublicServices()
+    partnerServices.value = publicServices
   }
 })
 </script>

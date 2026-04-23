@@ -23,12 +23,13 @@ export function useDashboard() {
                 `${import.meta.env.VITE_GATEWAY_URL}/v1/api/admin/dashboard/services`,
                 {
                     headers: {
-                        Authorization: `Bearer ${accessToken}`
+                        Authorization: `Bearer ${accessToken}`,
+                        "x-org-id": "e3845d6c-9bf8-4a2e-a766-33e67f23db22"
                     }
                 }
             );
 
-            
+
             if (res.status === 401 && retry) {
                 accessToken = await getAccessToken(true)
                 return await fetchDashboard(false)
@@ -52,7 +53,7 @@ export function useDashboard() {
         }
     }
 
-    
+
     const statCards = computed(() => [
         {
             label: 'Users',
@@ -81,7 +82,7 @@ export function useDashboard() {
         }
     ])
 
-   
+
     const tableData = computed(() => {
         return topServices.value.map(s => ({
             name: s.name,

@@ -10,35 +10,57 @@ export const usePartnerServices = () => {
   const loadServices = async () => {
     loading.value = true
     try {
-      // Gọi qua Proxy của Nguyên để an toàn
-      const res = await $fetch('/api/partner/list-services')
-      services.value = res.data || res || []
+      const accessToken = useCookie('accessToken')
+
+      const res = await fetch(
+        `${import.meta.env.VITE_GATEWAY_URL}/v1/api/partner/ai-services`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            "x-org-id": "e3845d6c-9bf8-4a2e-a766-33e67f23db22",
+            Authorization: `Bearer ${accessToken.value}`
+          }
+        }
+      )
+
+      const json = await res.json()
+      services.value = json?.data || []
+
     } catch (err) {
       if (err.statusCode === 401) {
         toast.error("Phiên đăng nhập hết hạn, vui lòng login lại!")
-        navigateTo('/login') 
+        navigateTo('/login')
       }
     } finally {
       loading.value = false
     }
   }
 
-    const loadPublicServices = async () => {
-        loading.value = true;
-        try {
-            const res = await $fetch('/api/partner/all-services')
-            const data = res.data || res || [];
-            services.value = Array.isArray(data) ? data : (data.data || []);
-            return services.value;
-        } catch (error) {
-            console.error('Fetch public services error:', error.message);
-            if (error.statusCode === 401) {
-              console.warn("Session expired or unauthorized for AI services");
-            }
-            return [];
-        } finally {
-            loading.value = false;
+  const loadPublicServices = async () => {
+    loading.value = true;
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_GATEWAY_URL}/v1/api/partner/ai-services`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            "x-org-id": "e3845d6c-9bf8-4a2e-a766-33e67f23db22"
+          }
         }
+      )
+
+      const json = await res.json()
+      const data = json?.data || []
+
+      services.value = Array.isArray(data) ? data : []
+      return services.value;
+
+    } catch (error) {
+      console.error('Fetch public services error:', error.message);
+      return [];
+    } finally {
+      loading.value = false;
     }
+  }
   return { services, loading, loadServices, loadPublicServices }
 }
