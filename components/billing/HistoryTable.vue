@@ -1,271 +1,178 @@
 <template>
-  <div class="space-y-6 text-slate-200">
-    <!-- Header info -->
-    <div class="flex items-center justify-between">
-      <div class="space-y-1">
-        <h2 class="text-2xl font-bold bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">
-          Lịch sử giao dịch
-        </h2>
-        <p class="text-sm text-slate-500">Xem và quản lý các giao dịch nạp tiền của bạn</p>
+  <div class="glass-container rounded-[2rem] p-10 animate-in slide-in-from-bottom-4 duration-700 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/5 shadow-2xl dark:shadow-none transition-colors duration-500">
+    <div class="flex items-center justify-between mb-10">
+      <div>
+        <h3 class="font-['Space_Grotesk'] text-2xl font-bold text-slate-900 dark:text-white tracking-tight transition-colors">Transaction History</h3>
+        <p class="text-xs text-slate-400 dark:text-white/30 uppercase tracking-[0.2em] mt-1 font-bold transition-colors">Comprehensive allocation logs</p>
+      </div>
+      <button class="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-[10px] font-bold text-cyan-600 dark:text-cyan-400 uppercase tracking-widest hover:bg-slate-100 dark:hover:bg-white/10 hover:text-slate-900 dark:hover:text-white transition-all shadow-sm">
+        <span class="material-symbols-outlined text-sm">download</span>
+        Export CSV
+      </button>
+    </div>
+
+    <div class="overflow-x-auto min-h-[400px] custom-scrollbar">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="text-[10px] text-slate-400 dark:text-white/30 uppercase tracking-[0.2em] border-b border-slate-100 dark:border-white/5 font-bold transition-colors">
+            <th class="pb-6">Execution Date</th>
+            <th class="pb-6">Transaction Hash</th>
+            <th class="pb-6 text-right">Allocation</th>
+            <th class="pb-6 text-right">Value (VND)</th>
+            <th class="pb-6 text-center">Gateway</th>
+            <th class="pb-6 text-right">Status</th>
+          </tr>
+        </thead>
+        <tbody class="text-sm text-slate-700 dark:text-white/80 divide-y divide-slate-100 dark:divide-white/5">
+          <tr v-for="tx in history" :key="tx.id" class="group hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-all duration-300">
+            <td class="py-6 text-slate-400 dark:text-white/40 font-medium group-hover:text-slate-900 dark:group-hover:text-white transition-colors">
+              <div>{{ tx.date }}</div>
+              <div class="text-[10px] opacity-60 mt-0.5">{{ tx.time }}</div>
+            </td>
+            <td class="py-6 font-mono text-xs text-slate-300 dark:text-white/20 group-hover:text-cyan-600 dark:group-hover:text-cyan-400/60 transition-colors uppercase">{{ tx.id }}</td>
+            <td class="py-6 text-right font-bold text-cyan-600 dark:text-cyan-400 group-hover:scale-105 transition-transform origin-right">
+              + {{ formatNumber(tx.tokenAmount) }}
+            </td>
+            <td class="py-6 text-right font-['Space_Grotesk'] font-bold text-slate-500 dark:text-white/60 transition-colors">{{ formatCurrency(tx.amount) }}</td>
+            <td class="py-6 text-center">
+              <span class="bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest text-slate-400 dark:text-white/40 group-hover:border-cyan-600/30 group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-all">
+                {{ tx.method }}
+              </span>
+            </td>
+            <td class="py-6 text-right">
+              <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all" :class="getStatusStyles(tx.status)">
+                <span class="w-1.5 h-1.5 rounded-full shadow-[0_0_8px_currentColor] animate-pulse" :class="tx.status === 'success' || tx.status === 'completed' ? 'bg-cyan-600 dark:bg-cyan-400' : 'bg-amber-500'"></span>
+                <span class="text-[9px] font-bold uppercase tracking-widest">{{ getStatusText(tx.status) }}</span>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Empty State -->
+      <div v-if="!history?.length && !pending" class="flex flex-col items-center justify-center py-24 text-center">
+        <div class="w-20 h-20 rounded-full bg-slate-50 dark:bg-white/[0.02] border border-slate-100 dark:border-white/5 flex items-center justify-center mb-6 transition-colors">
+          <span class="material-symbols-outlined text-slate-200 dark:text-white/10 text-4xl">inbox</span>
+        </div>
+        <h3 class="text-slate-400 dark:text-white/40 font-bold uppercase tracking-widest text-xs transition-colors">No active transactions</h3>
       </div>
     </div>
 
-    <!-- Table Container -->
-    <div class="relative overflow-hidden bg-slate-900/40 backdrop-blur-xl rounded-2xl border border-white/5 shadow-2xl">
-      <!-- Loading State -->
-      <div v-if="pending" class="flex flex-col items-center justify-center p-20 space-y-4 text-center">
-        <div class="w-10 h-10 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin"></div>
-        <p class="text-slate-400 font-medium animate-pulse">Đang tải dữ liệu...</p>
-      </div>
-
-      <!-- Error State -->
-      <div v-else-if="error" class="flex flex-col items-center justify-center p-20 text-center space-y-4">
-        <div class="p-4 bg-red-500/10 rounded-full">
-          <XCircleIcon class="w-10 h-10 text-red-500" />
-        </div>
-        <div>
-          <h3 class="text-white font-bold text-lg">Lỗi tải dữ liệu</h3>
-          <p class="text-slate-400 max-w-xs mx-auto text-sm">Không thể kết nối với máy chủ. Vui lòng thử lại sau.</p>
-        </div>
-        <button @click="refresh()" class="px-6 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl transition-all font-medium text-sm">
-          Thử lại
-        </button>
-      </div>
-
-      <!-- Content -->
-      <template v-else>
-        <div class="overflow-x-auto min-h-[350px]">
-          <table class="w-full text-left border-collapse">
-            <thead>
-              <tr class="border-b border-white/5 bg-white/[0.02]">
-                <th class="px-6 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500">Mã giao dịch</th>
-                <th class="px-6 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500 hidden md:table-cell">Phương thức</th>
-                <th class="px-6 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500">Số lượng</th>
-                <th class="px-6 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400 text-right">Trạng thái</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-white/5">
-              <tr v-for="tx in history" :key="tx.id" class="group hover:bg-white/[0.03] transition-colors duration-300">
-                <td class="px-6 py-5">
-                  <div class="flex items-center gap-4">
-                    <div :class="tx.isDeposit ? 'bg-emerald-500/10 text-emerald-500' : 'bg-orange-500/10 text-orange-500'" 
-                         class="p-2.5 rounded-xl hidden sm:flex border border-white/5">
-                      <ArrowDownLeftIcon v-if="tx.isDeposit" class="w-5 h-5" />
-                      <ArrowUpRightIcon v-else class="w-5 h-5" />
-                    </div>
-                    <div>
-                      <div class="text-sm font-semibold text-white group-hover:text-blue-400 transition-colors">
-                        {{ tx.id }}
-                      </div>
-                      <div class="text-[11px] text-slate-500 mt-1 flex items-center gap-2">
-                        <span>{{ tx.date }}</span>
-                      </div>
-                    </div>
-                  </div>
-                </td>
-                
-                <td class="px-6 py-5 hidden md:table-cell">
-                  <div class="flex items-center gap-2">
-                    <div class="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center border border-white/5">
-                      <span class="text-[10px] font-bold text-slate-400 uppercase">{{ tx.method.substring(0, 2) }}</span>
-                    </div>
-                    <span class="text-sm text-slate-300 capitalize">{{ tx.method }}</span>
-                  </div>
-                </td>
-
-                <td class="px-6 py-5">
-                  <div class="flex flex-col">
-                    <span :class="tx.isDeposit ? 'text-emerald-400' : 'text-orange-400'" class="text-sm font-bold tracking-tight">
-                      {{ tx.isDeposit ? '+' : '-' }}{{ formatNumber(tx.tokenAmount) }} TKN
-                    </span>
-                    <span class="text-[11px] text-slate-500 font-medium">
-                      {{ formatCurrency(tx.amount) }} VNĐ
-                    </span>
-                  </div>
-                </td>
-
-                <td class="px-6 py-5 text-right">
-                  <span :class="getStatusStyles(tx.status)" 
-                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider border">
-                    <component :is="getStatusIcon(tx.status)" 
-                               :class="['w-3 h-3', { 'animate-spin': tx.status === 'pending' }]" />
-                    {{ getStatusText(tx.status) }}
-                  </span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <!-- Pagination -->
-        <div v-if="history?.length" class="px-6 py-4 border-t border-white/5 flex items-center justify-between bg-white/[0.01]">
-          <div class="text-xs text-slate-500 font-medium">
-           <!-- Hiển thị <span class="text-slate-300">{{ history.length }}</span> / <span class="text-slate-300">{{ totalCount }}</span> giao dịch -->
-          </div>
-          <div class="flex items-center gap-4">
-            <div class="text-xs text-slate-500 font-bold uppercase tracking-widest hidden sm:block">
-              Trang <span class="text-blue-400">{{ currentPage }}</span> / {{ totalPages }}
-            </div>
-            <div class="flex items-center gap-1">
-              <button @click="prevPage" 
-                      :disabled="currentPage <= 1 || pending"
-                      class="p-2 rounded-lg bg-white/5 hover:bg-white/10 disabled:opacity-30 disabled:hover:bg-white/5 transition-all text-slate-400 hover:text-white">
-                <ChevronLeftIcon class="w-4 h-4" />
-              </button>
-              <button @click="nextPage" 
-                      :disabled="currentPage >= totalPages || pending"
-                      class="p-2 rounded-lg bg-white/5 hover:bg-white/10 disabled:opacity-30 disabled:hover:bg-white/5 transition-all text-slate-400 hover:text-white">
-                <ChevronRightIcon class="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Empty State -->
-        <div v-if="!history?.length" class="flex flex-col items-center justify-center p-20 text-center space-y-4">
-          <div class="p-6 bg-slate-800/50 rounded-full border border-white/5">
-            <InboxIcon class="w-12 h-12 text-slate-600" />
-          </div>
-          <div>
-            <h3 class="text-slate-200 font-bold text-lg">Chưa có giao dịch</h3>
-            <p class="text-slate-500 max-w-xs text-sm">Các giao dịch nạp tiền của bạn sẽ xuất hiện tại đây.</p>
-          </div>
-        </div>
-      </template>
+    <!-- Pagination Controls -->
+    <div v-if="totalPages > 1" class="mt-8 pt-8 border-t border-slate-100 dark:border-white/5 flex items-center justify-between transition-colors">
+       <span class="text-[10px] text-slate-300 dark:text-white/20 uppercase font-bold tracking-widest transition-colors">Page {{ currentPage }} of {{ totalPages }}</span>
+       <div class="flex gap-2">
+          <button @click="prevPage" :disabled="currentPage <= 1" class="p-2 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:bg-slate-100 dark:hover:bg-white/10 disabled:opacity-20 transition-all">
+             <span class="material-symbols-outlined text-sm">chevron_left</span>
+          </button>
+          <button @click="nextPage" :disabled="currentPage >= totalPages" class="p-2 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:bg-slate-100 dark:hover:bg-white/10 disabled:opacity-20 transition-all">
+             <span class="material-symbols-outlined text-sm">chevron_right</span>
+          </button>
+       </div>
     </div>
   </div>
 </template>
 
-
 <script setup>
 import { ref, computed } from 'vue'
-import { 
-  ArrowDownLeftIcon, 
-  ArrowUpRightIcon, 
-  CheckCircleIcon, 
-  ClockIcon, 
-  XCircleIcon,
-  InboxIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon
-} from '@heroicons/vue/24/outline'
 
 const headers = useRequestHeaders(['cookie'])
-
-// Pagination states
 const currentPage = ref(1)
 const pageSize = ref(5)
 
-// Tự động gọi API lấy danh sách payments
-const { data: paymentsData, pending, error, refresh } = await useFetch('/api/partner/billing/payments/list', { 
+const { data: paymentsData, pending, refresh } = await useFetch('/api/partner/billing/payments/list', { 
   headers,
-  query: { 
-    page: currentPage,
-    page_size: pageSize
-  },
-  watch: [currentPage],
-  lazy: true
+  query: computed(() => ({ 
+    page: currentPage.value, 
+    page_size: pageSize.value 
+  })),
+  lazy: true,
+  server: false
 })
 
-const totalCount = computed(() => paymentsData.value?.count ?? 0)
+const totalCount = computed(() => {
+  const res = paymentsData.value
+  return res?.count ?? res?.data?.count ?? res?.total ?? res?.data?.total ?? 0
+})
 const totalPages = computed(() => Math.max(1, Math.ceil(totalCount.value / pageSize.value)))
 
-const prevPage = () => {
-  if (currentPage.value > 1) currentPage.value--
-}
-
-const nextPage = () => {
-  if (currentPage.value < totalPages.value) currentPage.value++
-}
+const prevPage = () => { if (currentPage.value > 1) currentPage.value-- }
+const nextPage = () => { if (currentPage.value < totalPages.value) currentPage.value++ }
 
 const history = computed(() => {
-  // Fix data mapping: API trả về kết quả trong results field
-  const rawList = paymentsData.value?.results ?? paymentsData.value?.data?.results ?? paymentsData.value?.data ?? []
+  const res = paymentsData.value
+  const rawList = res?.results ?? res?.data?.results ?? (Array.isArray(res?.data) ? res.data : (Array.isArray(res) ? res : []))
   
   if (!Array.isArray(rawList)) return []
+  
+  // If API doesn't support server-side pagination (returns all), we do it here
+  const displayList = (rawList.length > pageSize.value) 
+    ? rawList.slice((currentPage.value - 1) * pageSize.value, currentPage.value * pageSize.value)
+    : rawList
 
-  // Đảm bảo chỉ hiển thị tối đa 5 bản ghi trên một trang trong UI
-  return rawList.slice(0, 5).map(tx => {
-    // Xác định loại giao dịch
-    const isDeposit = true // Tạm thời mặc định là nạp tiền
-    
+  return displayList.map(tx => {
+    const { date, time } = formatDateTime(tx.created_at)
     return {
       id: tx.transaction_id || tx.id?.substring(0, 8) || '---',
-      isDeposit,
       tokenAmount: tx.token_amount || 0,
       amount: tx.amount || 0,
-      method: tx.payment_method || 'payos',
-      date: formatDate(tx.created_at),
+      method: tx.payment_method || 'PAYOS',
+      date: date,
+      time: time,
       status: tx.status?.toLowerCase() || 'pending'
     }
   })
 })
 
-// Utilities
-const formatNumber = (val) => {
-  if (val === undefined || val === null) return '0'
-  // Đảm bảo ép kiểu về số và làm tròn để tránh lỗi định dạng chuỗi từ backend
-  const num = Math.floor(Number(val))
-  return new Intl.NumberFormat('vi-VN').format(num)
-}
-const formatCurrency = (val) => {
-  if (val === undefined || val === null) return '0'
-  const num = Number(val)
-  return new Intl.NumberFormat('vi-VN').format(num)
-}
-
-const formatDate = (dateStr) => {
-  if (!dateStr) return '---'
-  const date = new Date(dateStr)
-  return new Intl.DateTimeFormat('vi-VN', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  }).format(date)
+const formatNumber = (val) => new Intl.NumberFormat('vi-VN').format(Math.floor(Number(val)))
+const formatCurrency = (val) => new Intl.NumberFormat('vi-VN').format(Number(val))
+const formatDateTime = (dateStr) => {
+  if (!dateStr) return { date: '---', time: '---' }
+  const d = new Date(dateStr)
+  return {
+    date: new Intl.DateTimeFormat('en-US', { day: '2-digit', month: 'short', year: 'numeric' }).format(d),
+    time: new Intl.DateTimeFormat('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }).format(d)
+  }
 }
 
 const getStatusStyles = (status) => {
-  switch (status) {
-    case 'success':
-    case 'completed':
-      return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.05)]'
-    case 'pending':
-      return 'bg-amber-500/10 text-amber-400 border-amber-500/20 shadow-[0_0_15px_rgba(245,158,11,0.05)]'
-    case 'failed':
-    case 'error':
-    case 'cancelled':
-      return 'bg-red-500/10 text-red-400 border-red-500/20'
-    default:
-      return 'bg-slate-500/10 text-slate-400 border-slate-500/20'
+  const isDark = typeof window !== 'undefined' && document.documentElement.classList.contains('dark')
+  if (status === 'success' || status === 'completed') {
+    return 'bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-500/20 shadow-sm dark:shadow-[0_0_15px_rgba(0,240,255,0.1)]'
   }
-}
-
-const getStatusIcon = (status) => {
-  switch (status) {
-    case 'success':
-    case 'completed':
-      return CheckCircleIcon
-    case 'pending':
-      return ClockIcon
-    case 'failed':
-    case 'error':
-    case 'cancelled':
-      return XCircleIcon
-    default:
-      return ClockIcon
-  }
+  return 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20'
 }
 
 const getStatusText = (status) => {
-  switch (status) {
-    case 'success':
-    case 'completed': return 'Thành công'
-    case 'pending': return 'Đang xử lý'
-    case 'failed': return 'Thất bại'
-    case 'cancelled': return 'Đã hủy'
-    default: return status
-  }
+  if (status === 'success' || status === 'completed') return 'Success'
+  if (status === 'pending') return 'Pending'
+  return status
 }
 </script>
+
+<style scoped>
+.custom-scrollbar::-webkit-scrollbar {
+  height: 4px;
+  width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(0, 240, 255, 0.1);
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 240, 255, 0.3);
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.custom-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: thin;  /* Firefox */
+  scrollbar-color: rgba(0, 240, 255, 0.1) transparent;
+}
+</style>

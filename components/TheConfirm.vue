@@ -9,35 +9,35 @@
   >
     <div v-if="confirmData" class="fixed inset-0 z-[10000] flex items-center justify-center p-4">
       <!-- Backdrop -->
-      <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" @click="confirmData.resolve(false)"></div>
+      <div class="absolute inset-0 bg-slate-900/60 dark:bg-black/80 backdrop-blur-sm transition-opacity" @click="confirmData.resolve(false)"></div>
 
       <!-- Modal Card -->
-      <div class="relative bg-white w-full max-w-[400px] rounded-3xl p-8 shadow-2xl border border-slate-100 overflow-hidden group">
+      <div class="relative bg-white dark:bg-[#1a1a1a] w-full max-w-[400px] rounded-3xl p-8 shadow-2xl border border-slate-100 dark:border-white/5 overflow-hidden group transition-colors duration-500">
         <!-- Decoration -->
-        <div class="absolute -top-12 -right-12 w-32 h-32 bg-indigo-50 rounded-full opacity-50 group-hover:scale-110 transition-transform"></div>
+        <div class="absolute -top-12 -right-12 w-32 h-32 bg-indigo-50 dark:bg-white/5 rounded-full opacity-50 group-hover:scale-110 transition-transform"></div>
 
         <div class="relative">
           <div class="flex items-center gap-4 mb-6">
-            <div class="flex-shrink-0 w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600 shadow-inner">
+            <div class="flex-shrink-0 w-12 h-12 rounded-2xl bg-slate-50 dark:bg-white/5 flex items-center justify-center text-indigo-600 dark:text-cyan-400 shadow-inner transition-colors">
               <QuestionMarkCircleIcon class="w-7 h-7" />
             </div>
-            <h3 class="text-xl font-bold text-slate-900 font-['Sora'] tracking-tight">Xác nhận</h3>
+            <h3 class="text-xl font-bold text-slate-900 dark:text-white font-['Space_Grotesk'] tracking-tight transition-colors">Xác nhận</h3>
           </div>
 
-          <p class="text-slate-600 text-sm leading-relaxed mb-8">
+          <p class="text-slate-600 dark:text-white/60 text-sm leading-relaxed mb-8 transition-colors">
             {{ confirmData.message }}
           </p>
 
           <div class="flex gap-3">
             <button 
               @click="confirmData.resolve(false)"
-              class="flex-1 py-3.5 bg-slate-50 hover:bg-slate-100 text-slate-500 rounded-2xl text-xs font-black uppercase tracking-widest transition-all active:scale-95"
+              class="flex-1 py-3.5 bg-slate-50 dark:bg-white/5 hover:bg-slate-100 dark:hover:bg-white/10 text-slate-500 dark:text-white/40 rounded-2xl text-xs font-black uppercase tracking-widest transition-all active:scale-95"
             >
               Hủy bỏ
             </button>
             <button 
               @click="confirmData.resolve(true)"
-              class="flex-1 py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl text-xs font-black uppercase tracking-widest transition-all shadow-lg shadow-indigo-100 active:scale-95"
+              class="flex-1 py-3.5 bg-indigo-600 dark:bg-cyan-500 hover:bg-indigo-700 dark:hover:bg-cyan-400 text-white dark:text-black rounded-2xl text-xs font-black uppercase tracking-widest transition-all shadow-lg dark:shadow-none active:scale-95"
             >
               Đồng ý
             </button>

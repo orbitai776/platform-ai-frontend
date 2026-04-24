@@ -11,7 +11,7 @@
       <div 
         v-for="toast in toasts" 
         :key="toast.id"
-        class="pointer-events-auto flex items-center gap-3 px-5 py-4 rounded-2xl shadow-2xl backdrop-blur-md border min-w-[300px] max-w-md group overflow-hidden"
+        class="pointer-events-auto flex items-center gap-3 px-5 py-4 rounded-2xl shadow-2xl backdrop-blur-md border min-w-[300px] max-w-md group overflow-hidden transition-all duration-500"
         :class="bgClasses[toast.type]"
       >
         <!-- Icon -->
@@ -21,7 +21,7 @@
 
         <!-- Content -->
         <div class="flex-1">
-          <p class="text-sm font-bold font-['Sora'] leading-tight" :class="textClasses[toast.type]">
+          <p class="text-sm font-bold font-['Inter'] leading-tight transition-colors" :class="textClasses[toast.type]">
             {{ toast.message }}
           </p>
         </div>
@@ -29,7 +29,7 @@
         <!-- Close Button -->
         <button 
           @click="removeToast(toast.id)"
-          class="flex-shrink-0 text-gray-400 hover:text-gray-600 transition-colors p-1"
+          class="flex-shrink-0 text-slate-400 dark:text-white/20 hover:text-slate-600 dark:hover:text-white transition-colors p-1"
         >
           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -52,24 +52,24 @@ import { CheckCircleIcon, XCircleIcon, InformationCircleIcon, ExclamationTriangl
 const { toasts, removeToast } = useToast()
 
 const bgClasses = {
-  success: 'bg-green-50/90 border-green-200/50 text-green-800',
-  error: 'bg-red-50/90 border-red-200/50 text-red-800',
-  info: 'bg-blue-50/90 border-blue-200/50 text-blue-800',
-  warning: 'bg-yellow-50/90 border-yellow-200/50 text-yellow-800'
+  success: 'bg-emerald-50/90 dark:bg-emerald-500/10 border-emerald-200/50 dark:border-emerald-500/20 text-emerald-800 dark:text-emerald-400',
+  error: 'bg-rose-50/90 dark:bg-rose-500/10 border-rose-200/50 dark:border-rose-500/20 text-rose-800 dark:text-rose-400',
+  info: 'bg-indigo-50/90 dark:bg-indigo-500/10 border-indigo-200/50 dark:border-indigo-500/20 text-indigo-800 dark:text-indigo-400',
+  warning: 'bg-amber-50/90 dark:bg-amber-500/10 border-amber-200/50 dark:border-amber-500/20 text-amber-800 dark:text-amber-400'
 }
 
 const iconClasses = {
-  success: 'text-green-500',
-  error: 'text-red-500',
-  info: 'text-blue-500',
-  warning: 'text-yellow-500'
+  success: 'text-emerald-500 dark:text-emerald-400',
+  error: 'text-rose-500 dark:text-rose-400',
+  info: 'text-indigo-500 dark:text-indigo-400',
+  warning: 'text-amber-500 dark:text-amber-400'
 }
 
 const textClasses = {
-  success: 'text-green-900',
-  error: 'text-red-900',
-  info: 'text-blue-900',
-  warning: 'text-yellow-900'
+  success: 'text-emerald-900 dark:text-emerald-300',
+  error: 'text-rose-900 dark:text-rose-300',
+  info: 'text-indigo-900 dark:text-indigo-300',
+  warning: 'text-amber-900 dark:text-amber-300'
 }
 
 const icons = {

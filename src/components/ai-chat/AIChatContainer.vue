@@ -11,22 +11,22 @@
       >
         <div
           v-if="isOpen"
-          class="chat-shell relative flex h-[calc(100vh-6.5rem)] max-h-[550px] w-full flex-col overflow-hidden rounded-[28px] border border-white/70 bg-white/90 shadow-[0_30px_90px_rgba(15,23,42,0.18)] backdrop-blur-xl sm:h-[550px]"
+          class="chat-shell relative flex h-[calc(100vh-6.5rem)] max-h-[550px] w-full flex-col overflow-hidden rounded-[28px] border border-slate-200 dark:border-white/10 bg-white/90 dark:bg-slate-900/95 shadow-[0_30px_90px_rgba(15,23,42,0.18)] backdrop-blur-xl sm:h-[550px]"
           style="isolation: isolate;"
         >
           <div class="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(14,165,233,0.18),transparent_34%),radial-gradient(circle_at_bottom_left,rgba(15,23,42,0.08),transparent_40%)]"></div>
 
           <!-- Slim Header -->
-          <div class="relative border-b border-slate-200/50 bg-white/80 px-4 py-2.5 backdrop-blur-xl">
+          <div class="relative border-b border-slate-200/50 dark:border-white/5 bg-white/80 dark:bg-slate-900/80 px-4 py-2.5 backdrop-blur-xl">
             <div class="flex items-center justify-between gap-4">
               <div class="flex items-center gap-2.5 min-w-0">
-                <div class="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-slate-900 text-white shadow-sm">
+                <div class="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-slate-900 dark:bg-neon-cyan text-white dark:text-slate-900 shadow-sm">
                   <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
                   </svg>
                 </div>
                 <div class="flex items-center gap-2 truncate">
-                  <h2 class="text-[14px] font-bold text-slate-900 truncate">Chat hỗ trợ</h2>
+                  <h2 class="text-[14px] font-bold text-slate-900 dark:text-white truncate">Chat hỗ trợ</h2>
                   <span class="flex h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></span>
                 </div>
               </div>
@@ -207,7 +207,7 @@
 
       <!-- Floating Button -->
       <button
-        class="group flex items-center gap-2.5 rounded-full bg-slate-900/95 px-3.5 py-2 text-white shadow-[0_20px_60px_rgba(15,23,42,0.28)] ring-1 ring-white/10 backdrop-blur-xl transition hover:-translate-y-0.5 hover:bg-slate-950"
+        class="group flex items-center gap-2.5 rounded-full bg-slate-900/95 dark:bg-neon-cyan px-3.5 py-2 text-white dark:text-slate-900 shadow-[0_20px_60px_rgba(0,240,255,0.2)] ring-1 ring-white/10 backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:scale-105 active:scale-95"
         @click="isOpen = !isOpen"
       >
         <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/10 ring-1 ring-white/15">
@@ -219,8 +219,8 @@
           </svg>
         </span>
         <div class="flex flex-col text-left leading-none">
-          <div class="mb-0.5 text-[9px] font-bold uppercase tracking-[0.08em] text-slate-400/80">AI Chat</div>
-          <div class="text-[12px] font-bold tracking-tight text-white">{{ isOpen ? 'Thu gọn' : 'Chat ngay' }}</div>
+          <div class="mb-0.5 text-[9px] font-bold uppercase tracking-[0.08em] text-slate-400/80 dark:text-slate-900/60">AI Chat</div>
+          <div class="text-[12px] font-bold tracking-tight">{{ isOpen ? 'Thu gọn' : 'Chat ngay' }}</div>
         </div>
       </button>
     </div>

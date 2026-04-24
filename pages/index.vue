@@ -1,210 +1,255 @@
 <template>
-  <div class="font-['DM_Sans'] bg-[#f5f2ec] text-[#0d0d12] overflow-x-hidden">
+  <div class="font-body text-slate-900 dark:text-on-background bg-white dark:bg-[#09090B] min-h-screen selection:bg-neon-cyan/30 selection:text-white overflow-x-hidden relative transition-colors duration-500">
+    
+    <!-- Noise Texture Overlay -->
+    <div class="fixed inset-0 pointer-events-none z-[100] opacity-[0.03] mix-blend-overlay">
+      <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+        <filter id="noiseFilter">
+          <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch"/>
+        </filter>
+        <rect width="100%" height="100%" filter="url(#noiseFilter)"/>
+      </svg>
+    </div>
 
-    <section class="max-w-[1280px] mx-auto px-8 pt-20 pb-12 grid grid-cols-1 md:grid-cols-2 gap-16 items-center relative z-[1]">
-      <div>
-        <div class="inline-flex items-center gap-2 text-[0.7rem] font-semibold tracking-[0.15em] uppercase text-[#e8604c] mb-6 before:content-[''] before:block before:w-5 before:h-px before:bg-[#e8604c]">
-          Showcase
+    <!-- Global Background Grid -->
+    <div class="fixed inset-0 pointer-events-none opacity-[0.03] z-0" style="background-image: radial-gradient(circle, currentColor 1px, transparent 1px); background-size: 40px 40px;"></div>
+
+    <!-- Nebula Effects -->
+    <div class="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+      <div class="absolute top-[-10%] left-[-10%] w-[80vw] h-[80vw] bg-neon-cyan/10 dark:bg-neon-cyan/20 rounded-full blur-[180px] animate-nebula-1 mix-blend-screen dark:mix-blend-screen"></div>
+      <div class="absolute bottom-[-10%] right-[-10%] w-[70vw] h-[70vw] bg-deep-purple/10 dark:bg-deep-purple/20 rounded-full blur-[180px] animate-nebula-2 mix-blend-screen dark:mix-blend-screen"></div>
+    </div>
+
+    <!-- Shooting Stars -->
+    <div class="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+      <div v-for="n in 8" :key="`star-${n}`" 
+        class="shooting-star opacity-0 dark:opacity-100"
+        :style="{
+          left: `${Math.random() * 80 + 10}%`,
+          top: `${Math.random() * 40}%`,
+          animationDelay: `${Math.random() * 15}s`,
+          animationDuration: `${2.5 + Math.random() * 2}s`
+        }"
+      ></div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="relative z-10">
+      
+      <!-- Hero Section -->
+      <section class="relative max-w-container-max mx-auto px-8 pt-32 pb-24 flex flex-col items-center text-center">
+        <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 backdrop-blur-md mb-8 animate-fade-in">
+          <span class="w-2 h-2 rounded-full bg-neon-cyan animate-pulse shadow-[0_0_8px_#00f0ff]"></span>
+          <span class="font-display text-[0.7rem] font-bold text-neon-cyan uppercase tracking-widest">Orbit V4 Engine Live</span>
         </div>
-        <h1 class="font-['Sora'] text-[clamp(2.5rem,5vw,3.5rem)] font-extrabold leading-[1.05] tracking-[-0.03em] mb-6">
-          AI thực chiến<br/>cho ngành <em class="not-italic text-[#6c4de6]">du lịch</em>
-        </h1>
-        <p class="text-[#555] text-base leading-[1.7] max-w-[480px]">
-          Hệ thống AI Chat đa dịch vụ cho Tour, Villa & kho hàng du lịch — tư vấn 24/7, tích hợp đơn giản, vận hành không cần kỹ thuật.
+
+        <div class="relative mb-8">
+          <div class="absolute inset-0 bg-neon-cyan/20 blur-[60px] animate-pulse"></div>
+          <h1 class="relative font-display text-[clamp(2.5rem,6vw,4.5rem)] font-bold leading-[1.1] tracking-tight text-slate-900 dark:text-white max-w-4xl transition-all duration-500">
+            Intelligence <br/>
+            <span class="inline-block bg-gradient-to-r from-neon-cyan via-slate-400 dark:via-white to-deep-purple bg-clip-text text-transparent animate-shimmer" style="-webkit-text-fill-color: transparent;">Engineered for Infinity</span>
+          </h1>
+        </div>
+
+        <p class="text-slate-600 dark:text-on-surface-variant text-lg md:text-xl leading-relaxed max-w-2xl mb-12 animate-fade-in delay-200 transition-colors">
+          Deploy sentient-grade models with zero-latency inference. Orbit AI redefines computational boundaries for enterprises demanding absolute precision and unprecedented power.
         </p>
-        <div class="flex gap-3 flex-wrap mt-8">
-          <span v-for="badge in badges" :key="badge.text" class="flex items-center gap-1 font-['Sora'] text-[0.75rem] font-semibold text-[#555] bg-white px-[0.85rem] py-[0.4rem] rounded-full border border-[rgba(13,13,18,0.12)]">
-            <span class="text-[0.85rem]">{{ badge.icon }}</span>{{ badge.text }}
-          </span>
-        </div>
-      </div>
 
-      <div class="relative h-[320px] md:h-[320px] h-[200px]">
-        <div class="absolute inset-0 flex flex-wrap items-center justify-center gap-3">
-          <span v-for="(tag, i) in floatingTags" :key="i"
-            class="px-4 py-2 rounded-full text-[0.8rem] font-medium font-['Sora'] shadow-[0_4px_20px_rgba(0,0,0,0.08)]"
-            :style="{ background: tag.bg, color: tag.color, border: `1.5px solid ${tag.border}`, animationDelay: tag.delay, animation: 'floatTag 4s ease-in-out infinite' }"
-          >
-            {{ tag.label }}
-          </span>
-        </div>
-      </div>
-    </section>
-
-    <div class="max-w-[1280px] mx-auto mb-12 px-8 relative z-[1]">
-
-      <div class="flex border-b-2 border-[rgba(13,13,18,0.12)] mb-8">
-        <button
-          v-for="tab in tabs" :key="tab.id"
-          @click="activeTab = tab.id"
-          class="px-6 py-3 font-['Sora'] text-[0.8rem] font-bold tracking-[0.06em] uppercase border-none bg-none cursor-pointer border-b-2 -mb-[2px] transition-all duration-200"
-          :class="activeTab === tab.id ? 'text-[#0d0d12] border-[#6c4de6]' : 'text-[#aaa] border-transparent hover:text-[#555]'"
-        >
-          {{ tab.label }}
-        </button>
-      </div>
-
-      <div v-if="activeTab === 'public'">
-        <div class="flex gap-2 flex-wrap mb-6">
-          <button
-            v-for="f in filters" :key="f.value"
-            @click="activeFilter = f.value"
-            class="px-4 py-[0.4rem] border-[1.5px] rounded-full text-[0.8rem] cursor-pointer transition-all duration-200"
-            :class="activeFilter === f.value ? 'bg-[#0d0d12] border-[#0d0d12] text-white' : 'bg-transparent border-[rgba(13,13,18,0.15)] text-[#555] hover:bg-[#0d0d12] hover:border-[#0d0d12] hover:text-white'"
-          >
-            {{ f.label }}
+        <div class="flex flex-col sm:flex-row gap-6 items-center mb-20 animate-fade-in delay-300">
+          <button class="relative group bg-gradient-to-r from-neon-cyan to-deep-purple text-white px-10 py-4 rounded-full font-display text-sm font-bold tracking-widest uppercase shadow-[0_0_20px_rgba(0,240,255,0.3)] transition-all duration-300 hover:scale-105 active:scale-95 overflow-hidden">
+            <span class="relative z-10">Start Free Trial</span>
+            <div class="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 skew-x-12"></div>
+          </button>
+          <button class="text-slate-700 dark:text-on-surface hover:text-neon-cyan dark:hover:text-neon-cyan font-display text-sm font-bold tracking-widest uppercase transition-colors flex items-center gap-2 group transition-colors">
+            View Documentation
+            <span class="material-symbols-outlined text-sm group-hover:translate-x-1 transition-transform">arrow_forward</span>
           </button>
         </div>
 
-        <div v-if="loading" class="py-12 text-center text-[#555] font-['Sora'] flex justify-center items-center gap-3">
-          <svg class="animate-spin h-5 w-5 text-[#6c4de6]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-          Đang tải danh sách dịch vụ AI...
+        <!-- Impeccable Hero Visual -->
+        <div class="w-full relative max-w-[1100px] mx-auto mb-32 group">
+          <div class="absolute -top-[20%] -left-[10%] w-[60%] h-[60%] bg-neon-cyan/5 dark:bg-neon-cyan/15 rounded-full blur-[140px] animate-pulse pointer-events-none"></div>
+          <div class="absolute -bottom-[20%] -right-[10%] w-[60%] h-[60%] bg-deep-purple/5 dark:bg-deep-purple/15 rounded-full blur-[140px] animate-pulse pointer-events-none" style="animation-delay: 2s;"></div>
+
+          <div class="relative rounded-3xl border border-slate-200 dark:border-white/10 overflow-hidden shadow-2xl transition-all duration-700 group-hover:border-neon-cyan/30 min-h-[300px] md:min-h-[500px]">
+            <div class="absolute inset-0 flex items-center justify-center overflow-hidden bg-slate-900">
+              <img 
+                src="/ai_neural_core.png" 
+                alt="AI Neural Core" 
+                class="w-full h-full object-cover opacity-100 transition-transform duration-[15s] ease-out scale-110 group-hover:scale-105"
+              />
+              <div class="absolute inset-0 bg-gradient-to-b from-transparent via-neon-cyan/10 to-transparent h-[10%] w-full animate-scan pointer-events-none"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Bento Grid Features Section -->
+      <section class="max-w-container-max mx-auto px-8 py-32 relative">
+        <div class="mb-20 text-center">
+          <h2 class="font-display text-4xl font-bold text-slate-900 dark:text-white mb-6 transition-colors duration-500">Architected for the Bleeding Edge</h2>
+          <p class="text-slate-600 dark:text-on-surface-variant max-w-2xl mx-auto transition-colors">Our glass-box infrastructure provides unparalleled transparency without compromising on the staggering velocity of our inference engines.</p>
         </div>
 
-        <div v-else class="grid grid-cols-1 md:grid-cols-3 gap-[1.5px] bg-[rgba(13,13,18,0.12)] border-[1.5px] border-[rgba(13,13,18,0.12)] rounded-xl overflow-hidden">
-          <div
-            v-for="card in filteredCards" :key="card.id"
-            class="bg-[#f5f2ec] p-8 cursor-pointer relative overflow-hidden flex flex-col gap-4 transition-colors duration-200 hover:bg-white"
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-6 auto-rows-[320px]">
+          <!-- Large Card -->
+          <div class="card-glow md:col-span-8 md:row-span-2 rounded-3xl bg-white dark:bg-white/5 backdrop-blur-2xl border border-slate-200 dark:border-white/10 shadow-xl dark:shadow-none transition-all duration-300 p-12 relative overflow-hidden group flex flex-col justify-between">
+            <div class="absolute top-0 right-0 w-80 h-80 bg-neon-cyan/5 rounded-full blur-[100px] -z-10 group-hover:bg-neon-cyan/10 transition-colors"></div>
+            <div>
+              <div class="w-16 h-16 rounded-2xl bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/10 flex items-center justify-center mb-8 group-hover:scale-110 group-hover:rotate-6 transition-all duration-500">
+                <span class="material-symbols-outlined text-neon-cyan text-4xl group-hover:drop-shadow-[0_0_8px_#00f0ff]" style="font-variation-settings: 'FILL' 1">hub</span>
+              </div>
+              <h3 class="font-display text-3xl font-bold text-slate-900 dark:text-white mb-6 transition-colors">Neural Architecture Search</h3>
+              <p class="text-slate-600 dark:text-on-surface-variant text-lg max-w-md transition-colors">Automatically design optimal model architectures tailored to specific hardware constraints. Our evolutionary algorithms evolve topological structures in real-time.</p>
+            </div>
+            <div class="flex gap-3">
+              <span class="px-4 py-1.5 rounded-full bg-deep-purple/10 dark:bg-deep-purple/20 text-deep-purple dark:text-neon-cyan font-display text-[0.6rem] font-bold uppercase tracking-widest border border-deep-purple/20 transition-colors">AutoML</span>
+              <span class="px-4 py-1.5 rounded-full bg-deep-purple/10 dark:bg-deep-purple/20 text-deep-purple dark:text-neon-cyan font-display text-[0.6rem] font-bold uppercase tracking-widest border border-deep-purple/20 transition-colors">Topology Optimization</span>
+            </div>
+          </div>
+
+          <!-- Small Cards -->
+          <div v-for="(feat, i) in smallFeatures" :key="i" class="card-glow md:col-span-4 rounded-3xl bg-white dark:bg-white/5 backdrop-blur-2xl border border-slate-200 dark:border-white/10 shadow-xl dark:shadow-none transition-all duration-300 p-8 relative overflow-hidden group hover:border-neon-cyan/30 transition-all">
+            <div class="w-12 h-12 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-all duration-500">
+              <span class="material-symbols-outlined text-neon-cyan text-2xl group-hover:drop-shadow-[0_0_8px_#00f0ff]" style="font-variation-settings: 'FILL' 1">{{ feat.icon }}</span>
+            </div>
+            <h3 class="font-display text-xl font-bold text-slate-900 dark:text-white mb-4 group-hover:text-neon-cyan transition-colors">{{ feat.title }}</h3>
+            <p class="text-sm text-slate-500 dark:text-on-surface-variant leading-relaxed transition-colors">{{ feat.desc }}</p>
+          </div>
+
+          <!-- Wide Card -->
+          <div class="card-glow md:col-span-12 rounded-3xl bg-white dark:bg-white/5 backdrop-blur-2xl border border-slate-200 dark:border-white/10 shadow-xl dark:shadow-none transition-all duration-300 p-12 relative overflow-hidden group flex flex-col md:flex-row items-center gap-12 hover:bg-slate-50 dark:hover:bg-white/[0.05] transition-all">
+            <div class="flex-1">
+              <div class="w-16 h-16 rounded-2xl bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/10 flex items-center justify-center mb-8 group-hover:scale-110 group-hover:-rotate-6 transition-all duration-500">
+                <span class="material-symbols-outlined text-deep-purple text-4xl group-hover:drop-shadow-[0_0_8px_#7701d0]" style="font-variation-settings: 'FILL' 1">insights</span>
+              </div>
+              <h3 class="font-display text-3xl font-bold text-slate-900 dark:text-white mb-6 transition-colors">Real-time Interpretability</h3>
+              <p class="text-slate-600 dark:text-on-surface-variant text-lg transition-colors">Demystify the black box. Observe decision pathways, feature importance matrices, and attention maps streaming live.</p>
+            </div>
+            <div class="w-full md:w-1/2 h-48 bg-slate-50 dark:bg-black/40 border border-slate-200 dark:border-white/10 rounded-2xl flex items-center justify-center relative overflow-hidden">
+              <div class="absolute inset-0 opacity-[0.03] dark:opacity-10" style="background-image: linear-gradient(currentColor 1px, transparent 1px), linear-gradient(90deg, currentColor 1px, transparent 1px); background-size: 20px 20px;"></div>
+              <div class="w-3/4 h-2/3 flex items-end gap-3 px-8">
+                <div v-for="(h, i) in [90, 60, 80, 40, 95]" :key="i" 
+                  class="flex-1 rounded-t-lg transition-all duration-1000 shadow-[0_0_15px_rgba(0,240,255,0.3)]"
+                  :class="i % 2 === 0 ? 'bg-deep-purple' : 'bg-neon-cyan'"
+                  :style="{ height: `${h}%` }">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Dashboard Tabs Section -->
+      <section class="max-w-container-max mx-auto px-8 pb-32">
+        <h2 class="font-display text-center text-xs font-bold tracking-[0.4em] uppercase text-slate-400 dark:text-white/20 mb-12 transition-colors">Interactive Platform Control</h2>
+        
+        <!-- Glassmorphic Tabs -->
+        <div class="flex flex-wrap gap-2 p-1.5 bg-slate-100 dark:bg-white/5 backdrop-blur-xl border border-slate-200 dark:border-white/10 rounded-2xl mb-12 max-w-fit mx-auto transition-colors">
+          <button
+            v-for="tab in tabs" :key="tab.id"
+            @click="activeTab = tab.id"
+            class="px-6 py-3 font-display text-xs font-bold tracking-widest uppercase rounded-xl transition-all duration-300"
+            :class="activeTab === tab.id ? 'bg-white dark:bg-white/10 text-slate-900 dark:text-white shadow-xl ring-1 ring-slate-200 dark:ring-white/10' : 'text-slate-500 dark:text-white/40 hover:text-slate-900 dark:hover:text-white/70 hover:bg-white dark:hover:bg-white/5'"
           >
-            <div class="w-full h-40 rounded-md overflow-hidden relative bg-[#e0ddd6]">
-              <img :src="card.image" :alt="card.title" class="w-full h-full object-cover transition-transform duration-300 grayscale-[20%] hover:scale-[1.04] hover:grayscale-0" />
-              <span class="absolute top-3 right-3 font-['Sora'] text-[0.65rem] font-bold tracking-[0.1em] text-white bg-[rgba(13,13,18,0.6)] px-2 py-[0.2rem] rounded backdrop-blur-sm">{{ card.num }}</span>
-            </div>
-            <div class="flex gap-1 flex-wrap">
-              <span v-for="tag in card.tags" :key="tag.label" class="px-[0.6rem] py-[0.2rem] rounded-[3px] text-[0.65rem] font-bold font-['Sora'] tracking-[0.05em] uppercase" :class="tag.class">{{ tag.label }}</span>
-            </div>
-            <h3 class="font-['Sora'] text-base font-bold leading-[1.3] text-[#0d0d12] tracking-[-0.01em]">{{ card.title }}</h3>
-            <p class="text-[0.825rem] leading-[1.65] text-[#6b6b70] flex-1">{{ card.desc }}</p>
-            <ul class="list-none m-0 p-0 flex flex-col gap-[0.3rem]">
-              <li v-for="feat in card.features" :key="feat" class="text-[0.78rem] text-[#6b6b70] flex items-start gap-1 before:content-['→'] before:text-[#6c4de6] before:text-[0.7rem] before:mt-[0.05rem] before:shrink-0">
-                {{ feat }}
-              </li>
-            </ul>
-            <div class="flex items-center justify-between pt-3 border-t border-[rgba(13,13,18,0.08)]">
-              <button 
-                @click="handleDemoClick(card.id)"
-                class="inline-flex items-center gap-1 font-['Sora'] text-[0.75rem] font-bold tracking-[0.06em] uppercase text-[#6c4de6] bg-none border-none cursor-pointer p-0 transition-all duration-200 hover:gap-3"
-              >
-                Demo ngay
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-              </button>
-            </div>
-          </div>
+            {{ tab.label }}
+          </button>
         </div>
 
-        <div class="mt-8">
-          <div class="font-['Sora'] text-[0.7rem] font-bold tracking-[0.12em] uppercase text-[#aaa] mb-4">Tính năng public portal</div>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-[1px] bg-[rgba(13,13,18,0.1)] rounded-[10px] overflow-hidden border border-[rgba(13,13,18,0.1)]">
-            <div v-for="feat in publicFeatures" :key="feat.title" class="bg-[#f5f2ec] p-6 flex gap-4 transition-colors duration-200 hover:bg-white">
-              <div class="w-9 h-9 rounded-lg flex items-center justify-center shrink-0 text-base" :class="feat.iconBg">{{ feat.icon }}</div>
-              <div>
-                <div class="font-['Sora'] text-[0.875rem] font-bold mb-1 text-[#0d0d12]">{{ feat.title }}</div>
-                <div class="text-[0.78rem] text-[#6b6b70] leading-[1.55]">{{ feat.desc }}</div>
-              </div>
-            </div>
+        <!-- Services Grid -->
+        <div v-if="activeTab === 'public'" class="space-y-12">
+          <div class="flex gap-3 flex-wrap justify-center mb-8">
+            <button
+              v-for="f in filters" :key="f.value"
+              @click="activeFilter = f.value"
+              class="px-5 py-2 rounded-full text-xs font-bold font-display tracking-widest uppercase border transition-all duration-300"
+              :class="activeFilter === f.value ? 'bg-neon-cyan border-neon-cyan text-slate-900 shadow-[0_0_15px_rgba(0,240,255,0.4)]' : 'bg-transparent border-slate-200 dark:border-white/10 text-slate-500 dark:text-white/60 hover:border-neon-cyan/50 hover:text-neon-cyan'"
+            >
+              {{ f.label }}
+            </button>
           </div>
-        </div>
-      </div>
 
-      <div v-if="activeTab === 'partner'">
-        <div class="grid grid-cols-1 lg:grid-cols-[220px_1fr] gap-8">
-          <div class="bg-[#0d0d12] rounded-lg p-5 lg:sticky lg:top-20 h-fit">
-            <div v-for="section in partnerMenu" :key="section.label" class="mb-6">
-              <div class="font-['Sora'] text-[0.6rem] font-bold tracking-[0.15em] uppercase text-white/35 mb-2 px-2">{{ section.label }}</div>
-              <button v-for="item in section.items" :key="item" class="flex items-center gap-2 px-3 py-2 rounded-[5px] cursor-pointer text-[0.82rem] text-white/65 transition-all duration-200 hover:bg-white/10 hover:text-white w-full text-left border-none bg-none">
-                {{ item }}
-              </button>
-            </div>
+          <div v-if="loading" class="py-24 text-center">
+            <div class="inline-block animate-spin w-8 h-8 border-4 border-neon-cyan/20 border-t-neon-cyan rounded-full mb-4"></div>
+            <p class="font-display text-sm tracking-widest text-slate-400 dark:text-white/40 transition-colors">ĐANG TẢI HỆ THỐNG...</p>
           </div>
-          <div>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-              <div v-for="stat in partnerStats" :key="stat.label" class="bg-white border border-[rgba(13,13,18,0.1)] rounded-lg p-5 flex flex-col gap-1">
-                <div class="font-['Sora'] text-[0.72rem] text-[#999] tracking-[0.05em] uppercase">{{ stat.label }}</div>
-                <div class="font-['Sora'] text-[1.75rem] font-extrabold text-[#0d0d12] leading-none">{{ stat.value }}</div>
-                <div class="text-[0.72rem] font-semibold" :class="stat.down ? 'text-[#e8604c]' : 'text-[#0f6e56]'">{{ stat.change }}</div>
-              </div>
-            </div>
-            <div class="bg-white border border-[rgba(13,13,18,0.1)] rounded-lg p-5 mb-4">
-              <div class="font-['Sora'] text-[0.8rem] font-bold text-[#0d0d12] mb-4">Cài đặt dịch vụ AI — Tour du lịch</div>
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div v-for="item in partnerSettings" :key="item.label">
-                  <div class="text-[0.72rem] text-[#aaa] uppercase tracking-[0.06em] mb-1 font-['Sora']">{{ item.label }}</div>
-                  <div class="bg-[#f5f2ec] rounded-md px-3 py-2 text-[0.82rem]">{{ item.value }}</div>
+
+          <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div
+              v-for="card in filteredCards" :key="card.id"
+              class="card-glow group relative bg-white/40 dark:bg-white/[0.03] backdrop-blur-3xl border border-slate-200 dark:border-white/10 shadow-2xl dark:shadow-none transition-all duration-700 rounded-[2.5rem] p-10 overflow-hidden hover:border-neon-cyan/40 hover:bg-white/60 dark:hover:bg-white/[0.07] hover:-translate-y-2 flex flex-col"
+            >
+              <!-- Internal Ambient Glow -->
+              <div class="absolute -top-20 -right-20 w-40 h-40 bg-neon-cyan/5 dark:bg-neon-cyan/10 rounded-full blur-[60px] group-hover:bg-neon-cyan/20 transition-colors duration-700"></div>
+              <div class="absolute -bottom-20 -left-20 w-40 h-40 bg-deep-purple/5 dark:bg-deep-purple/10 rounded-full blur-[60px] group-hover:bg-deep-purple/20 transition-colors duration-700"></div>
+              
+              <div class="relative z-10 flex flex-col h-full">
+                <!-- Icon Header -->
+                <div class="w-16 h-16 rounded-2xl bg-slate-50/50 dark:bg-white/5 border border-slate-200/50 dark:border-white/10 flex items-center justify-center mb-8 group-hover:scale-110 group-hover:rotate-3 transition-all duration-500 shadow-sm">
+                  <span class="material-symbols-outlined text-neon-cyan text-4xl group-hover:drop-shadow-[0_0_12px_#00f0ff]" style="font-variation-settings: 'FILL' 1">{{ card.icon }}</span>
                 </div>
-              </div>
-            </div>
-            <div class="bg-white border border-[rgba(13,13,18,0.1)] rounded-lg p-5">
-              <div class="font-['Sora'] text-[0.8rem] font-bold text-[#0d0d12] mb-4">Nhúng chat — Embed code</div>
-              <div class="bg-[#0d0d12] rounded-md p-4 mb-3">
-                <code class="text-[0.72rem] text-[#5dcaa5] font-mono leading-[1.8] whitespace-pre-wrap">&lt;script src="https://travelai.vn/embed.js"
-  data-org="your-org-id"
-  data-service="tour"
-  data-lang="vi"&gt;
-&lt;/script&gt;</code>
-              </div>
-              <div class="flex gap-2">
-                <button class="inline-flex items-center gap-1 font-['Sora'] text-[0.75rem] font-bold tracking-[0.06em] uppercase text-[#6c4de6] border border-[rgba(108,77,230,0.3)] px-[0.85rem] py-[0.4rem] rounded cursor-pointer bg-none transition-all hover:gap-3">Sao chép code →</button>
-                <button class="inline-flex items-center gap-1 font-['Sora'] text-[0.75rem] font-bold tracking-[0.06em] uppercase text-[#e8604c] border border-[rgba(232,96,76,0.3)] px-[0.85rem] py-[0.4rem] rounded cursor-pointer bg-none transition-all hover:gap-3">Xem sub-page →</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
 
-      <div v-if="activeTab === 'admin'">
-        <div class="grid grid-cols-1 lg:grid-cols-[220px_1fr] gap-8">
-          <div class="bg-[#0d0d12] rounded-lg p-5 lg:sticky lg:top-20 h-fit">
-            <div v-for="section in adminMenu" :key="section.label" class="mb-6">
-              <div class="font-['Sora'] text-[0.6rem] font-bold tracking-[0.15em] uppercase text-white/35 mb-2 px-2">{{ section.label }}</div>
-              <button v-for="item in section.items" :key="item" class="flex items-center gap-2 px-3 py-2 rounded-[5px] cursor-pointer text-[0.82rem] text-white/65 transition-all duration-200 hover:bg-white/10 hover:text-white w-full text-left border-none bg-none">
-                {{ item }}
-              </button>
-            </div>
-          </div>
-          <div>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-              <div v-for="stat in adminStats" :key="stat.label" class="bg-white border border-[rgba(13,13,18,0.1)] rounded-lg p-5 flex flex-col gap-1">
-                <div class="font-['Sora'] text-[0.72rem] text-[#999] tracking-[0.05em] uppercase">{{ stat.label }}</div>
-                <div class="font-['Sora'] text-[1.75rem] font-extrabold text-[#0d0d12] leading-none">{{ stat.value }}</div>
-                <div class="text-[0.72rem] font-semibold" :class="stat.down ? 'text-[#e8604c]' : 'text-[#0f6e56]'">{{ stat.change }}</div>
-              </div>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-[2fr_1fr] gap-4">
-              <div class="bg-white border border-[rgba(13,13,18,0.1)] rounded-lg p-5">
-                <div class="font-['Sora'] text-[0.8rem] font-bold text-[#0d0d12] mb-4">Phân bổ dịch vụ theo loại</div>
-                <div v-for="row in serviceRows" :key="row.name" class="flex items-center gap-3 py-2 border-b border-[rgba(13,13,18,0.06)] last:border-0">
-                  <div class="w-2 h-2 rounded-full shrink-0" :style="{ background: row.color }"></div>
-                  <div class="text-[0.8rem] flex-1">{{ row.name }}</div>
-                  <div class="w-20 h-1 bg-[rgba(13,13,18,0.08)] rounded-sm overflow-hidden">
-                    <div class="h-full rounded-sm" :style="{ width: row.pct, background: row.color }"></div>
+                <div class="flex justify-between items-start mb-6">
+                  <div class="flex gap-2">
+                    <span v-for="tag in card.tags" :key="tag.label" 
+                      class="px-3 py-1 rounded-full text-[0.6rem] font-bold font-display tracking-widest uppercase border transition-colors duration-300"
+                      :class="tag.class"
+                    >
+                      {{ tag.label }}
+                    </span>
                   </div>
-                  <div class="text-[0.75rem] font-['Sora'] font-semibold text-[#555] min-w-[40px] text-right">{{ row.pct }}</div>
+                  <span class="font-display text-xs font-bold text-slate-300 dark:text-white/20 tracking-widest group-hover:text-neon-cyan transition-colors">{{ card.num }}</span>
                 </div>
-              </div>
-              <div class="bg-white border border-[rgba(13,13,18,0.1)] rounded-lg p-5">
-                <div class="font-['Sora'] text-[0.8rem] font-bold text-[#0d0d12] mb-4">Nhật ký gần đây</div>
-                <div class="flex flex-col gap-3">
-                  <div v-for="log in adminLogs" :key="log.title" class="text-[0.75rem] border-b border-[rgba(13,13,18,0.06)] pb-2 last:border-0">
-                    <div class="font-semibold" :style="{ color: log.color }">{{ log.title }}</div>
-                    <div class="text-[#999]">{{ log.desc }}</div>
-                    <div class="text-[#bbb] text-[0.68rem]">{{ log.time }}</div>
+
+                <h3 class="font-display text-2xl font-bold text-slate-900 dark:text-white mb-4 group-hover:text-neon-cyan transition-colors leading-tight">{{ card.title }}</h3>
+                <p class="text-sm text-slate-500 dark:text-on-surface-variant leading-relaxed mb-8 flex-1 transition-colors">{{ card.desc }}</p>
+
+                <div class="space-y-3 mb-10">
+                  <div v-for="feat in card.features" :key="feat" class="flex items-center gap-3 text-xs font-medium text-slate-500 dark:text-on-surface-variant/70 transition-colors">
+                    <span class="w-1.5 h-1.5 rounded-full bg-neon-cyan shadow-[0_0_8px_#00f0ff]"></span>
+                    {{ feat }}
                   </div>
                 </div>
+
+                <button 
+                  @click="handleDemoClick(card.id)"
+                  class="relative group/btn w-full py-4 rounded-2xl bg-slate-900 dark:bg-white text-white dark:text-black font-display text-[0.7rem] font-black tracking-widest uppercase overflow-hidden transition-all duration-300 hover:scale-[1.02] active:scale-95 shadow-xl dark:shadow-none"
+                >
+                  <span class="relative z-10">Kích hoạt Assistant</span>
+                  <div class="absolute inset-0 bg-gradient-to-r from-neon-cyan to-deep-purple opacity-0 group-hover/btn:opacity-100 transition-opacity duration-500"></div>
+                </button>
               </div>
             </div>
           </div>
         </div>
-      </div>
+      </section>
+    </main>
 
-    </div>
+    <!-- Footer -->
+    <footer class="relative z-10 border-t border-slate-100 dark:border-white/5 py-12 bg-white/80 dark:bg-black/50 backdrop-blur-md transition-colors">
+      <div class="max-w-container-max mx-auto px-8 flex flex-col md:flex-row justify-between items-center gap-8">
+        <div class="font-display text-xl font-bold bg-gradient-to-r from-neon-cyan to-deep-purple bg-clip-text text-transparent">
+          Orbit AI
+        </div>
+        <div class="flex gap-8 text-[0.6rem] font-display font-bold tracking-[0.2em] uppercase text-slate-400 dark:text-white/30 transition-colors">
+          <a href="#" class="hover:text-neon-cyan transition-colors">Privacy Policy</a>
+          <a href="#" class="hover:text-neon-cyan transition-colors">Terms of Service</a>
+          <a href="#" class="hover:text-neon-cyan transition-colors">System Status</a>
+        </div>
+        <div class="text-[0.6rem] font-display text-slate-300 dark:text-white/20 uppercase tracking-widest transition-colors">
+          © 2024 Orbit AI Platform.
+        </div>
+      </div>
+    </footer>
+
     <ClientOnly>
       <AIChatContainer ref="chatRef"/>
     </ClientOnly>
-    </div>
+  </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import AIChatContainer from '../src/components/ai-chat/AIChatContainer.vue'
 import {usePartnerServices} from '../src/composables/usePartnerService'
 
@@ -217,25 +262,13 @@ definePageMeta({
 const activeTab = ref('public')
 const activeFilter = ref('all')
 
-const badges = [
-  { icon: '⚡', text: 'Triển khai trong 24h' },
-  { icon: '🌐', text: 'Nhúng mọi website' },
-  { icon: '📊', text: 'Dashboard đối tác' },
-]
-
-const floatingTags = [
-  { label: 'Tư vấn Tour',    bg: '#e1f5ee', color: '#0f6e56', border: '#5dcaa5', delay: '0s' },
-  { label: 'Villa & Lưu trú', bg: '#f3eeff', color: '#6c4de6', border: '#c4aff5', delay: '0.6s' },
-  { label: 'Tồn kho',        bg: '#fff8e6', color: '#c4841a', border: '#f0d895', delay: '1.2s' },
-  { label: 'Booking tự động', bg: '#eef4ff', color: '#3b6fe8', border: '#bdd0f7', delay: '0.3s' },
-  { label: 'Đối tác',        bg: '#fff0ec', color: '#e8604c', border: '#f5c4ba', delay: '0.9s' },
-  { label: 'Admin Portal',   bg: '#f5f0ff', color: '#7940e0', border: '#c9b0f5', delay: '1.5s' },
-  { label: '24/7 AI',        bg: '#edfff4', color: '#1a8c50', border: '#90ddb0', delay: '0.45s' },
-  { label: 'Nhúng Web',      bg: '#fffbf0', color: '#a07820', border: '#e8d5a0', delay: '1.1s' },
+const smallFeatures = [
+  { icon: 'rocket_launch', title: 'Hyper-Deployment', desc: 'Push models to edge clusters globally in milliseconds with deterministic orchestration.' },
+  { icon: 'security', title: 'Quantum Encryption', desc: 'Secure proprietary weights with post-quantum cryptographic primitives standard.' },
 ]
 
 const tabs = [
-  { id: 'public',  label: '🌍 Public — AI Chat Service' },
+  { id: 'public',  label: '🌍 Public Services' },
   { id: 'partner', label: '🤝 Partner Portal' },
   { id: 'admin',   label: '🛡 Admin Portal' },
 ]
@@ -249,13 +282,33 @@ const filters = [
 
 const chatRef = ref(null)
 
-// Fetch data on server to populate the useState-backed 'services'
 await useAsyncData('public-services', () => loadPublicServices())
 
-// Fallback: Nếu SSR không lấy được dữ liệu (ví dụ 401 trên server), thử lại trên client
+const handleMouseMove = (e) => {
+  if (process.client) {
+    const cards = document.querySelectorAll('.card-glow');
+    cards.forEach(card => {
+      const rect = card.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      card.style.setProperty('--mouse-x', `${x}px`);
+      card.style.setProperty('--mouse-y', `${y}px`);
+    });
+  }
+};
+
 onMounted(() => {
+  if (process.client) {
+    window.addEventListener('mousemove', handleMouseMove);
+  }
   if (!services.value || services.value.length === 0) {
     loadPublicServices()
+  }
+})
+
+onUnmounted(() => {
+  if (process.client) {
+    window.removeEventListener('mousemove', handleMouseMove);
   }
 })
 
@@ -264,28 +317,30 @@ const dynamicCards = computed(() => {
   
   return services.value.map((item, index) => {
     let category = (item.type || 'tour').toLowerCase()
-    let tagColorClass = 'bg-[#e1f5ee] text-[#0f6e56] border border-[#5dcaa5]'
+    let tagColorClass = 'bg-neon-cyan/10 text-neon-cyan border-neon-cyan/20'
     let image = 'https://images.unsplash.com/photo-1530521954074-e64f6810b32d?w=600&q=80'
 
+    let icon = 'hub'
     if (category.includes('villa')) {
-      tagColorClass = 'bg-[#f3eeff] text-[#6c4de6] border border-[#c4aff5]'
-      image = 'https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?w=600&q=80'
+      tagColorClass = 'bg-deep-purple/10 text-deep-purple border-deep-purple/20'
+      icon = 'home_work'
     } else if (category.includes('inventory') || category.includes('kho')) {
       category = 'inventory'
-      tagColorClass = 'bg-[#fff8e6] text-[#c4841a] border border-[#f0d895]'
-      image = 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600&q=80'
-    } else {
-      category = 'tour'
+      tagColorClass = 'bg-pink-400/10 text-pink-400 border-pink-400/20'
+      icon = 'inventory_2'
+    } else if (category.includes('tour')) {
+      tagColorClass = 'bg-neon-cyan/10 text-neon-cyan border-neon-cyan/20'
+      icon = 'explore'
     }
 
     return {
       id: item.id,
       num: String(index + 1).padStart(2, '0'),
       category: category,
-      image: image,
+      icon: icon,
       tags: [
         { label: (item.type || 'Tour').toUpperCase(), class: tagColorClass },
-        { label: 'Public', class: 'bg-[#eef4ff] text-[#3b6fe8] border border-[#bdd0f7]' },
+        { label: 'Public', class: 'bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-white/50 border-slate-200 dark:border-white/10' },
       ],
       title: item.name,
       desc: item.description || 'Trợ lý AI hỗ trợ tự động 24/7.',
@@ -305,65 +360,114 @@ const handleDemoClick = (cardId) => {
     chatRef.value.openChatWithService(cardId)
   }
 }
-
-const publicFeatures = [
-  { icon: '📰', iconBg: 'bg-[#f3eeff]', title: 'Trang tin tức', desc: 'Cập nhật xu hướng du lịch, khuyến mãi mới, tin tức ngành theo thời gian thực.' },
-  { icon: '👤', iconBg: 'bg-[#fff0ec]', title: 'Hồ sơ người dùng', desc: 'Quản lý thông tin cá nhân, lịch sử chat và lịch sử đặt dịch vụ.' },
-  { icon: '🔐', iconBg: 'bg-[#e1f5ee]', title: 'Đăng nhập / Đăng ký', desc: 'Xác thực bảo mật, hỗ trợ đăng nhập qua mạng xã hội và email.' },
-  { icon: '💬', iconBg: 'bg-[#fff8e6]', title: 'Chat AI nhúng', desc: 'Widget AI sẵn sàng tích hợp trên mọi trang public, hỗ trợ đa kênh.' },
-]
-
-const partnerMenu = [
-  { label: 'Tổ chức', items: ['🏢 Thiết lập tổ chức', '👤 Hồ sơ đối tác'] },
-  { label: 'Dịch vụ AI', items: ['🤖 Cài đặt dịch vụ AI', '📋 Loại dịch vụ', '🔢 Giới hạn token', '📁 Dữ liệu training', '🕐 Lịch hoạt động'] },
-  { label: 'Thanh toán', items: ['💳 Token billing', '💰 Nạp token'] },
-  { label: 'Nhúng & Embed', items: ['🌐 Sub-page tổ chức', '🔗 Embed chat'] },
-  { label: 'Báo cáo', items: ['📊 Dashboard'] },
-]
-
-const partnerStats = [
-  { label: 'Token còn lại', value: '482K', change: '↑ 12% tháng này' },
-  { label: 'Dịch vụ AI',   value: '3',    change: 'Tour · Villa · Kho' },
-  { label: 'Chat hôm nay', value: '247',  change: '↑ 8% so hôm qua' },
-  { label: 'Leads tháng',  value: '1.2K', change: '↓ 3% vs tháng trước', down: true },
-]
-
-const partnerSettings = [
-  { label: 'Loại dịch vụ',        value: '🟢 Tư vấn tour du lịch' },
-  { label: 'Giới hạn token / tháng', value: '200,000 tokens' },
-  { label: 'Dữ liệu training',    value: '12 tài liệu · 3.4 MB' },
-  { label: 'Lịch hoạt động',      value: '24/7 · Tất cả múi giờ' },
-]
-
-const adminMenu = [
-  { label: 'Tổng quan', items: ['📊 Dashboard'] },
-  { label: 'Quản lý', items: ['👥 Người dùng', '🤝 Đối tác', '└ Tổ chức', '└ Token đối tác', '🤖 Dịch vụ AI'] },
-  { label: 'Hệ thống', items: ['⚙️ Cấu hình', '📋 Nhật ký hành động'] },
-]
-
-const adminStats = [
-  { label: 'Người dùng',    value: '1,247', change: '↑ 24% tháng này' },
-  { label: 'Đối tác',       value: '38',    change: '↑ 3 mới tháng này' },
-  { label: 'Dịch vụ AI',    value: '114',   change: '↑ 12 dịch vụ mới' },
-  { label: 'Token tiêu thụ', value: '8.4M', change: '↑ 31% so T10', down: true },
-]
-
-const serviceRows = [
-  { name: 'Tư vấn Tour du lịch', color: '#0f6e56', pct: '72%' },
-  { name: 'Villa & Lưu trú',     color: '#6c4de6', pct: '54%' },
-  { name: 'Sản phẩm tồn kho',    color: '#c4841a', pct: '28%' },
-]
-
-const adminLogs = [
-  { title: 'Đối tác mới',      color: '#0f6e56', desc: 'Công ty TNHH Du lịch Phương Nam', time: '2 phút trước' },
-  { title: 'Dịch vụ kích hoạt', color: '#6c4de6', desc: 'Villa Sunrise — Nạp 500K token',  time: '15 phút trước' },
-  { title: 'Cảnh báo token',   color: '#e8604c', desc: 'TourABC — còn 5% token',           time: '1 giờ trước' },
-]
 </script>
 
 <style scoped>
-@keyframes floatTag {
-  0%, 100% { transform: translateY(0); }
-  50%       { transform: translateY(-8px); }
+@keyframes nebula-1 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(10%, 10%) scale(1.1); }
+  66% { transform: translate(-5%, 15%) scale(0.9); }
+}
+
+@keyframes nebula-2 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(-10%, -15%) scale(1.2); }
+}
+
+.animate-nebula-1 { animation: nebula-1 25s ease-in-out infinite; }
+.animate-nebula-2 { animation: nebula-2 30s ease-in-out infinite; }
+
+.shimmer-text, .animate-shimmer {
+  display: inline-block;
+  color: #1e293b;
+  position: relative;
+  background-size: 200% auto;
+  animation: shimmer 4s linear infinite;
+}
+
+.dark .shimmer-text, .dark .animate-shimmer {
+  color: #fff;
+}
+
+@supports (background-clip: text) or (-webkit-background-clip: text) {
+  .shimmer-text, .animate-shimmer {
+    background-image: linear-gradient(90deg, #1e293b, #00f0ff, #1e293b);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  
+  .dark .shimmer-text, .dark .animate-shimmer {
+    background-image: linear-gradient(90deg, #fff, #00f0ff, #fff);
+  }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes scan {
+  0% { transform: translateY(-100%); opacity: 0; }
+  50% { opacity: 1; }
+  100% { transform: translateY(1000%); opacity: 0; }
+}
+
+.animate-scan {
+  animation: scan 4s linear infinite;
+}
+
+.card-glow {
+  position: relative;
+}
+
+.card-glow::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  background: radial-gradient(600px circle at var(--mouse-x) var(--mouse-y), rgba(0, 240, 255, 0.1), transparent 40%);
+  z-index: 10;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.5s;
+}
+
+.card-glow:hover::before {
+  opacity: 1;
+}
+
+.shooting-star {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  background: #fff;
+  border-radius: 50%;
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.1), 0 0 0 8px rgba(255, 255, 255, 0.1), 0 0 20px rgba(255, 255, 255, 1);
+  animation: shooting 3s linear infinite;
+}
+
+.shooting-star::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 300px;
+  height: 1px;
+  background: linear-gradient(90deg, #fff, transparent);
+}
+
+@keyframes shooting {
+  0% { transform: rotate(-45deg) translateX(0); opacity: 1; }
+  70% { opacity: 1; }
+  100% { transform: rotate(-45deg) translateX(-1000px); opacity: 0; }
 }
 </style>

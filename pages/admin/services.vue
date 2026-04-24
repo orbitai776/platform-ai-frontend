@@ -1,142 +1,188 @@
 <template>
-  <div class="p-8 bg-gray-50 min-h-screen">
-    <div class="max-w-6xl mx-auto">
-      
-      <div class="flex justify-between items-center mb-8 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+  <div class="min-h-screen bg-slate-50 dark:bg-[#09090B] text-slate-900 dark:text-[#e1e2ec] font-inter selection:bg-[#adc6ff]/30 relative overflow-hidden transition-colors duration-500">
+    <!-- Ambient Background Glows -->
+    <div class="absolute top-0 left-1/4 w-1/2 h-96 bg-indigo-500/5 dark:bg-[#adc6ff]/5 rounded-full blur-[100px] pointer-events-none"></div>
+    <div class="absolute bottom-0 right-0 w-[600px] h-[600px] bg-emerald-500/5 dark:bg-[#ffb3ad]/5 rounded-full blur-[150px] pointer-events-none"></div>
+
+    <div class="max-w-7xl mx-auto px-6 py-10 relative z-10">
+      <!-- Page Header -->
+      <header class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10 border-b border-slate-200 dark:border-[#272a31] pb-8 transition-colors">
         <div>
-          <h1 class="text-2xl font-black text-gray-800 font-['Sora'] uppercase tracking-tight">Quản trị AI Services</h1>
-          <p class="text-gray-500 text-sm">Quản lý danh mục, cấu hình hạn mức và trạng thái dịch vụ toàn hệ thống</p>
+          <h1 class="font-display-lg text-[30px] font-bold tracking-tight text-slate-900 dark:text-[#e1e2ec] mb-2 transition-colors">Quản trị AI Services</h1>
+          <p class="text-[14px] text-slate-500 dark:text-[#8c909f] max-w-2xl transition-colors">Quản lý danh mục, cấu hình hạn mức và trạng thái dịch vụ toàn hệ thống. Theo dõi mức tiêu thụ tài nguyên và phiên bản mô hình hoạt động.</p>
         </div>
         <button 
           @click="openModal('create')"
-          class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl transition-all shadow-lg flex items-center gap-2 font-bold font-['Sora'] text-sm"
+          class="bg-indigo-600 dark:bg-[#adc6ff] hover:bg-indigo-700 dark:hover:bg-[#4d8eff] text-white dark:text-[#002e6a] font-bold text-[11px] uppercase tracking-[0.15em] px-6 py-3 rounded-md flex items-center gap-2 transition-all shadow-[0_0_20px_rgba(79,70,229,0.2)] dark:shadow-[0_0_20px_rgba(173,198,255,0.2)] active:scale-95"
         >
-          <span>+ Thiết lập Service mới</span>
+          <span class="material-symbols-outlined text-[18px]">add</span>
+          Thiết lập Service mới
         </button>
+      </header>
+
+      <!-- Search & Filter Controls -->
+      <div class="flex flex-wrap items-center justify-between gap-4 mb-8">
+        <div class="relative w-full md:w-80">
+          <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-[#8c909f] text-[18px]">search</span>
+          <input 
+            v-model="searchQuery"
+            type="text" 
+            placeholder="Tìm kiếm mẫu dịch vụ..." 
+            class="w-full bg-white dark:bg-[#1d2027]/50 border border-slate-200 dark:border-[#424754] rounded-lg py-2.5 pl-10 pr-4 text-[13px] text-slate-900 dark:text-[#e1e2ec] placeholder:text-slate-400 dark:placeholder:text-[#8c909f] focus:outline-none focus:border-indigo-500 dark:focus:border-[#adc6ff] focus:ring-1 focus:ring-indigo-500 dark:focus:ring-[#adc6ff] transition-all"
+          />
+        </div>
+        <div class="flex gap-3">
+          <button class="flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-[#1d2027]/50 border border-slate-200 dark:border-[#424754] rounded-lg text-slate-900 dark:text-[#e1e2ec] hover:bg-slate-50 dark:hover:bg-[#272a31] transition-all text-[12px] font-medium shadow-sm transition-colors">
+            <span class="material-symbols-outlined text-[18px]">filter_list</span>
+            Bộ lọc
+          </button>
+        </div>
       </div>
 
-      <div v-if="loading" class="py-20 text-center">
-        <div class="animate-spin inline-block w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full mb-4"></div>
-        <p class="text-gray-400 font-['Sora']">Đang đồng bộ dữ liệu hệ thống...</p>
+      <!-- Loading State -->
+      <div v-if="loading" class="py-32 text-center">
+        <div class="w-12 h-12 border-4 border-indigo-600 dark:border-[#adc6ff] border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
+        <p class="text-indigo-600 dark:text-[#adc6ff] font-bold uppercase text-[12px] tracking-[0.2em] animate-pulse transition-colors">Đang đồng bộ Registry...</p>
       </div>
 
-      <div v-else class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-        <table class="w-full text-left border-collapse">
-          <thead class="bg-gray-50 border-b border-gray-100">
-            <tr>
-              <th class="p-4 text-[11px] font-black text-gray-400 uppercase tracking-wider">Thông tin dịch vụ</th>
-              <!-- <th class="p-4 text-[11px] font-black text-gray-400 uppercase tracking-wider">ID Hệ thống</th> -->
-              <th class="p-4 text-[11px] font-black text-gray-400 uppercase tracking-wider">Hạn mức Token</th>
-              <th class="p-4 text-[11px] font-black text-gray-400 uppercase tracking-wider text-center">Trạng thái</th>
-              <th class="p-4 text-[11px] font-black text-gray-400 uppercase tracking-wider text-center">Thao tác</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-gray-50">
-            <tr 
-              v-for="item in services" 
-              :key="item.id" 
-              class="hover:bg-gray-50/50 transition-colors"
-              :class="{'opacity-60 grayscale-[0.5] bg-gray-50/30': item.active === false || item.active === 0 || item.active === '0'}"
-            >
-              <td class="p-4">
-                <div class="font-bold text-gray-800 font-['Sora'] text-sm">{{ item.name }}</div>
-                <div class="text-[10px] text-gray-400 mt-0.5 uppercase font-medium tracking-tighter">
-                  Loại: {{ catalog.find(c => c.id === item.service_id)?.name || item.service_id }}
-                </div>
-              </td>
-              <!-- <td class="p-4">
-                <span class="font-mono text-[10px] bg-gray-100 px-2 py-1 rounded text-gray-500">#{{ item.id }}</span>
-              </td> -->
-              <td class="p-4">
-                <div class="text-sm font-bold text-gray-700">{{ item.token_limit?.toLocaleString() }}</div>
-                <div class="text-[10px] text-gray-400 italic">Đã dùng: {{ item.token_used?.toLocaleString() }}</div>
-              </td>
-              <td class="p-4 text-center">
-                <span 
-                  :class="(item.active === false || item.active === 0 || item.active === '0') ? 'bg-red-100 text-red-600 border-red-200' : 'bg-green-100 text-green-600 border-green-200'"
-                  class="px-3 py-1 rounded-full text-[10px] font-black uppercase border"
-                >
-                  {{ (item.active === false || item.active === 0 || item.active === '0') ? 'Đã ẩn' : 'Đang chạy' }}
-                </span>
-              </td>
-              <td class="p-4">
-                <div class="flex justify-center gap-2">
-                  <button 
-                    @click="openModal('edit', item)" 
-                    class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
-                    title="Chỉnh sửa thông tin"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                    </svg>
-                  </button>
-                  <button 
-                    @click="handleSoftDelete(item)" 
-                    class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-all"
-                    :title="item.active !== false ? 'Ẩn dịch vụ' : 'Khôi phục dịch vụ'"
-                  >
-                    <svg v-if="item.active !== false" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.882 9.882L3.29 3.29m17.42 17.42L14.12 14.12M21 12c0 1.268-.235 2.483-.664 3.606m-1.543-1.543a9.954 9.954 0 00.207-2.063c0-4.478-2.943-8.268-7-9.543a9.97 9.97 0 00-3.029 1.563" />
-                    </svg>
-                    <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                    </svg>
-                  </button>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <div v-if="showModal" class="fixed inset-0 z-[200] flex items-center justify-center bg-gray-900/60 backdrop-blur-sm p-4">
-        <div class="bg-white rounded-3xl w-full max-w-lg p-8 shadow-2xl border border-gray-100">
-          <h2 class="text-2xl font-black mb-6 font-['Sora'] text-gray-800">
-            {{ modalType === 'create' ? 'Kích hoạt Dịch vụ AI' : 'Cập nhật Cấu hình' }}
-          </h2>
+      <!-- Catalog Grid -->
+      <div v-else class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        <div 
+          v-for="item in filteredServices" 
+          :key="item.id" 
+          class="bg-white dark:bg-[#191b23]/60 backdrop-blur-md border border-slate-200 dark:border-[#272a31] rounded-xl p-6 flex flex-col relative group overflow-hidden transition-all hover:bg-slate-50/50 dark:hover:bg-[#191b23]/80 hover:border-indigo-200 dark:hover:border-[#424754] shadow-xl hover:shadow-2xl hover:-translate-y-1 duration-300"
+          :class="{'opacity-40 grayscale-[0.5]': item.active === false || item.active === 0 || item.active === '0'}"
+        >
+          <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 to-emerald-500 dark:from-[#adc6ff] dark:to-[#4edea3] opacity-50 group-hover:opacity-100 transition-opacity"></div>
           
-          <div class="space-y-5">
+          <div class="flex justify-between items-start mb-6">
+            <div class="flex items-center gap-4">
+              <div class="w-12 h-12 rounded-lg bg-indigo-50 dark:bg-[#adc6ff]/10 border border-indigo-100 dark:border-[#adc6ff]/20 flex items-center justify-center text-indigo-600 dark:text-[#adc6ff] transition-colors">
+                <span class="material-symbols-outlined text-[24px]">{{ getServiceIcon(item.name) }}</span>
+              </div>
+              <div>
+                <h3 class="text-[18px] font-bold leading-tight text-slate-900 dark:text-[#e1e2ec] group-hover:text-indigo-600 dark:group-hover:text-[#adc6ff] transition-colors">{{ item.name }}</h3>
+                <span class="text-[11px] font-data-mono text-slate-400 dark:text-[#8c909f] uppercase tracking-tighter transition-colors">ID: {{ item.id?.slice(0, 8) }}</span>
+              </div>
+            </div>
+            <span 
+              :class="(item.active === false || item.active === 0 || item.active === '0') ? 'bg-rose-50 dark:bg-[#ffb3ad]/10 text-rose-600 dark:text-[#ffb3ad] border-rose-100 dark:border-[#ffb3ad]/20' : 'bg-emerald-50 dark:bg-[#4edea3]/10 text-emerald-600 dark:text-[#4edea3] border-emerald-100 dark:border-[#4edea3]/20'"
+              class="px-2.5 py-1 rounded-full border text-[10px] font-bold uppercase tracking-wider transition-all"
+            >
+              {{ (item.active === false || item.active === 0 || item.active === '0') ? 'Đã ẩn' : 'Active' }}
+            </span>
+          </div>
+
+          <p class="text-[12px] text-slate-500 dark:text-[#c2c6d6] leading-relaxed mb-6 flex-1 transition-colors">
+            Loại: <span class="text-slate-900 dark:text-[#e1e2ec] font-medium transition-colors">{{ catalog.find(c => c.id === item.service_id)?.name || item.service_id }}</span>. 
+            Mô hình AI được tối ưu hóa cho hiệu suất cao và độ trễ thấp trong các tác vụ cụ thể.
+          </p>
+
+          <div class="grid grid-cols-2 gap-4 border-t border-slate-100 dark:border-[#272a31] pt-6 mb-8 transition-colors">
             <div>
-              <label class="block text-[10px] font-black text-gray-400 mb-1.5 uppercase tracking-widest">Tên hiển thị (Partner thấy)</label>
-              <input v-model="form.name" type="text" class="w-full p-3.5 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-indigo-500 focus:bg-white transition-all text-sm font-bold" placeholder="VD: ChatGPT-4o Premium">
+              <span class="block text-[10px] font-bold text-slate-400 dark:text-[#8c909f] uppercase tracking-widest mb-1.5 transition-colors">Hạn mức Token</span>
+              <span class="block text-[14px] font-data-mono text-slate-900 dark:text-[#e1e2ec] transition-colors">{{ item.token_limit?.toLocaleString() }}</span>
+            </div>
+            <div>
+              <span class="block text-[10px] font-bold text-slate-400 dark:text-[#8c909f] uppercase tracking-widest mb-1.5 transition-colors">Đã sử dụng</span>
+              <span class="block text-[14px] font-data-mono text-indigo-600 dark:text-[#adc6ff] transition-colors">{{ item.token_used?.toLocaleString() }}</span>
+            </div>
+            <div class="col-span-2">
+              <div class="h-1.5 w-full bg-slate-100 dark:bg-[#32353c] rounded-full overflow-hidden mt-1 transition-colors">
+                <div class="h-full bg-gradient-to-r from-indigo-500 to-indigo-400 dark:from-[#adc6ff] dark:to-[#4d8eff] rounded-full shadow-[0_0_8px_rgba(79,70,229,0.2)] dark:shadow-[0_0_8px_rgba(173,198,255,0.4)]" :style="{ width: getUsagePercent(item) + '%' }"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex gap-3 mt-auto">
+            <button @click="openModal('edit', item)" class="flex-1 py-2.5 bg-indigo-600 dark:bg-[#adc6ff] text-white dark:text-[#002e6a] rounded-lg text-[12px] font-bold uppercase tracking-widest hover:bg-indigo-700 dark:hover:bg-[#4d8eff] transition-all shadow-lg dark:shadow-[0_0_15px_rgba(173,198,255,0.1)]">Cấu hình</button>
+            <button @click="handleSoftDelete(item)" class="px-3 py-2.5 border border-slate-200 dark:border-[#424754] rounded-lg text-slate-400 dark:text-[#8c909f] hover:text-rose-500 dark:hover:text-[#ffb3ad] hover:border-rose-200 dark:hover:border-[#ffb3ad] hover:bg-rose-50 dark:hover:bg-[#ffb3ad]/5 transition-all flex items-center justify-center">
+              <span class="material-symbols-outlined text-[20px]">{{ item.active !== false ? 'visibility_off' : 'visibility' }}</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Add New Card -->
+        <div @click="openModal('create')" class="bg-white/50 dark:bg-[#191b23]/30 border border-dashed border-slate-300 dark:border-[#424754] rounded-xl p-8 flex flex-col items-center justify-center text-center min-h-[340px] hover:bg-slate-50 dark:hover:bg-[#191b23]/50 hover:border-indigo-500 dark:hover:border-[#adc6ff] transition-all cursor-pointer group shadow-sm hover:shadow-xl">
+          <div class="w-14 h-14 rounded-full bg-slate-100 dark:bg-[#1d2027] border border-slate-200 dark:border-[#424754] flex items-center justify-center text-slate-400 dark:text-[#8c909f] group-hover:text-indigo-600 dark:group-hover:text-[#adc6ff] group-hover:border-indigo-600 dark:group-hover:border-[#adc6ff] group-hover:bg-indigo-50 dark:group-hover:bg-[#adc6ff]/10 transition-all mb-4 shadow-sm">
+            <span class="material-symbols-outlined text-[28px]">add</span>
+          </div>
+          <h3 class="text-[18px] font-bold text-slate-900 dark:text-[#e1e2ec] mb-2 transition-colors">Tạo Template tùy chỉnh</h3>
+          <p class="text-[12px] text-slate-500 dark:text-[#8c909f] max-w-xs leading-relaxed transition-colors">Khởi tạo cấu hình dịch vụ AI mới để triển khai cho đối tác và quản lý hạn mức tập trung.</p>
+        </div>
+      </div>
+
+      <!-- Pagination Footer -->
+      <div v-if="!loading && services.length > 0" class="mt-8 px-6 py-4 border-t border-slate-100 dark:border-[#424754] bg-white dark:bg-[#191b23]/50 flex items-center justify-between rounded-xl shadow-xl transition-colors">
+        <div class="text-slate-400 dark:text-[#8c909f] text-[12px] font-medium">
+          Trang <span class="text-indigo-600 dark:text-[#adc6ff] transition-colors">{{ Math.ceil(filteredServices.length / 9) > 0 ? 1 : 0 }}</span> / {{ Math.ceil(filteredServices.length / 9) || 1 }} — Hiển thị <span class="text-slate-900 dark:text-[#e1e2ec] transition-colors">{{ filteredServices.length }}</span> dịch vụ
+        </div>
+        <div class="flex gap-2">
+          <button class="p-2 rounded border border-slate-200 dark:border-[#424754] text-slate-400 dark:text-[#8c909f] hover:text-slate-900 dark:hover:text-[#e1e2ec] hover:bg-slate-50 dark:hover:bg-[#32353c] transition-all opacity-20 cursor-not-allowed">
+            <span class="material-symbols-outlined">chevron_left</span>
+          </button>
+          <button class="p-2 rounded border border-slate-200 dark:border-[#424754] text-slate-400 dark:text-[#e1e2ec] hover:bg-slate-50 dark:hover:bg-[#32353c] transition-all opacity-20 cursor-not-allowed">
+            <span class="material-symbols-outlined">chevron_right</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Admin Modal -->
+    <transition name="modal">
+      <div v-if="showModal" class="fixed inset-0 z-[200] flex items-center justify-center bg-slate-900/60 dark:bg-[#09090B]/80 backdrop-blur-md p-6 transition-colors">
+        <div class="bg-white dark:bg-[#1d2027] border border-slate-200 dark:border-[#424754] rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl animate-in zoom-in duration-300 transition-colors">
+          <div class="px-8 py-6 border-b border-slate-100 dark:border-[#424754] flex justify-between items-center bg-slate-50 dark:bg-[#191b23] transition-colors">
+            <h2 class="text-xl font-bold text-slate-900 dark:text-[#e1e2ec] transition-colors">
+              {{ modalType === 'create' ? 'Kích hoạt Dịch vụ AI' : 'Cập nhật Cấu hình' }}
+            </h2>
+            <button @click="showModal = false" class="text-slate-400 dark:text-[#8c909f] hover:text-slate-900 dark:hover:text-[#e1e2ec] transition-colors">
+              <span class="material-symbols-outlined">close</span>
+            </button>
+          </div>
+          
+          <div class="p-8 space-y-6">
+            <div class="flex flex-col gap-2">
+              <label class="text-[10px] font-bold text-slate-400 dark:text-[#8c909f] uppercase tracking-widest transition-colors">Tên hiển thị (Partner thấy)</label>
+              <input v-model="form.name" type="text" class="w-full bg-slate-50 dark:bg-[#10131a] border border-slate-200 dark:border-[#424754] rounded-xl px-4 py-3.5 text-slate-900 dark:text-[#e1e2ec] focus:border-indigo-500 dark:focus:border-[#adc6ff]/50 focus:ring-1 focus:ring-indigo-500 dark:focus:ring-[#adc6ff]/50 outline-none transition-all text-sm font-medium shadow-inner transition-colors" placeholder="VD: ChatGPT-4o Premium">
             </div>
             
-            <div class="grid grid-cols-2 gap-4">
-              <div>
-                <label class="block text-[10px] font-black text-gray-400 mb-1.5 uppercase tracking-widest">Hạn mức Token</label>
-                <input v-model.number="form.token_limit" type="number" class="w-full p-3.5 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-indigo-500 focus:bg-white transition-all text-sm font-bold">
+            <div class="grid grid-cols-2 gap-6">
+              <div class="flex flex-col gap-2">
+                <label class="text-[10px] font-bold text-slate-400 dark:text-[#8c909f] uppercase tracking-widest transition-colors">Hạn mức Token</label>
+                <input v-model.number="form.token_limit" type="number" class="w-full bg-slate-50 dark:bg-[#10131a] border border-slate-200 dark:border-[#424754] rounded-xl px-4 py-3.5 text-slate-900 dark:text-[#e1e2ec] focus:border-indigo-500 dark:focus:border-[#adc6ff]/50 outline-none transition-all text-sm font-data-mono transition-colors">
               </div>
-              <div v-if="modalType === 'create'">
-                <label class="block text-[10px] font-black text-gray-400 mb-1.5 uppercase tracking-widest">Loại AI (Catalog)</label>
-                <select v-model="form.service_id" class="w-full p-3.5 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-indigo-500 focus:bg-white transition-all text-sm font-bold">
+              <div v-if="modalType === 'create'" class="flex flex-col gap-2">
+                <label class="text-[10px] font-bold text-slate-400 dark:text-[#8c909f] uppercase tracking-widest transition-colors">Loại AI (Catalog)</label>
+                <select v-model="form.service_id" class="w-full bg-slate-50 dark:bg-[#10131a] border border-slate-200 dark:border-[#424754] rounded-xl px-4 py-3.5 text-slate-900 dark:text-[#e1e2ec] focus:border-indigo-500 dark:focus:border-[#adc6ff]/50 outline-none cursor-pointer text-sm font-medium transition-colors">
                   <option v-for="cat in catalog" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
                 </select>
               </div>
-              <div v-else class="flex flex-col justify-end pb-1">
-                <div class="flex items-center gap-3 bg-indigo-50/50 p-3 rounded-xl border border-indigo-100">
-                  <input type="checkbox" v-model="form.active" id="active" class="w-4 h-4 accent-indigo-600">
-                  <label for="active" class="font-bold text-xs text-indigo-700 select-none">Đang hoạt động</label>
+              <div v-else class="flex flex-col justify-end">
+                <div @click="form.active = !form.active" class="flex items-center gap-3 bg-indigo-50 dark:bg-[#adc6ff]/5 p-3.5 rounded-xl border border-indigo-100 dark:border-[#adc6ff]/10 hover:bg-indigo-100 dark:hover:bg-[#adc6ff]/10 cursor-pointer transition-all group transition-colors">
+                  <div class="w-5 h-5 rounded border border-slate-200 dark:border-[#424754] flex items-center justify-center transition-all" :class="{'bg-indigo-600 dark:bg-[#adc6ff] border-indigo-600 dark:border-[#adc6ff]': form.active}">
+                    <span v-if="form.active" class="material-symbols-outlined text-[16px] text-white dark:text-[#002e6a] font-bold">check</span>
+                  </div>
+                  <span class="font-bold text-[11px] uppercase tracking-widest transition-colors" :class="form.active ? 'text-indigo-600 dark:text-[#adc6ff]' : 'text-slate-400 dark:text-[#8c909f]'">Đang hoạt động</span>
                 </div>
               </div>
             </div>
           </div>
 
-          <div class="flex gap-3 mt-10">
-            <button @click="showModal = false" class="flex-1 py-4 font-bold text-gray-400 hover:bg-gray-50 rounded-2xl transition-all text-sm uppercase tracking-widest">Hủy bỏ</button>
-            <button @click="submitForm" class="flex-1 py-4 font-black bg-indigo-600 text-white rounded-2xl hover:bg-indigo-700 shadow-xl shadow-indigo-200 transition-all text-sm uppercase tracking-widest">
-              {{ modalType === 'create' ? 'Tạo ngay' : 'Lưu cập nhật' }}
+          <div class="px-8 py-6 bg-slate-50 dark:bg-[#191b23] flex gap-4 transition-colors">
+            <button @click="showModal = false" class="flex-1 py-3.5 font-bold text-slate-400 dark:text-[#8c909f] hover:text-slate-900 dark:hover:text-[#e1e2ec] hover:bg-slate-200 dark:hover:bg-[#272a31] rounded-xl transition-all text-[11px] uppercase tracking-[0.2em] border border-transparent hover:border-slate-300 dark:hover:border-[#424754]">Hủy bỏ</button>
+            <button @click="submitForm" class="flex-1 py-3.5 font-bold bg-indigo-600 dark:bg-[#adc6ff] text-white dark:text-[#002e6a] rounded-xl hover:bg-indigo-700 dark:hover:bg-[#4d8eff] shadow-lg shadow-indigo-200 dark:shadow-[#adc6ff]/10 transition-all text-[11px] uppercase tracking-[0.2em] active:scale-95">
+              {{ modalType === 'create' ? 'Kích hoạt' : 'Lưu cập nhật' }}
             </button>
           </div>
         </div>
       </div>
-
-    </div>
+    </transition>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import useServices from '~/src/composables/useServices'
 
 const toast = useToast()
@@ -148,6 +194,7 @@ const loading = ref(true)
 const showModal = ref(false)
 const modalType = ref('create') 
 const API_PATH = '/api/partner/list-services'
+const searchQuery = ref('')
 
 const form = ref({
   id: null,
@@ -163,7 +210,7 @@ const fetchData = async () => {
   try {
     const res = await $fetch(API_PATH)
     services.value = res.data || []
-    await fetchCatalog() // Đồng bộ danh mục từ đồng đội
+    await fetchCatalog() 
   } catch (err) {
     console.error("Lỗi tải dữ liệu Admin:", err)
   } finally {
@@ -175,10 +222,8 @@ const fetchData = async () => {
 const openModal = (type, item = null) => {
   modalType.value = type
   if (type === 'edit' && item) {
-    // Clone dữ liệu để sửa
     form.value = { ...item, active: !(item.active === false || item.active === 0 || item.active === '0') }
   } else {
-    // Reset form cho tạo mới
     form.value = { 
       id: null, 
       name: '', 
@@ -212,14 +257,14 @@ const submitForm = async () => {
     if (res) {
       toast.success(isEdit ? 'Cập nhật thành công!' : 'Kích hoạt dịch vụ thành công!')
       showModal.value = false
-      await fetchData() // Refresh bảng dữ liệu
+      await fetchData() 
     }
   } catch (err) {
     toast.error('Lỗi: ' + (err.data?.message || 'Không thể lưu dữ liệu'))
   }
 }
 
-// 5. XỬ LÝ XÓA MỀM (SOFT DELETE - GỌI METHOD DELETE)
+// 5. XỬ LÝ XÓA MỀM (SOFT DELETE)
 const handleSoftDelete = async (item) => {
   const isHidden = (item.active === false || item.active === 0 || item.active === '0')
   const confirmMsg = isHidden ? 'Khôi phục hiển thị dịch vụ này?' : 'Bạn có chắc muốn ẩn dịch vụ này khỏi đối tác?'
@@ -228,11 +273,9 @@ const handleSoftDelete = async (item) => {
 
   try {
     if (!isHidden) {
-      // TRƯỜNG HỢP ẨN: Gọi DELETE (Backend sẽ update active = 0)
       await $fetch(`${API_PATH}/${item.id}`, { method: 'DELETE' })
       toast.success('Đã ẩn dịch vụ.')
     } else {
-      // TRƯỜNG HỢP KHÔI PHỤC: Gọi PATCH để bật lại active = 1
       await $fetch(`${API_PATH}/${item.id}`, { 
         method: 'PATCH',
         body: { active: true }
@@ -245,16 +288,85 @@ const handleSoftDelete = async (item) => {
   }
 }
 
+// UTILS
+const filteredServices = computed(() => {
+  return services.value.filter(s => 
+    s.name?.toLowerCase().includes(searchQuery.value.toLowerCase())
+  )
+})
+
+const getUsagePercent = (item) => {
+  if (!item.token_limit) return 0
+  return Math.min((item.token_used / item.token_limit) * 100, 100)
+}
+
+const getServiceIcon = (name) => {
+  const n = name?.toLowerCase() || ''
+  if (n.includes('chat') || n.includes('gpt')) return 'forum'
+  if (n.includes('image') || n.includes('dalle')) return 'image'
+  if (n.includes('code')) return 'terminal'
+  if (n.includes('audio') || n.includes('voice')) return 'settings_voice'
+  if (n.includes('travel') || n.includes('tourism')) return 'flight_takeoff'
+  return 'smart_toy'
+}
+
 onMounted(() => {
   fetchData()
 })
+
 definePageMeta({
   layout: 'layout-admin'
 })
 </script>
 
 <style scoped>
-.font-sora {
-  font-family: 'Sora', sans-serif;
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+.font-inter {
+  font-family: 'Inter', sans-serif;
+}
+
+.font-data-mono {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.font-display-lg {
+  font-family: 'Inter', sans-serif;
+}
+
+/* Modal Animations */
+.modal-enter-active, .modal-leave-active {
+  transition: all 0.3s ease;
+}
+.modal-enter-from, .modal-leave-to {
+  opacity: 0;
+  transform: scale(0.95);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(59, 130, 246, 0.3);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: rgba(173, 198, 255, 0.3);
 }
 </style>
