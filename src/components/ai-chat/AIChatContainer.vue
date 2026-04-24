@@ -32,15 +32,31 @@
               </div>
 
               <div class="flex shrink-0 items-center gap-1.5">
+                <!-- Nút về danh sách partner (chỉ hiện khi đang trong conversation) -->
                 <button
+                  v-if="currentConversationId"
                   class="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white/50 text-slate-500 transition hover:bg-slate-50 hover:text-sky-600"
-                  title="Đổi trợ lý"
+                  title="Về danh sách trợ lý"
                   @click="backToServices"
+                >
+                  <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+
+                <!-- Nút refresh chat (chỉ hiện khi đang trong conversation) -->
+                <button
+                  v-if="currentConversationId"
+                  class="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white/50 text-slate-500 transition hover:bg-slate-50 hover:text-sky-600"
+                  title="Làm mới đoạn chat"
+                  @click="refreshMessages"
                 >
                   <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                   </svg>
                 </button>
+
+                <!-- Nút đóng chat -->
                 <button
                   class="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white/50 text-slate-500 transition hover:bg-rose-50 hover:text-rose-500"
                   title="Đóng chat"
@@ -85,9 +101,13 @@
                 <button
                   v-for="service in partnerServices"
                   :key="service.id"
-                  class="group relative overflow-hidden rounded-[24px] border bg-white/85 p-4 text-left shadow-[0_18px_40px_rgba(15,23,42,0.08)] transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_24px_48px_rgba(15,23,42,0.12)]"
-                  :class="selectedServiceId === service.id ? 'border-sky-400 ring-2 ring-sky-100' : 'border-white/70 hover:border-sky-200'"
-                  @click="handleSelectService(service.id)"
+                  class="group relative overflow-hidden rounded-[24px] border bg-white/85 p-4 text-left shadow-[0_18px_40px_rgba(15,23,42,0.08)] transition duration-200"
+                  :class="[
+                    service.status === 'coming_soon' ? 'opacity-60 cursor-not-allowed' : 'hover:-translate-y-0.5 hover:shadow-[0_24px_48px_rgba(15,23,42,0.12)]',
+                    selectedServiceId === service.id ? 'border-sky-400 ring-2 ring-sky-100' : 'border-white/70 hover:border-sky-200'
+                  ]"
+                  :disabled="service.status === 'coming_soon'"
+                  @click="service.status !== 'coming_soon' && handleSelectService(service.id, service.service_name)"
                 >
                   <div class="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.4),rgba(241,245,249,0.25))]"></div>
 
@@ -202,6 +222,49 @@
             :loading="isLoading"
             @send="handleSendMessage"
           />
+
+          <!-- Confirm Dialog -->
+          <Transition
+            enter-active-class="transition duration-150 ease-out"
+            enter-from-class="opacity-0 scale-95"
+            enter-to-class="opacity-100 scale-100"
+            leave-active-class="transition duration-100 ease-in"
+            leave-from-class="opacity-100 scale-100"
+            leave-to-class="opacity-0 scale-95"
+          >
+            <div
+              v-if="confirmDialog.show"
+              class="absolute inset-0 z-50 flex items-center justify-center rounded-[28px] bg-slate-900/30 backdrop-blur-sm"
+            >
+              <div class="mx-4 w-full max-w-[280px] overflow-hidden rounded-[24px] border border-white/70 bg-white shadow-[0_30px_60px_rgba(15,23,42,0.2)]">
+                <div class="px-5 pb-2 pt-5">
+                  <div class="mb-1 flex items-center gap-2.5">
+                    <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-amber-50 text-amber-500">
+                      <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+                      </svg>
+                    </div>
+                    <p class="text-sm font-bold text-slate-900">{{ confirmDialog.title }}</p>
+                  </div>
+                  <p class="mt-1 pl-[42px] text-[12px] leading-relaxed text-slate-500">{{ confirmDialog.message }}</p>
+                </div>
+                <div class="flex gap-2 px-5 pb-5 pt-3">
+                  <button
+                    class="flex-1 rounded-[14px] border border-slate-200 bg-slate-50 py-2 text-[13px] font-semibold text-slate-600 transition hover:bg-slate-100"
+                    @click="confirmDialog.show = false"
+                  >
+                    Huỷ
+                  </button>
+                  <button
+                    class="flex-1 rounded-[14px] bg-slate-900 py-2 text-[13px] font-semibold text-white transition hover:bg-slate-800"
+                    @click="confirmDialog.onConfirm()"
+                  >
+                    Xác nhận
+                  </button>
+                </div>
+              </div>
+            </div>
+          </Transition>
         </div>
       </Transition>
 
@@ -228,9 +291,9 @@
 </template>
 
 <script setup>
-import { ref, nextTick, watch, onMounted, computed } from 'vue'
+import { ref, reactive, nextTick, watch, onMounted, computed } from 'vue'
 import { useAIChat } from '../../composables/useAIChat'
-import { usePartnerServices } from '../../composables/usePartnerService'
+import { useCookie } from '#app'
 
 const toast = useToast()
 
@@ -242,10 +305,25 @@ import AIChatEmptyState from './AIChatEmptyState.vue'
 import AINewsList from './AINewsList.vue'
 
 const isOpen = ref(false)
+const confirmDialog = reactive({
+  show: false,
+  title: '',
+  message: '',
+  onConfirm: () => {}
+})
+
+const showConfirm = (title, message, onConfirm) => {
+  confirmDialog.title = title
+  confirmDialog.message = message
+  confirmDialog.onConfirm = () => {
+    confirmDialog.show = false
+    onConfirm()
+  }
+  confirmDialog.show = true
+}
 const activeTab = ref('messages')
 const messagesContainer = ref(null)
 const selectedServiceId = ref(null)
-const { loadPublicServices } = usePartnerServices()
 
 const {
   messages,
@@ -262,187 +340,169 @@ const {
   currentConversationId
 } = useAIChat()
 
+// FIX: đồng nhất tên cookie với useAIChatAPI (accessToken, không phải access_token)
+const accessToken = useCookie('accessToken')
+const isGuest = computed(() => !accessToken.value)
+
 const currentService = computed(() => {
   if (selectedServiceId.value) {
-    return partnerServices.value.find(service => service.id === selectedServiceId.value)
+    return partnerServices.value?.find(s => s.id === selectedServiceId.value)
   }
 
-  if (currentConversationId.value && conversationsList.value.length > 0) {
-    const conversation = conversationsList.value.find(item => item.conversation_id === currentConversationId.value)
-    if (conversation) {
-      return partnerServices.value.find(service => service.id === conversation.partner_service_id)
+  if (currentConversationId.value) {
+    const savedServiceId = localStorage.getItem('selected_service_id')
+    if (savedServiceId) {
+      return partnerServices.value?.find(s => s.id === savedServiceId)
+    }
+
+    if (!isGuest.value && conversationsList.value?.length) {
+      const conv = conversationsList.value.find(
+        c => c.conversation_id === currentConversationId.value
+      )
+      if (conv) {
+        return partnerServices.value?.find(
+          s => s.id === conv.partner_service_id
+        )
+      }
     }
   }
 
   return null
 })
 
+const scrollToBottom = async () => {
+  await nextTick()
+  messagesContainer.value?.scrollTo({
+    top: messagesContainer.value.scrollHeight,
+    behavior: 'smooth'
+  })
+}
+
 const getServiceIcon = (service) => {
-  const source = `${service?.type || ''} ${service?.category || ''} ${service?.name || ''}`.toLowerCase()
-  if (source.includes('tour') || source.includes('travel')) return '✈'
-  if (source.includes('villa') || source.includes('hotel') || source.includes('room')) return '⌂'
-  if (source.includes('inventory') || source.includes('product') || source.includes('shop')) return '◫'
+  const s = `${service?.type || ''} ${service?.category || ''} ${service?.name || ''}`.toLowerCase()
+  if (s.includes('tour')) return '✈'
+  if (s.includes('hotel') || s.includes('villa')) return '⌂'
+  if (s.includes('product') || s.includes('shop')) return '◫'
   return 'AI'
 }
 
-const getServiceTypeLabel = (service) => {
-  const type = service?.type || service?.category || 'assistant'
-  return String(type).replace(/_/g, ' ')
-}
+const getServiceTypeLabel = (service) =>
+  (service?.type || service?.category || 'assistant').replace(/_/g, ' ')
 
 const getServiceStatusLabel = (status) => {
-  return status === 'active' ? 'Sẵn sàng' : 'Tạm tắt'
+  if (status === 'active') return 'Sẵn sàng'
+  if (status === 'coming_soon') return 'Sắp ra mắt'
+  return 'Tạm tắt'
 }
 
 const getServiceStatusClass = (status) => {
-  return status === 'active'
-    ? 'bg-emerald-100 text-emerald-700'
-    : 'bg-slate-100 text-slate-500'
-}
-
-const scrollToBottom = async () => {
-  await nextTick()
-  if (messagesContainer.value) {
-    messagesContainer.value.scrollTo({
-      top: messagesContainer.value.scrollHeight,
-      behavior: 'smooth'
-    })
-  }
+  if (status === 'active') return 'bg-emerald-50 text-emerald-600'
+  if (status === 'coming_soon') return 'bg-amber-50 text-amber-500'
+  return 'bg-slate-100 text-slate-400'
 }
 
 const handleSelectService = async (serviceId) => {
-  const isGuest = !useCookie('access_token').value
-
   selectedServiceId.value = serviceId
+  localStorage.setItem('selected_service_id', serviceId)
   isLoading.value = true
 
   try {
-    let convId = null
-
-    if (isGuest) {
-     const guestSessionId =
-        localStorage.getItem('guest_session_id') || crypto.randomUUID()
-
-      localStorage.setItem('guest_session_id', guestSessionId)
-
-      const res = await $fetch(
-          'https://platform-gateway-dev.orbitai.fun/v1/api/chat/conversations',
-          {
-            method: 'POST',
-            body: {
-              partner_service_id: serviceId,
-              guest_session_id: guestSessionId
-            }
-          }
-        )
-
-      convId = res?.data?.conversation_id
-
-      localStorage.setItem('conversation_id', convId)
-    } else {
-      convId = await createConversation(serviceId)
-    }
+    // Lấy service_name từ service được chọn để truyền vào sendMessage
+    const service = partnerServices.value?.find(s => s.id === serviceId)
+    const serviceName = service?.service_name || 'tourist'
+    const convId = await createConversation(serviceId, serviceName)
 
     if (convId) {
       await loadConversationHistory(convId)
       scrollToBottom()
     }
   } catch (err) {
-    console.error('Error createConversation:', err)
+    console.error('handleSelectService Error:', err)
   } finally {
     isLoading.value = false
   }
 }
 
 const handleSendMessage = async (text) => {
-  if (!text || !text.trim() || isLoading.value) return
+  if (!text?.trim() || isLoading.value) return
 
-  const isGuest = !useCookie('access_token').value
-
-  if (isGuest) {
-    const conversationId = localStorage.getItem('conversation_id')
-
-    if (!conversationId) {
-      toast.error('Chưa có cuộc hội thoại')
-      return
-    }
-
-    try {
-      isLoading.value = true
-
-      const res = await $fetch('/api/chat-messages', {
-        method: 'POST',
-        query: {
-          conversationId
-        },
-        body: {
-          message: text
-        }
-      })
-
-      messages.value.push({
-        role: 'user',
-        content: text
-      })
-
-      messages.value.push({
-        role: 'assistant',
-        content: res?.data?.response || 'Không có phản hồi'
-      })
-    } catch (err) {
-      console.error(err)
-    } finally {
-      isLoading.value = false
-      scrollToBottom()
-    }
-  } else {
+  try {
+    // KHÔNG push thủ công ở đây — useAIChatAPI.sendMessage đã tự push user + AI message
     await sendMessage(text)
     scrollToBottom()
+  } catch (err) {
+    console.error('sendMessage error:', err)
   }
 }
 
 const handleAskNews = (news) => {
   activeTab.value = 'messages'
+
   setTimeout(() => {
-    const prompt = `Tôi muốn hỏi về: ${news.title}. Bạn tư vấn thêm được không?`
-    handleSendMessage(prompt)
+    handleSendMessage(`Tôi muốn hỏi về: ${news.title}`)
   }, 200)
 }
 
 const refreshChat = async () => {
-  if (await toast.askConfirm('Bạn có muốn kết thúc cuộc trò chuyện này để chọn trợ lý khác?')) {
+  if (await toast.askConfirm('Kết thúc cuộc trò chuyện?')) {
     resetChat()
     selectedServiceId.value = null
     activeTab.value = 'messages'
   }
 }
 
+const refreshMessages = async () => {
+  showConfirm(
+    'Làm mới toàn bộ?',
+    'Cuộc trò chuyện hiện tại sẽ bị xoá giống như F5.',
+    () => {
+      resetChat()
+      selectedServiceId.value = null
+      localStorage.removeItem('selected_service_id')
+      localStorage.removeItem('guest_session_id')
+      activeTab.value = 'messages'
+    }
+  )
+}
+
 const backToServices = () => {
-  if (confirm('Quay lại danh sách trợ lý?')) {
-    resetChat()
-    selectedServiceId.value = null
-  }
+  showConfirm(
+    'Quay lại danh sách?',
+    'Cuộc trò chuyện hiện tại sẽ được lưu lại.',
+    () => {
+      resetChat()
+      selectedServiceId.value = null
+    }
+  )
 }
 
 watch(() => messages.value.length, scrollToBottom)
 
-watch(() => currentConversationId.value, (value) => {
-  if (!value) selectedServiceId.value = null
+watch(() => currentConversationId.value, (val) => {
+  if (!val) selectedServiceId.value = null
 })
 
 onMounted(async () => {
-  const isGuest = !useCookie('access_token').value
-
   await loadOrganization()
 
-  if (!isGuest) {
-    await loadPartnerServices()
-    await loadConversations()
+  if (!isGuest.value) {
+    await Promise.all([
+      loadConversations(),
+      loadPartnerServices()
+    ])
   } else {
-    console.warn('🚫 Guest mode → skip protected APIs')
+    console.warn('🚫 Guest mode active')
+    await loadPartnerServices()
+  }
 
-    const publicServices = await loadPublicServices()
-    partnerServices.value = publicServices
+  const savedServiceId = localStorage.getItem('selected_service_id')
+  if (savedServiceId) {
+    selectedServiceId.value = savedServiceId
+  }
+
+  if (currentConversationId.value) {
+    await loadConversationHistory(currentConversationId.value)
+    scrollToBottom()
   }
 })
 </script>
