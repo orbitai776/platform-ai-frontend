@@ -1,5 +1,6 @@
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { tmpdir } from 'node:os';
 
 export default defineEventHandler(async (event) => {
     const body = await readBody(event);
@@ -7,19 +8,15 @@ export default defineEventHandler(async (event) => {
     
     if (!uid) return { success: false, error: 'Missing UID' };
 
-    const filePath = resolve(process.cwd(), 'suspended_users.json');
+    // Sử dụng thư mục tạm của hệ điều hành (Vercel hỗ trợ /tmp)
+    const filePath = resolve(tmpdir(), 'suspended_users.json');
     
-    let blacklistMap = {}; // Use object to store uid: status
+    let blacklistMap: Record<string, string> = {};
+    
     if (existsSync(filePath)) {
         try {
             const content = readFileSync(filePath, 'utf-8');
             blacklistMap = JSON.parse(content);
-            // Migrate old array format if needed
-            if (Array.isArray(blacklistMap)) {
-                const oldArray = blacklistMap;
-                blacklistMap = {};
-                oldArray.forEach(id => { blacklistMap[id] = 'suspended'; });
-            }
         } catch (e) {
             console.error('[BLACKLIST API] Parse error:', e);
             blacklistMap = {};
@@ -34,7 +31,16 @@ export default defineEventHandler(async (event) => {
         delete blacklistMap[uid];
     }
 
-    writeFileSync(filePath, JSON.stringify(blacklistMap, null, 2));
+    try {
+        writeFileSync(filePath, JSON.stringify(blacklistMap, null, 2));
+        console.log(`[BLACKLIST] Saved to ${filePath}`);
+    } catch (err) {
+        console.error('[BLACKLIST WRITE ERROR]:', err);
+        throw createError({
+            statusCode: 500,
+            statusMessage: 'Không thể ghi file vào thư mục tạm'
+        });
+    }
     
     return { 
         success: true, 
@@ -42,3 +48,5 @@ export default defineEventHandler(async (event) => {
         action: action
     };
 });
+
+
