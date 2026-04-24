@@ -13,22 +13,19 @@ export default defineEventHandler(async (event) => {
   const jwtDecoded: any = jwtDecode(response.accessToken);
   const uid = jwtDecoded.uid;
 
-  // 2. Secondary check: Local Blacklist
+  // 2. Secondary check: Local Blacklist (lưu trong /tmp)
   try {
     const fs = await import('fs');
     const path = await import('path');
-    const BLACKLIST_FILE = path.join(process.cwd(), 'suspended_users.json');
-    
-    console.log(`[LOGIN BLACKLIST] Reading file from: ${BLACKLIST_FILE}`);
+    const os = await import('os');
+    const BLACKLIST_FILE = path.resolve(os.tmpdir(), 'suspended_users.json');
     
     if (fs.existsSync(BLACKLIST_FILE)) {
       const blacklist = JSON.parse(fs.readFileSync(BLACKLIST_FILE, 'utf-8'));
-      
-      // Check if blocked (supports both array and object formats)
-      const isBlocked = Array.isArray(blacklist) ? blacklist.includes(uid) : !!blacklist[uid];
+      const isBlocked = !!blacklist[uid];
       
       if (isBlocked) {
-        const status = Array.isArray(blacklist) ? 'suspended' : (blacklist[uid] || 'suspended');
+        const status = blacklist[uid] || 'suspended';
         console.log(`[LOGIN BLACKLIST] BLOCKED access for UID: ${uid} (Status: ${status})`);
         throw createError({
           statusCode: 403,
@@ -40,6 +37,8 @@ export default defineEventHandler(async (event) => {
     if (err.statusCode === 403) throw err;
     console.error('[LOGIN BLACKLIST ERROR]:', err.message);
   }
+
+
 
   // 3. Optional: Access test for standard user APIs (keep as fallback)
   try {
