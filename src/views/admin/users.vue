@@ -5,7 +5,12 @@
       <!-- Page Header -->
       <div class="flex flex-col sm:flex-row sm:items-end justify-between mb-10 gap-6">
         <div class="animate-in fade-in slide-in-from-left duration-700">
-          <h1 class="font-display-lg text-3xl md:text-4xl font-bold tracking-tighter text-slate-900 dark:text-[#e1e2ec] mb-2 transition-colors">Global User Management</h1>
+          <h1 class="font-display-lg text-3xl md:text-4xl font-bold tracking-tighter text-slate-900 dark:text-[#e1e2ec] mb-2 transition-colors flex items-center gap-3">
+            Global User Management
+            <span v-if="!loading" class="text-lg font-normal bg-slate-100 dark:bg-[#1d2027] px-3 py-1 rounded-full text-slate-500 dark:text-[#8c909f]">
+              {{ users.length }}
+            </span>
+          </h1>
           <p class="font-body-base text-sm text-slate-500 dark:text-[#c2c6d6] flex items-center gap-2 transition-colors">
             <span class="w-2 h-2 rounded-full bg-emerald-500 dark:bg-[#4edea3] shadow-[0_0_8px_rgba(16,185,129,0.4)] dark:shadow-[0_0_8px_rgba(78,222,163,0.8)]"></span>
             Manage identity, access, and organizational links across the orbital network.
@@ -13,6 +18,16 @@
         </div>
         
         <div class="flex gap-3 animate-in fade-in slide-in-from-right duration-700">
+          <button @click="showTrash = !showTrash" 
+            :class="[
+              'px-4 py-2.5 rounded-lg flex items-center gap-2 transition-all active:scale-95 text-sm font-medium border shadow-sm',
+              showTrash 
+                ? 'bg-rose-50 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-900/50' 
+                : 'bg-white dark:bg-[#1d2027]/40 text-slate-700 dark:text-[#c2c6d6] border-slate-200 dark:border-[#27272A] hover:bg-slate-50 dark:hover:bg-[#32353c]'
+            ]">
+            <span class="material-symbols-outlined text-[18px]">{{ showTrash ? 'person' : 'delete' }}</span>
+            {{ showTrash ? 'Back to Users' : 'Trash Bin' }}
+          </button>
           <button class="bg-white dark:bg-[#1d2027]/40 backdrop-blur-xl px-4 py-2.5 rounded-lg flex items-center gap-2 hover:bg-slate-50 dark:hover:bg-[#32353c] transition-all active:scale-95 text-sm font-medium border border-slate-200 dark:border-[#27272A] shadow-sm">
             <span class="material-symbols-outlined text-[18px]">download</span>
             Export CSV
@@ -80,7 +95,7 @@
                 </td>
               </tr>
 
-              <tr v-for="user in paginatedUsers" :key="user.id" 
+              <tr v-for="user in paginatedUsers" :key="`${user.id}-${user.status}`" 
                   class="border-b border-slate-50 dark:border-[#424754]/30 hover:bg-slate-50/80 dark:hover:bg-[#272a31]/30 transition-colors group relative"
                   :class="{'opacity-40 grayscale': user.status === 'deleted'}">
                 <td class="px-6 py-5">
@@ -109,24 +124,36 @@
                 </td>
                 <td class="px-6 py-5 text-right">
                   <div class="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button @click="openDetail(user.id)" 
-                      class="p-2 rounded-lg bg-slate-50 dark:bg-[#272a31] text-slate-400 dark:text-[#c2c6d6] hover:text-indigo-600 dark:hover:text-[#adc6ff] border border-slate-200 dark:border-[#424754] hover:border-indigo-500 dark:hover:border-[#adc6ff] transition-all" title="Details">
-                      <span class="material-symbols-outlined text-[20px]">visibility</span>
-                    </button>
-                    
-                    <button v-if="user.status === 'active'" @click="handleStatus(user.id, 'suspended')" 
-                      class="p-2 rounded-lg bg-slate-50 dark:bg-[#272a31] text-slate-400 dark:text-[#c2c6d6] hover:text-rose-500 dark:hover:text-[#ffb3ad] border border-slate-200 dark:border-[#424754] hover:border-rose-500 dark:hover:border-[#ffb3ad] transition-all" title="Suspend">
-                      <span class="material-symbols-outlined text-[20px]">block</span>
-                    </button>
-                    <button v-if="user.status === 'suspended'" @click="handleStatus(user.id, 'active')" 
-                      class="p-2 rounded-lg bg-slate-50 dark:bg-[#272a31] text-slate-400 dark:text-[#c2c6d6] hover:text-emerald-500 dark:hover:text-[#4edea3] border border-slate-200 dark:border-[#424754] hover:border-emerald-500 dark:hover:border-[#4edea3] transition-all" title="Activate">
-                      <span class="material-symbols-outlined text-[20px]">check_circle</span>
-                    </button>
-                    
-                    <button v-if="user.status !== 'deleted'" @click="handleDelete(user.id)" 
-                      class="p-2 rounded-lg bg-slate-50 dark:bg-[#272a31] text-rose-300 dark:text-[#ffb3ad]/70 hover:text-rose-600 dark:hover:text-[#ffb3ad] border border-slate-200 dark:border-[#424754] hover:border-rose-500 dark:hover:border-[#ffb3ad] transition-all" title="Delete">
-                      <span class="material-symbols-outlined text-[20px]">delete</span>
-                    </button>
+                    <template v-if="!showTrash">
+                      <button @click="openDetail(user.id)" 
+                        class="p-2 rounded-lg bg-slate-50 dark:bg-[#272a31] text-slate-400 dark:text-[#c2c6d6] hover:text-indigo-600 dark:hover:text-[#adc6ff] border border-slate-200 dark:border-[#424754] hover:border-indigo-500 dark:hover:border-[#adc6ff] transition-all" title="Details">
+                        <span class="material-symbols-outlined text-[20px]">visibility</span>
+                      </button>
+                      
+                      <button v-if="user.status === 'active'" @click="handleStatus(user.id, 'suspended')" 
+                        class="p-2 rounded-lg bg-slate-50 dark:bg-[#272a31] text-slate-400 dark:text-[#c2c6d6] hover:text-rose-500 dark:hover:text-[#ffb3ad] border border-slate-200 dark:border-[#424754] hover:border-rose-500 dark:hover:border-[#ffb3ad] transition-all" title="Suspend">
+                        <span class="material-symbols-outlined text-[20px]">block</span>
+                      </button>
+                      <button v-if="user.status === 'suspended'" @click="handleStatus(user.id, 'active')" 
+                        class="p-2 rounded-lg bg-slate-50 dark:bg-[#272a31] text-slate-400 dark:text-[#c2c6d6] hover:text-emerald-500 dark:hover:text-[#4edea3] border border-slate-200 dark:border-[#424754] hover:border-emerald-500 dark:hover:border-[#4edea3] transition-all" title="Activate">
+                        <span class="material-symbols-outlined text-[20px]">check_circle</span>
+                      </button>
+                      
+                      <button @click="handleSoftDelete(user.id)" 
+                        class="p-2 rounded-lg bg-slate-50 dark:bg-[#272a31] text-rose-300 dark:text-[#ffb3ad]/70 hover:text-rose-600 dark:hover:text-[#ffb3ad] border border-slate-200 dark:border-[#424754] hover:border-rose-500 dark:hover:border-[#ffb3ad] transition-all" title="Move to Trash">
+                        <span class="material-symbols-outlined text-[20px]">delete</span>
+                      </button>
+                    </template>
+                    <template v-else>
+                      <button @click="handleRestore(user.id)" 
+                        class="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 border border-emerald-200 dark:border-emerald-900/50 transition-all" title="Restore User">
+                        <span class="material-symbols-outlined text-[20px]">settings_backup_restore</span>
+                      </button>
+                      <button @click="handleHardDelete(user.id)" 
+                        class="p-2 rounded-lg bg-rose-50 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-300 border border-rose-200 dark:border-rose-900/50 transition-all" title="Delete Permanently">
+                        <span class="material-symbols-outlined text-[20px]">delete_forever</span>
+                      </button>
+                    </template>
                   </div>
                 </td>
               </tr>
@@ -278,22 +305,34 @@
 </style>
 
 <script setup>
-import { ref, onMounted, watch, computed } from 'vue'
+import { ref, reactive, onMounted, watch, computed } from 'vue'
 import useUserAdmin from '~/src/composables/useUserAdmin'
 
-const { users, currentUserDetail, loading, fetchUsers, fetchUserDetails, updateStatus, softDeleteUser } = useUserAdmin()
+const { 
+  users, 
+  currentUserDetail, 
+  loading, 
+  fetchUsers, 
+  fetchUserDetails, 
+  updateStatus, 
+  softDeleteUser, 
+  restoreUser, 
+  hardDeleteUser 
+} = useUserAdmin()
 
+const showTrash = ref(false)
 const searchQuery = ref('')
 const filterStatus = ref('')
 const isModalOpen = ref(false)
 
 // Pagination State
 const currentPage = ref(1)
-const itemsPerPage = 7
+const itemsPerPage = 100
 
 const totalPages = computed(() => Math.ceil(users.value.length / itemsPerPage) || 1)
 
 const paginatedUsers = computed(() => {
+  console.log(`[UI DEBUG] paginatedUsers updated. Total in users.value: ${users.value.length}`);
   const start = (currentPage.value - 1) * itemsPerPage
   return users.value.slice(start, start + itemsPerPage)
 })
@@ -306,27 +345,34 @@ const nextPage = () => {
   if (currentPage.value < totalPages.value) currentPage.value++
 }
 
-onMounted(() => fetchUsers())
-
-// Reset to first page when searching or filtering
-watch([searchQuery, filterStatus], () => {
-  currentPage.value = 1
-  fetchUsers({
-    page: 1,
-    limit: 1000, // Fetch all to handle client-side pagination correctly
-    search: searchQuery.value,
-    status: filterStatus.value
-  })
-})
-
-const handleSearch = () => {
-  currentPage.value = 1
+const refresh = () => {
   fetchUsers({
     page: 1,
     limit: 1000,
     search: searchQuery.value,
     status: filterStatus.value
   })
+  currentPage.value = 1
+}
+
+// Update status filter based on Trash toggle
+watch(showTrash, (newVal) => {
+  filterStatus.value = newVal ? 'deleted' : ''
+  refresh()
+})
+
+onMounted(() => refresh())
+
+// Reset to first page when searching or filtering
+watch([searchQuery, filterStatus], () => {
+  if (!showTrash.value) { // Only auto-refresh if not in trash mode or manually triggered
+     refresh()
+  }
+})
+
+const handleSearch = () => {
+  currentPage.value = 1
+  refresh()
 }
 
 const openDetail = async (id) => {
@@ -338,11 +384,23 @@ const openDetail = async (id) => {
 const handleStatus = async (id, status) => {
   const ok = await updateStatus(id, status)
   if (!ok) alert("Failed to update status")
+  // refresh() is NOT needed because useUserAdmin updates local state immediately
 }
 
-const handleDelete = async (id) => {
+const handleSoftDelete = async (id) => {
   const ok = await softDeleteUser(id)
   if (!ok) alert("Error deleting user")
+  // refresh() is NOT needed
+}
+
+const handleRestore = async (id) => {
+  await restoreUser(id)
+  refresh()
+}
+
+const handleHardDelete = async (id) => {
+  await hardDeleteUser(id)
+  refresh()
 }
 
 const getStatusStyle = (status) => {

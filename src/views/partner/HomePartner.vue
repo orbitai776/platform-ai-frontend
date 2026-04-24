@@ -80,7 +80,7 @@
 
         <div class="max-w-6xl mx-auto relative z-10">
           <PartnerOverview v-if="activeTab === 'overview'" />
-          <PartnerOrganization v-if="activeTab === 'organization'" :orgData="orgData" :profile="profile" @edit="openEditModal" />
+          <PartnerOrganization v-if="activeTab === 'organization'" :orgData="orgData" :profile="profile" :loading="loading" @edit="openEditModal" />
           <PartnerBilling v-if="activeTab === 'billing'" @topup="showTopupModal = true" />
           <PartnerAIConfig v-if="activeTab === 'ai-config'" @save="saveAIConfig" />
         </div>
@@ -146,6 +146,7 @@ const showTopupModal = ref(false)
 const profile = ref(null)
 const orgData = ref(null)
 const isOrgExists = ref(false)
+const loading = ref(false)
 
 // Watch activeTab changes and update URL
 watch(activeTab, (newTab) => {
@@ -185,13 +186,23 @@ const stars = ref(Array.from({ length: 6 }, (_, i) => ({
 
 // METHODS
 const loadOrganization = async () => {
+  loading.value = true;
   try {
     const result = await $fetch("/api/partner/organization");
     if (result.data) {
       orgData.value = result.data;
       isOrgExists.value = true;
+    } else {
+      orgData.value = null;
+      isOrgExists.value = false;
     }
-  } catch (err) { console.error("Org load failed:", err); }
+  } catch (err) { 
+    console.error("Org load failed:", err);
+    orgData.value = null;
+    isOrgExists.value = false;
+  } finally {
+    loading.value = false;
+  }
 }
 
 const openEditModal = () => {

@@ -144,17 +144,18 @@ onMounted(() => {
 });
 
 const handleBackendAuth = async (firebaseIdToken) => {
+  const { auth, signOut } = await import('~/src/auth/firebase.js');
   try {
-    await useFetch('/api/auth/login', {
+    await $fetch('/api/auth/login', {
       method: 'POST',
       body: { idToken: firebaseIdToken },
     });
 
-    const { data: userRolesData } = await useFetch('/api/auth/user-roles', {
+    const userRolesData = await $fetch('/api/auth/user-roles', {
       method: 'GET',
     });
 
-    const userRoles = userRolesData.value || [];
+    const userRoles = userRolesData || [];
 
     if (userRoles.includes('admin')) {
       window.location.href = '/admin';
@@ -165,7 +166,16 @@ const handleBackendAuth = async (firebaseIdToken) => {
     }
   } catch (error) {
     console.error('Backend auth failed:', error);
-    toast.error('Đăng nhập thất bại do lỗi phía Gateway hoặc tài khoản.');
+    
+    // Crucial: Sign out from Firebase if backend rejects the session
+    try {
+      await signOut(auth);
+    } catch (signOutError) {
+      console.error('Sign out failed after auth error:', signOutError);
+    }
+    
+    const message = error.data?.statusMessage || error.data?.message || 'Đăng nhập thất bại do lỗi phía Gateway hoặc tài khoản.';
+    toast.error(message);
   }
 };
 

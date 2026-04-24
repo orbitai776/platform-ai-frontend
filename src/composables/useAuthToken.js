@@ -2,6 +2,7 @@ import { auth } from '~/src/auth/firebase'
 import { onAuthStateChanged } from 'firebase/auth'
 
 let accessTokenCache = null;
+let lastUserUid = null;
 
 export function useAuthToken() {
 
@@ -19,7 +20,17 @@ export function useAuthToken() {
         if (process.server) return null;
 
         const user = await waitForAuth();
-        if (!user) return null;
+        if (!user) {
+            accessTokenCache = null;
+            lastUserUid = null;
+            return null;
+        }
+
+        // If user changed, clear cache
+        if (lastUserUid !== user.uid) {
+            accessTokenCache = null;
+            lastUserUid = user.uid;
+        }
 
         if (accessTokenCache && !forceRefresh) {
             return accessTokenCache;
@@ -28,8 +39,9 @@ export function useAuthToken() {
         try {
             const idToken = await user.getIdToken(true);
 
+            const gatewayUrl = import.meta.env?.VITE_GATEWAY_URL || process.env.VITE_GATEWAY_URL;
             const res = await fetch(
-                `${import.meta.env.VITE_GATEWAY_URL}/v1/api/auth`,
+                `${gatewayUrl}/v1/api/auth`,
                 {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
