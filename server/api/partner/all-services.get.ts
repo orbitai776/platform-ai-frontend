@@ -10,10 +10,12 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
+    console.log('[Server API] Calling Gateway:', `${config.public.gatewayUrl}/v1/api/partner/ai-services-all`);
     const response = await $fetch(`${config.public.gatewayUrl}/v1/api/partner/ai-services-all`, {
       method: 'GET',
       headers
     })
+    console.log('[Server API] Gateway Response Success, items:', Array.isArray(response) ? response.length : (response?.data?.length || 'object'));
     
     return response
   } catch (error: any) {

@@ -1,375 +1,310 @@
 <template>
-  <section class="min-h-screen bg-white text-slate-900 p-6">
-    <div class="max-w-7xl mx-auto">
-      <div class="flex items-center justify-between mb-6">
-        <h1 class="text-3xl font-bold">Blog News</h1>
-        <button
-          class="border border-sky-500 text-sky-400 px-4 py-2 rounded-lg hover:bg-sky-500/10 transition"
-        >
-          View all
-        </button>
-      </div>
-      <div
-        v-if="newsList.length"
-        class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"
-      >
-        <NuxtLink
-          v-for="news in newsList"
-          :key="news._id.$oid"
-          :to="`/newdetail/${news._id.$oid}`"
-          class="block"
-        >
-          <article
-            class="rounded-2xl overflow-hidden bg-white border border-slate-200 shadow-lg hover:scale-[1.02] hover:border-sky-500/50 transition duration-300"
-          >
-            <div
-              class="h-48 bg-gradient-to-br from-sky-100 via-indigo-100 to-slate-200 flex items-center justify-center text-lg font-semibold"
-            >
-              {{ news.title }}
-            </div>
+  <div class="bg-white dark:bg-[#09090B] text-slate-900 dark:text-on-background min-h-screen relative overflow-x-hidden font-body transition-colors duration-500">
+    <!-- Deep Space Background Orbs -->
+    <div class="fixed inset-0 z-0 overflow-hidden pointer-events-none">
+      <div class="absolute top-[-10%] left-[-10%] w-[50vw] h-[50vw] rounded-full bg-neon-cyan opacity-[0.05] dark:opacity-[0.1] blur-[120px] mix-blend-multiply dark:mix-blend-screen animate-nebula-1"></div>
+      <div class="absolute bottom-[-20%] right-[-10%] w-[60vw] h-[60vw] rounded-full bg-deep-purple opacity-[0.05] dark:opacity-[0.1] blur-[150px] mix-blend-multiply dark:mix-blend-screen animate-nebula-2"></div>
+    </div>
 
-            <div class="p-5 space-y-3">
-              <div class="flex items-start justify-between gap-3">
-                <h2 class="text-xl font-semibold leading-snug line-clamp-2">
+    <!-- Shooting Stars -->
+    <div class="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+      <div v-for="n in 5" :key="`star-${n}`" 
+        class="shooting-star opacity-0 dark:opacity-0 group-dark:opacity-100"
+        :style="{
+          left: `${Math.random() * 80 + 10}%`,
+          top: `${Math.random() * 40}%`,
+          animationDelay: `${Math.random() * 15}s`,
+          animationDuration: `${2.5 + Math.random() * 2}s`
+        }"
+      ></div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="relative z-10 pt-32 pb-24 px-6 md:px-12 max-w-container-max mx-auto">
+      <!-- Header -->
+      <header class="mb-24 flex flex-col items-center text-center">
+        <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 backdrop-blur-md mb-8 animate-fade-in">
+          <span class="w-2 h-2 rounded-full bg-neon-cyan animate-pulse shadow-[0_0_8px_#00f0ff]"></span>
+          <span class="font-display text-[0.7rem] font-bold text-neon-cyan uppercase tracking-widest">Intelligence Feed</span>
+        </div>
+        
+        <h1 class="font-display text-[clamp(2.5rem,6vw,4.5rem)] font-bold leading-[1.1] tracking-tight text-slate-900 dark:text-white mb-8 max-w-4xl animate-fade-in transition-colors">
+          Signals from the <span class="bg-gradient-to-r from-neon-cyan to-deep-purple bg-clip-text text-transparent animate-shimmer">Frontier</span>
+        </h1>
+        
+        <p class="text-slate-600 dark:text-on-surface-variant text-lg md:text-xl leading-relaxed max-w-2xl animate-fade-in delay-200 transition-colors">
+          Explore bleeding-edge developments in cognitive architecture, synthetic reasoning, and the evolving ecosystem of Orbit AI.
+        </p>
+      </header>
+
+      <!-- Bento Grid -->
+      <div v-if="newsList.length" class="grid grid-cols-1 md:grid-cols-12 gap-8">
+        <template v-for="(news, index) in newsList" :key="news._id.$oid">
+          <NuxtLink 
+            :to="`/newdetail/${news._id.$oid}`"
+            class="glass-card-wrapper group cursor-pointer transition-all duration-500"
+            :class="index === 0 ? 'md:col-span-8' : 'md:col-span-4'"
+          >
+            <div class="glass-card-inner flex flex-col relative h-full overflow-hidden transition-all duration-500 bg-white/20 dark:bg-white/[0.03] border border-slate-200 dark:border-white/10 group-hover:bg-white/40 dark:group-hover:bg-white/[0.05] shadow-lg dark:shadow-none group-hover:shadow-[0_0_40px_rgba(0,240,255,0.15)]">
+              
+              <!-- Card Image -->
+              <div :class="index === 0 ? 'h-80' : 'h-48'" class="w-full relative overflow-hidden rounded-t-2xl">
+                <img 
+                  v-if="news.cover_image"
+                  :src="news.cover_image" 
+                  class="w-full h-full object-cover opacity-100 group-hover:scale-105 transition-transform duration-700 ease-out"
+                />
+                <div v-else class="w-full h-full bg-gradient-to-br from-slate-100 to-white dark:from-white/5 dark:to-white/0 flex items-center justify-center p-8">
+                  <span class="font-display text-2xl font-bold text-slate-200 dark:text-white/10 group-hover:text-neon-cyan/20 transition-colors">{{ news.title }}</span>
+                </div>
+                <div class="absolute inset-0 bg-gradient-to-t from-white/20 dark:from-[#09090B]/80 to-transparent transition-colors"></div>
+              </div>
+
+              <!-- Card Content -->
+              <div class="p-8 flex flex-col flex-grow">
+                <div class="flex gap-3 mb-6">
+                  <span v-for="tag in news.tags.slice(0, 2)" :key="tag" 
+                    class="bg-deep-purple/10 dark:bg-deep-purple/20 text-deep-purple dark:text-neon-cyan font-display text-[0.6rem] font-bold px-3 py-1 rounded-full uppercase tracking-widest border border-deep-purple/20 dark:border-deep-purple/30 transition-colors">
+                    {{ tag }}
+                  </span>
+                  <span v-if="news.status === 'published'" class="ml-auto text-[0.6rem] font-bold text-neon-cyan uppercase tracking-widest">
+                    Live
+                  </span>
+                </div>
+
+                <h2 :class="index === 0 ? 'text-3xl' : 'text-xl'" class="font-display font-bold text-slate-900 dark:text-white mb-4 group-hover:text-neon-cyan transition-colors leading-tight">
                   {{ news.title }}
                 </h2>
-                <span
-                  class="text-xs px-3 py-1 rounded-full border"
-                  :class="
-                    news.status === 'published'
-                      ? 'border-emerald-500 text-emerald-400'
-                      : 'border-amber-500 text-amber-400'
-                  "
-                >
-                  {{ news.status }}
-                </span>
-              </div>
 
-              <p class="text-sm text-slate-500">
-                {{ formatDate(news.published_at) }}
-              </p>
+                <p class="text-slate-500 dark:text-on-surface-variant text-sm leading-relaxed mb-8 flex-grow line-clamp-3 transition-colors">
+                  {{ news.body }}
+                </p>
 
-              <p class="text-slate-700 line-clamp-3">
-                {{ news.body }}
-              </p>
-
-              <div class="flex flex-wrap gap-2 pt-2">
-                <span
-                  v-for="tag in news.tags"
-                  :key="tag"
-                  class="text-xs bg-sky-50 text-sky-700 px-2 py-1 rounded-md"
-                >
-                  #{{ tag }}
-                </span>
+                <div class="flex items-center justify-between pt-6 border-t border-slate-100 dark:border-white/5 mt-auto transition-colors">
+                  <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 flex items-center justify-center transition-colors">
+                      <span class="material-symbols-outlined text-slate-400 dark:text-white/40 text-[16px]">code</span>
+                    </div>
+                    <span class="text-[0.7rem] font-bold text-slate-400 dark:text-white/40 uppercase tracking-wider transition-colors">Orbit Core</span>
+                  </div>
+                  <span class="text-[0.7rem] font-bold text-slate-300 dark:text-white/20 uppercase tracking-widest transition-colors">{{ formatDate(news.published_at) }}</span>
+                </div>
               </div>
             </div>
-          </article>
-        </NuxtLink>
+          </NuxtLink>
+        </template>
       </div>
-      <div v-else class="text-center py-16 text-slate-500">No news found.</div>
-    </div>
-  </section>
+
+      <div v-else class="text-center py-32">
+        <div class="inline-block animate-spin w-8 h-8 border-4 border-neon-cyan/20 border-t-neon-cyan rounded-full mb-4"></div>
+        <p class="font-display text-sm tracking-widest text-slate-400 dark:text-white/40 transition-colors">SYNCING DATASTREAMS...</p>
+      </div>
+
+      <!-- Load More -->
+      <div v-if="newsList.length" class="mt-24 flex justify-center">
+        <button class="bg-white dark:bg-transparent border border-slate-200 dark:border-white/10 hover:border-neon-cyan text-slate-500 dark:text-white/60 hover:text-neon-cyan px-10 py-4 rounded-full font-display text-[0.7rem] font-bold uppercase tracking-[0.2em] transition-all duration-300 flex items-center gap-3 group shadow-sm dark:shadow-none">
+          Load More Transmissions
+          <span class="material-symbols-outlined text-[18px] group-hover:translate-y-1 transition-transform">expand_more</span>
+        </button>
+      </div>
+    </main>
+
+    <!-- Footer Space -->
+    <div class="h-32"></div>
+  </div>
 </template>
 
 <script setup>
-import { onMounted,ref } from 'vue';
-import { auth } from '../src/auth/firebase'
+import { ref, onMounted } from 'vue';
+import { auth } from '../src/auth/firebase';
 
-const accessToken = ref('')
+const accessToken = ref('');
+const loading = ref(true);
+
 onMounted(async () => {
+  setTimeout(() => {
+    loading.value = false;
+  }, 1000);
+
   try {
-   const user = auth.currentUser;
-    if (!user) {
-      console.error('Chưa đăng nhập Firebase')
-      return
-    }
-    const idToken = await user.getIdToken()
-    const authRes = await fetch(
-      'https://platform-gateway-dev.orbitai.fun/v1/api/auth',
-      {
+    const user = auth.currentUser;
+    if (user) {
+      const idToken = await user.getIdToken();
+      const authRes = await fetch('https://platform-gateway-dev.orbitai.fun/v1/api/auth', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ idToken })
-      }
-    )
-    const authData = await authRes.json()
-    accessToken.value = authData.accessToken
-    const updateRes = await fetch(
-      'https://platform-gateway-dev.orbitai.fun/v1/api/partner/organization',
-      {
-        method: 'PATCH',
-        headers: {
-          Authorization: `Bearer ${accessToken.value}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          name: 'New Organization Name',
-          phone: '1234567890',
-          address: '123 New Address, City, Country'
-        })
-      }
-    )
-    const updateData = await updateRes.json()
-    console.log('Cập nhật tổ chức thành công:', updateData)
+      });
+      const authData = await authRes.json();
+      accessToken.value = authData.accessToken;
+    }
   } catch (err) {
-    console.error('Lỗi API:', err)
+    console.error('API Sync Error:', err);
   }
-})
-
-
-const route = useRoute();
+});
 
 const newsList = [
   {
-    _id: {
-      $oid: "69ce264233c6cfc31e1482b1",
-    },
-    title: "Tin tức 14",
-    slug: "tin-tuc-14",
-    body: "Nội dung bài viết...",
-    cover_image: null,
-    tags: ["du lịch", "AI", "booking"],
-    status: "draft",
-    author_id: "d2c77fd2-a90f-4f6d-8d03-bd2798614c59",
-    published_at: {
-      $date: "2026-04-02T08:18:10.599Z",
-    },
-    created_at: {
-      $date: "2026-04-02T08:18:10.599Z",
-    },
-    updated_at: {
-      $date: "2026-04-02T08:18:10.599Z",
-    },
-  },
-  {
-    _id: {
-      $oid: "69ce264233c6cfc31e1482c6",
-    },
-    title: "Tin tức 35",
-    slug: "tin-tuc-35",
-    body: "Nội dung bài viết...",
-    cover_image: null,
-    tags: ["du lịch", "AI", "booking"],
+    _id: { $oid: "69ce264233c6cfc31e1482b1" },
+    title: "Introducing the Quantum-State Routing Protocol",
+    body: "Our latest infrastructural update enables sub-millisecond dynamic routing across global node clusters, reducing latency for complex inference tasks by 40%. This breakthrough allows for real-time sentient-grade model interactions.",
+    cover_image: "https://images.unsplash.com/photo-1639322537228-f710d846310a?q=80&w=2000&auto=format&fit=crop",
+    tags: ["Architecture", "Infrastructure"],
     status: "published",
-    author_id: "d2c77fd2-a90f-4f6d-8d03-bd2798614c59",
-    published_at: null,
-    created_at: {
-      $date: "2026-04-02T08:18:10.600Z",
-    },
-    updated_at: {
-      $date: "2026-04-02T08:18:10.600Z",
-    },
+    published_at: { $date: "2024-10-24T08:18:10.599Z" }
   },
   {
-    _id: {
-      $oid: "69ce264233c6cfc31e1482df",
-    },
-    title: "Tin tức 60",
-    slug: "tin-tuc-60",
-    body: "Nội dung bài viết...",
-    cover_image: null,
-    tags: ["du lịch", "AI", "booking"],
-    status: "draft",
-    author_id: "d2c77fd2-a90f-4f6d-8d03-bd2798614c59",
-    published_at: {
-      $date: "2026-04-02T08:18:10.600Z",
-    },
-    created_at: {
-      $date: "2026-04-02T08:18:10.600Z",
-    },
-    updated_at: {
-      $date: "2026-04-02T08:18:10.600Z",
-    },
-  },
-  {
-    _id: {
-      $oid: "69ce264233c6cfc31e1482e4",
-    },
-    title: "Tin tức 65",
-    slug: "tin-tuc-65",
-    body: "Nội dung bài viết...",
-    cover_image: null,
-    tags: ["du lịch", "AI", "booking"],
+    _id: { $oid: "69ce264233c6cfc31e1482c6" },
+    title: "Orbit Studio 2.5: Enhanced Context",
+    body: "Developers can now leverage expanded continuous context windows within the Studio interface, allowing for deeper semantic tracking in long-form generation and complex codebase analysis.",
+    cover_image: "https://images.unsplash.com/photo-1633356122544-f134324a6cee?q=80&w=2000&auto=format&fit=crop",
+    tags: ["Update", "Studio"],
     status: "published",
-    author_id: "d2c77fd2-a90f-4f6d-8d03-bd2798614c59",
-    published_at: null,
-    created_at: {
-      $date: "2026-04-02T08:18:10.600Z",
-    },
-    updated_at: {
-      $date: "2026-04-02T08:18:10.600Z",
-    },
+    published_at: { $date: "2024-10-18T08:18:10.600Z" }
   },
   {
-    _id: {
-      $oid: "69ce264233c6cfc31e148300",
-    },
-    title: "Tin tức 93",
-    slug: "tin-tuc-93",
-    body: "Nội dung bài viết...",
-    cover_image: null,
-    tags: ["du lịch", "AI", "booking"],
+    _id: { $oid: "69ce264233c6cfc31e1482df" },
+    title: "Expanding the Enterprise Edge",
+    body: "Deployments in the APAC region are now supported by localized edge inference nodes, ensuring strict data residency compliance without sacrificing processing speed or precision.",
+    cover_image: "https://images.unsplash.com/photo-1558494949-ef010cbdcc51?q=80&w=2000&auto=format&fit=crop",
+    tags: ["Ecosystem", "Enterprise"],
     status: "published",
-    author_id: "d2c77fd2-a90f-4f6d-8d03-bd2798614c59",
-    published_at: null,
-    created_at: {
-      $date: "2026-04-02T08:18:10.600Z",
-    },
-    updated_at: {
-      $date: "2026-04-02T08:18:10.600Z",
-    },
+    published_at: { $date: "2024-10-12T08:18:10.600Z" }
   },
   {
-    _id: {
-      $oid: "69ce264233c6cfc31e148301",
-    },
-    title: "Tin tức 94",
-    slug: "tin-tuc-94",
-    body: "Nội dung bài viết...",
-    cover_image: null,
-    tags: ["du lịch", "AI", "booking"],
-    status: "draft",
-    author_id: "d2c77fd2-a90f-4f6d-8d03-bd2798614c59",
-    published_at: {
-      $date: "2026-04-02T08:18:10.600Z",
-    },
-    created_at: {
-      $date: "2026-04-02T08:18:10.600Z",
-    },
-    updated_at: {
-      $date: "2026-04-02T08:18:10.600Z",
-    },
-  },
-  {
-    _id: {
-      $oid: "69ce264233c6cfc31e1482bd",
-    },
-    title: "Tin tức 26",
-    slug: "tin-tuc-26",
-    body: "Nội dung bài viết...",
-    cover_image: null,
-    tags: ["du lịch", "AI", "booking"],
-    status: "draft",
-    author_id: "d2c77fd2-a90f-4f6d-8d03-bd2798614c59",
-    published_at: {
-      $date: "2026-04-02T08:18:10.599Z",
-    },
-    created_at: {
-      $date: "2026-04-02T08:18:10.600Z",
-    },
-    updated_at: {
-      $date: "2026-04-02T08:18:10.600Z",
-    },
-  },
-  {
-    _id: {
-      $oid: "69ce264233c6cfc31e1482cb",
-    },
-    title: "Tin tức 40",
-    slug: "tin-tuc-40",
-    body: "Nội dung bài viết...",
-    cover_image: null,
-    tags: ["du lịch", "AI", "booking"],
-    status: "draft",
-    author_id: "d2c77fd2-a90f-4f6d-8d03-bd2798614c59",
-    published_at: {
-      $date: "2026-04-02T08:18:10.600Z",
-    },
-    created_at: {
-      $date: "2026-04-02T08:18:10.600Z",
-    },
-    updated_at: {
-      $date: "2026-04-02T08:18:10.600Z",
-    },
-  },
-  {
-    _id: {
-      $oid: "69ce264233c6cfc31e1482da",
-    },
-    title: "Tin tức 55",
-    slug: "tin-tuc-55",
-    body: "Nội dung bài viết...",
-    cover_image: null,
-    tags: ["du lịch", "AI", "booking"],
+    _id: { $oid: "69ce264233c6cfc31e1482e4" },
+    title: "Mitigating Hallucinations in LLMs",
+    body: "A deep dive into our latest whitepaper detailing asynchronous validation loops that cross-reference model outputs against verified external datasets in real-time.",
+    cover_image: "https://images.unsplash.com/photo-1677442136019-21780ecad995?q=80&w=2000&auto=format&fit=crop",
+    tags: ["Research", "Safety"],
     status: "published",
-    author_id: "d2c77fd2-a90f-4f6d-8d03-bd2798614c59",
-    published_at: null,
-    created_at: {
-      $date: "2026-04-02T08:18:10.600Z",
-    },
-    updated_at: {
-      $date: "2026-04-02T08:18:10.600Z",
-    },
+    published_at: { $date: "2024-10-05T08:18:10.600Z" }
   },
   {
-    _id: {
-      $oid: "69ce264233c6cfc31e1482dd",
-    },
-    title: "Tin tức 58",
-    slug: "tin-tuc-58",
-    body: "Nội dung bài viết...",
-    cover_image: null,
-    tags: ["du lịch", "AI", "booking"],
-    status: "draft",
-    author_id: "d2c77fd2-a90f-4f6d-8d03-bd2798614c59",
-    published_at: {
-      $date: "2026-04-02T08:18:10.600Z",
-    },
-    created_at: {
-      $date: "2026-04-02T08:18:10.600Z",
-    },
-    updated_at: {
-      $date: "2026-04-02T08:18:10.600Z",
-    },
+    _id: { $oid: "69ce264233c6cfc31e148300" },
+    title: "Next-Gen Spatial Analysis Tools",
+    body: "Our computer vision APIs have been upgraded to support real-time 3D spatial mapping and depth estimation from standard 2D video feeds using advanced neural depth prediction.",
+    cover_image: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=2000&auto=format&fit=crop",
+    tags: ["Vision", "Spatial AI"],
+    status: "published",
+    published_at: { $date: "2024-09-28T08:18:10.600Z" }
   },
   {
-    _id: {
-      $oid: "69ce264233c6cfc31e1482e9",
-    },
-    title: "Tin tức 70",
-    slug: "tin-tuc-70",
-    body: "Nội dung bài viết...",
-    cover_image: null,
-    tags: ["du lịch", "AI", "booking"],
-    status: "draft",
-    author_id: "d2c77fd2-a90f-4f6d-8d03-bd2798614c59",
-    published_at: {
-      $date: "2026-04-02T08:18:10.600Z",
-    },
-    created_at: {
-      $date: "2026-04-02T08:18:10.600Z",
-    },
-    updated_at: {
-      $date: "2026-04-02T08:18:10.600Z",
-    },
-  },
-  {
-    _id: {
-      $oid: "69ce264233c6cfc31e148301",
-    },
-    title: "Tin tức 99",
-    slug: "tin-tuc-99",
-    body: "Nội dung bài viết...",
-    cover_image: null,
-    tags: ["du lịch", "AI", "booking"],
-    status: "draft",
-    author_id: "d2c77fd2-a90f-4f6d-8d03-bd2798614c59",
-    published_at: {
-      $date: "2026-04-02T08:18:10.600Z",
-    },
-    created_at: {
-      $date: "2026-04-02T08:18:10.600Z",
-    },
-    updated_at: {
-      $date: "2026-04-02T08:18:10.600Z",
-    },
-  },
+    _id: { $oid: "69ce264233c6cfc31e148301" },
+    title: "Securing Proprietary Weights",
+    body: "New post-quantum cryptographic primitives are now standard across all Orbit AI clusters, ensuring your intellectual property remains secure against tomorrow's threats.",
+    cover_image: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=2000&auto=format&fit=crop",
+    tags: ["Security", "Encryption"],
+    status: "published",
+    published_at: { $date: "2024-09-15T08:18:10.600Z" }
+  }
 ];
 
 const formatDate = (date) => {
   if (!date?.$date) return "N/A";
-  return new Date(date.$date).toLocaleDateString("vi-VN");
+  return new Date(date.$date).toLocaleDateString("en-US", {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric'
+  });
 };
 </script>
+
+<style scoped>
+.glass-card-wrapper {
+  position: relative;
+  padding: 1px;
+  border-radius: 1.5rem;
+}
+
+.glass-card-inner {
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: calc(1.5rem - 1px);
+}
+
+@keyframes nebula-1 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(5%, 10%) scale(1.1); }
+  66% { transform: translate(-10%, -5%) scale(0.9); }
+}
+
+@keyframes nebula-2 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(-10%, -5%) scale(1.1); }
+  66% { transform: translate(5%, 10%) scale(0.9); }
+}
+
+.animate-nebula-1 {
+  animation: nebula-1 20s infinite ease-in-out;
+}
+
+.animate-nebula-2 {
+  animation: nebula-2 25s infinite ease-in-out;
+}
+
+.animate-fade-in {
+  animation: fadeIn 1s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+.animate-shimmer {
+  display: inline-block;
+  color: #1e293b;
+  position: relative;
+  background-size: 200% auto;
+  animation: shimmer 5s linear infinite;
+}
+
+.dark .animate-shimmer {
+  color: #fff;
+}
+
+@supports (background-clip: text) or (-webkit-background-clip: text) {
+  .animate-shimmer {
+    background-image: linear-gradient(90deg, #1e293b, #00f0ff, #1e293b);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  
+  .dark .animate-shimmer {
+    background-image: linear-gradient(90deg, #fff, #00f0ff, #fff);
+  }
+}
+
+.shooting-star {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  background: #fff;
+  border-radius: 50%;
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.1), 0 0 0 8px rgba(255, 255, 255, 0.1), 0 0 20px rgba(255, 255, 255, 1);
+  animation: shooting 3s linear infinite;
+}
+
+.shooting-star::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 300px;
+  height: 1px;
+  background: linear-gradient(90deg, #fff, transparent);
+}
+
+@keyframes shooting {
+  0% { transform: rotate(-45deg) translateX(0); opacity: 1; }
+  70% { opacity: 1; }
+  100% { transform: rotate(-45deg) translateX(-1000px); opacity: 0; }
+}
+</style>

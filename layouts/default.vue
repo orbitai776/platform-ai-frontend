@@ -1,10 +1,8 @@
 <template>
-  <div class="min-h-screen bg-gray-50">
+  <div class="min-h-screen" style="background-color: var(--bg-color);">
     <Navbar />
-        <main class="container mx-auto px-4 py-8">
-      <slot />
-    </main>
-    <Footer />
+    <slot />
+    <!-- Footer is now inside pages to allow for specific styling, or can be moved back here if standardized -->
   </div>
 </template>
 

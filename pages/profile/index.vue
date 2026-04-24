@@ -1,239 +1,249 @@
 <template>
-  <section class="min-h-screen bg-slate-50 p-8">
-    <div
-      class="max-w-6xl mx-auto bg-white rounded-3xl shadow-xl border border-slate-200 overflow-hidden"
-    >
-      <div class="grid md:grid-cols-3">
-        <!-- LEFT SIDEBAR -->
-        <div
-          class="bg-slate-100 p-8 flex flex-col items-center justify-center border-r"
-        >
-          <div v-if="user">
-            <img
-              :src="user.photoURL"
-              alt="Avatar"
-              class="w-36 h-36 rounded-full shadow-lg border-4 border-white"
-            />
+  <div class="min-h-screen bg-slate-50 dark:bg-[#060b13] text-slate-900 dark:text-white font-['Inter'] relative overflow-x-hidden selection:bg-cyan-500/30 transition-colors duration-500">
+    <!-- Ambient Grid Background -->
+    <div class="fixed inset-0 pointer-events-none opacity-[0.03] dark:opacity-20" style="background-image: radial-gradient(circle, currentColor 1px, transparent 1px); background-size: 50px 50px;"></div>
+    
+    <!-- MAIN PROFILE CONTENT -->
+    <main class="max-w-[1400px] mx-auto px-12 pt-32 pb-20 grid grid-cols-12 gap-8 relative z-10">
+      
+      <!-- LEFT SECTION -->
+      <div class="col-span-12 lg:col-span-4 flex flex-col gap-8">
+        <!-- Identity Card -->
+        <div class="glass-card rounded-[2rem] p-10 flex flex-col items-center text-center bg-white dark:bg-white/5 border border-slate-200 dark:border-white/5 shadow-xl dark:shadow-none transition-colors">
+          <div class="relative mb-8">
+            <div class="absolute inset-0 bg-indigo-500 dark:bg-cyan-500 rounded-full blur-3xl opacity-10 dark:opacity-20"></div>
+            <div class="w-40 h-40 rounded-full p-1.5 border-2 border-slate-200 dark:border-cyan-500/20 relative">
+              <img :src="user?.photoURL || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=256&h=256'" class="w-full h-full rounded-full object-cover relative z-10" alt="Avatar" />
+              <button @click="openEditModal" class="absolute bottom-2 right-2 bg-white dark:bg-[#1a1a1a] border border-slate-200 dark:border-white/20 rounded-full p-2 hover:bg-indigo-50 dark:hover:bg-cyan-500/20 hover:border-indigo-400 dark:hover:border-cyan-400 transition-all z-20 shadow-lg">
+                <span class="material-symbols-outlined text-slate-600 dark:text-white text-sm">edit</span>
+              </button>
+            </div>
           </div>
-          <div
-            v-else
-            class="w-36 h-36 rounded-full bg-slate-300 flex items-center justify-center text-4xl font-bold text-slate-500"
-          >
-            ?
-          </div>
-          <h2 class="mt-5 text-2xl font-bold text-slate-800">
-            {{ user?.displayName || "Guest User" }}
-          </h2>
-          <p class="text-slate-500 text-sm mt-1">
-            {{ user?.email || "No email" }}
+          
+          <h1 class="text-4xl font-bold font-['Space_Grotesk'] text-slate-900 dark:text-white mb-2 tracking-tight transition-colors">{{ user?.displayName || 'Elara Vance' }}</h1>
+          <p class="text-xs font-bold text-indigo-600 dark:text-cyan-400 uppercase tracking-[0.2em] flex items-center gap-2 mb-10 transition-colors">
+            <span class="material-symbols-outlined text-[18px]">verified</span> 
+            Level 7 Neural Operator
           </p>
-          <div class="mt-6 flex flex-col gap-3 w-full">
-            <button
-              v-if="user"
-              @click="openEditModal"
-              class="w-full px-4 py-3 bg-yellow-600 text-white rounded-xl hover:bg-yellow-700 transition"
-            >
-              Edit Profile
-            </button>
 
-            <button
-              v-if="user"
-              @click="signOutUser"
-              class="w-full px-4 py-3 bg-red-600 text-white rounded-xl hover:bg-red-700 transition"
-            >
-              Logout
-            </button>
+          <div class="w-full grid grid-cols-2 gap-4 border-t border-slate-100 dark:border-white/5 pt-8">
+            <div class="flex flex-col items-center border-r border-slate-100 dark:border-white/5">
+              <span class="text-[9px] text-slate-400 dark:text-white/30 uppercase tracking-[0.2em] mb-2 font-bold transition-colors">Compute Hours</span>
+              <span class="text-3xl font-bold text-indigo-600 dark:text-cyan-400 font-['Space_Grotesk'] tracking-tighter transition-colors">1,420</span>
+            </div>
+            <div class="flex flex-col items-center">
+              <span class="text-[9px] text-slate-400 dark:text-white/30 uppercase tracking-[0.2em] mb-2 font-bold transition-colors">Syntheses</span>
+              <span class="text-3xl font-bold text-purple-600 dark:text-purple-400 font-['Space_Grotesk'] tracking-tighter transition-colors">89</span>
+            </div>
           </div>
         </div>
-        <!-- RIGHT CONTENT -->
-        <div class="md:col-span-2 p-8">
-          <!-- TOP TAB BUTTONS -->
-          <div class="flex gap-3 mb-6">
-            <NuxtLink
-              to="/profile"
-              class="px-5 py-2 rounded-xl font-medium bg-blue-600 text-white hover:bg-blue-700 transition"
-            >
-              User Profile
-            </NuxtLink>
 
-            <NuxtLink
-              to="/profile/organization"
-              class="px-5 py-2 rounded-xl font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 transition"
-            >
-              Organization Profile
-            </NuxtLink>
-          </div>
-
-          <!-- TITLE -->
-          <h1 class="text-3xl font-bold text-slate-800 mb-8">
-            Profile Information
-          </h1>
-
-          <!-- PROFILE INFO -->
-          <div class="grid md:grid-cols-2 gap-6">
-            <div class="bg-slate-50 rounded-2xl p-5 border">
-              <p class="text-sm text-slate-500">Username</p>
-              <p class="text-lg font-semibold">
-                {{ user?.displayName || "N/A" }}
-              </p>
-            </div>
-
-            <div class="bg-slate-50 rounded-2xl p-5 border">
-              <p class="text-sm text-slate-500">Email</p>
-              <p class="text-lg font-semibold">
-                {{ user?.email || "N/A" }}
-              </p>
-            </div>
-
-            <div class="bg-slate-50 rounded-2xl p-5 border">
-              <p class="text-sm text-slate-500">Phone</p>
-              <p class="text-sm font-medium break-all">
-                {{ user?.phoneNumber || "N/A" }}
-              </p>
-            </div>
-
-            <div class="bg-slate-50 rounded-2xl p-5 border">
-              <p class="text-sm text-slate-500">Provider</p>
-              <p class="text-lg font-semibold">
-                {{ user?.providerData?.[0]?.providerId || "N/A" }}
-              </p>
+        <!-- Linked Arrays Card -->
+        <div class="glass-card rounded-[2rem] p-8 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/5 transition-colors">
+          <h2 class="text-[10px] text-slate-400 dark:text-white/30 uppercase tracking-[0.2em] mb-8 border-b border-slate-100 dark:border-white/5 pb-4 font-bold transition-colors">Linked Arrays</h2>
+          <div class="space-y-4">
+            <div v-for="link in links" :key="link.name" class="flex items-center justify-between p-5 rounded-2xl bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/5 hover:bg-slate-100 dark:hover:bg-white/10 transition-all cursor-pointer">
+              <div class="flex items-center gap-4">
+                <span class="material-symbols-outlined text-slate-400 dark:text-white/40 group-hover:text-slate-900 dark:group-hover:text-white">{{ link.icon }}</span>
+                <span class="text-xs font-bold text-slate-700 dark:text-white/80 transition-colors">{{ link.name }}</span>
+              </div>
+              <span class="text-[10px] font-bold uppercase tracking-widest transition-colors" :class="link.status === 'Connected' ? 'text-indigo-600 dark:text-cyan-400' : 'text-slate-300 dark:text-white/20'">{{ link.status }}</span>
             </div>
           </div>
         </div>
       </div>
-    </div>
-  </section>
 
-  <!-- MODAL -->
-  <div
-    v-if="showEditModal"
-    class="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
-  >
-    <div class="bg-white w-full max-w-lg rounded-2xl shadow-xl p-6">
-      <h2 class="text-2xl font-bold mb-6">Edit Profile</h2>
+      <!-- RIGHT SECTION -->
+      <div class="col-span-12 lg:col-span-8 flex flex-col gap-8">
+        <!-- Core Parameters Card -->
+        <div class="glass-card rounded-[2rem] p-12 flex-grow bg-white dark:bg-white/5 border border-slate-200 dark:border-white/5 transition-colors">
+          <div class="flex items-center justify-between mb-12 border-b border-slate-100 dark:border-white/5 pb-8">
+            <div>
+              <h2 class="text-3xl font-bold text-slate-900 dark:text-white font-['Space_Grotesk'] transition-colors">Core Parameters</h2>
+              <p class="text-sm text-slate-500 dark:text-white/40 mt-1 transition-colors">Manage your foundational identity data within the Orbit network.</p>
+            </div>
+          </div>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-10">
+            <div class="flex flex-col gap-3">
+              <label class="text-[10px] text-slate-400 dark:text-white/40 uppercase tracking-[0.2em] font-bold transition-colors">First Name</label>
+              <input v-model="profileForm.firstName" type="text" class="bg-slate-50 dark:bg-[#0c121d] border border-slate-200 dark:border-white/10 rounded-xl px-6 py-4 text-slate-900 dark:text-white focus:border-indigo-500/50 dark:focus:border-cyan-500/50 outline-none transition-all" placeholder="Elara" />
+            </div>
+            <div class="flex flex-col gap-3">
+              <label class="text-[10px] text-slate-400 dark:text-white/40 uppercase tracking-[0.2em] font-bold transition-colors">Last Name</label>
+              <input v-model="profileForm.lastName" type="text" class="bg-slate-50 dark:bg-[#0c121d] border border-slate-200 dark:border-white/10 rounded-xl px-6 py-4 text-slate-900 dark:text-white focus:border-indigo-500/50 dark:focus:border-cyan-500/50 outline-none transition-all" placeholder="Vance" />
+            </div>
+            <div class="flex flex-col gap-3 md:col-span-2">
+              <label class="text-[10px] text-slate-400 dark:text-white/40 uppercase tracking-[0.2em] font-bold transition-colors">Email Address</label>
+              <div class="relative">
+                <span class="material-symbols-outlined absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-white/20 transition-colors">mail</span>
+                <input v-model="profileForm.email" type="email" class="w-full bg-slate-50 dark:bg-[#0c121d] border border-slate-200 dark:border-white/10 rounded-xl pl-14 pr-6 py-4 text-slate-900 dark:text-white focus:border-indigo-500/50 dark:focus:border-cyan-500/50 outline-none transition-all" placeholder="elara.vance@orbit.net" />
+              </div>
+            </div>
+            
+            <div class="md:col-span-2 flex justify-end mt-4">
+              <button @click="saveProfile" class="luminous-btn px-10 py-4 rounded-xl text-[10px] font-bold text-white dark:text-black uppercase tracking-[0.2em] flex items-center gap-3 transition-all hover:scale-105 active:scale-95 shadow-lg dark:shadow-none">
+                <span class="material-symbols-outlined text-[18px]">save</span>
+                Save Changes
+              </button>
+            </div>
+          </div>
+        </div>
 
-      <div class="space-y-4">
-        <input
-          v-model="profileForm.name"
-          type="text"
-          placeholder="Name"
-          class="w-full border rounded-lg px-4 py-3"
-        />
+        <!-- Bottom Grid: Security & Action -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <!-- Security Protocols -->
+          <div class="glass-card rounded-[2rem] p-10 flex flex-col justify-between bg-white dark:bg-white/5 border border-slate-200 dark:border-white/5 transition-colors">
+            <h3 class="text-[10px] text-slate-400 dark:text-white/30 uppercase tracking-[0.2em] mb-10 font-bold flex items-center gap-3 transition-colors">
+              <span class="material-symbols-outlined text-slate-400 dark:text-white/40 text-lg">verified_user</span> Security Protocols
+            </h3>
+            <div class="space-y-8">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-sm font-bold text-slate-900 dark:text-white tracking-tight transition-colors">Multi-Factor Authentication</p>
+                  <p class="text-[10px] text-slate-400 dark:text-white/30 mt-1 uppercase font-bold tracking-widest transition-colors">Require secondary key on login</p>
+                </div>
+                <div @click="profileForm.mfa = !profileForm.mfa" class="w-12 h-6 rounded-full relative cursor-pointer transition-all duration-300 border border-slate-200 dark:border-white/10" :class="profileForm.mfa ? 'bg-indigo-500/20 dark:bg-cyan-500/20 border-indigo-500/40 dark:border-cyan-500/40' : 'bg-slate-100 dark:bg-white/5'">
+                  <div class="absolute top-1 w-4 h-4 rounded-full transition-all duration-300" :class="profileForm.mfa ? 'right-1 bg-indigo-600 dark:bg-cyan-400 shadow-[0_0_10px_rgba(0,240,255,1)]' : 'left-1 bg-slate-300 dark:bg-white/20'"></div>
+                </div>
+              </div>
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-sm font-bold text-slate-900 dark:text-white tracking-tight transition-colors">Data Telemetry</p>
+                  <p class="text-[10px] text-slate-400 dark:text-white/30 mt-1 uppercase font-bold tracking-widest transition-colors">Share anonymized usage logs</p>
+                </div>
+                <div @click="profileForm.telemetry = !profileForm.telemetry" class="w-12 h-6 rounded-full relative cursor-pointer transition-all duration-300 border border-slate-200 dark:border-white/10" :class="profileForm.telemetry ? 'bg-indigo-500/20 dark:bg-cyan-500/20 border-indigo-500/40 dark:border-cyan-500/40' : 'bg-slate-100 dark:bg-white/5'">
+                  <div class="absolute top-1 w-4 h-4 rounded-full transition-all duration-300" :class="profileForm.telemetry ? 'right-1 bg-indigo-600 dark:bg-cyan-400 shadow-[0_0_10px_rgba(0,240,255,1)]' : 'left-1 bg-slate-300 dark:bg-white/20'"></div>
+                </div>
+              </div>
+            </div>
+          </div>
 
-        <input
-          v-model="profileForm.phone"
-          type="text"
-          placeholder="Phone"
-          class="w-full border rounded-lg px-4 py-3"
-        />
-
-        <input
-          v-model="profileForm.email"
-          type="text"
-          placeholder="Email"
-          class="w-full border rounded-lg px-4 py-3"
-        />
+          <!-- Latest Action -->
+          <div class="glass-card rounded-[2rem] p-10 flex flex-col justify-between bg-white dark:bg-white/5 border border-slate-200 dark:border-white/5 transition-colors">
+            <div>
+              <h3 class="text-[10px] text-slate-400 dark:text-white/30 uppercase tracking-[0.2em] mb-8 font-bold flex items-center gap-3 transition-colors">
+                <span class="material-symbols-outlined text-slate-400 dark:text-white/40 text-lg transition-colors">history</span> Latest Action
+              </h3>
+              <p class="text-sm font-bold text-slate-900 dark:text-white leading-tight transition-colors">Initiated Deep Scan on Sector 7G.</p>
+              <p class="text-[10px] text-purple-600 dark:text-purple-400 font-bold uppercase tracking-widest mt-2 transition-colors">12 minutes ago</p>
+            </div>
+            
+            <div class="mt-12">
+              <div class="w-full bg-slate-100 dark:bg-white/5 h-2 rounded-full overflow-hidden border border-slate-200 dark:border-white/5 transition-colors">
+                <div class="bg-gradient-to-r from-indigo-500 dark:from-cyan-400 to-purple-500 h-full w-[75%] relative shadow-[0_0_15px_rgba(0,240,255,0.3)] transition-all">
+                  <div class="absolute right-0 top-0 bottom-0 w-4 bg-white/30 blur-[2px] animate-pulse"></div>
+                </div>
+              </div>
+              <div class="flex justify-end mt-3">
+                 <p class="text-[9px] text-slate-400 dark:text-white/20 uppercase font-bold tracking-[0.2em] transition-colors">Scan 75% Complete</p>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
+    </main>
 
-      <div class="flex justify-end gap-3 mt-6">
-        <button @click="closeEditModal" class="px-4 py-2 border rounded-lg">
-          Cancel
-        </button>
-
-        <button
-          @click="saveProfile"
-          class="px-4 py-2 bg-blue-600 text-white rounded-lg"
-        >
-          Save
-        </button>
-      </div>
-    </div>
+    <!-- Footer Mockup -->
+    <footer class="w-full py-12 px-12 border-t border-slate-100 dark:border-white/5 text-center flex flex-col items-center gap-6 transition-colors">
+       <div class="flex gap-8 text-[9px] font-bold text-slate-400 dark:text-white/20 uppercase tracking-[0.2em] transition-colors">
+          <a href="#" class="hover:text-slate-600 dark:hover:text-white/40 transition-colors">Privacy Protocol</a>
+          <a href="#" class="hover:text-slate-600 dark:hover:text-white/40 transition-colors">Node Status</a>
+          <a href="#" class="hover:text-slate-600 dark:hover:text-white/40 transition-colors">API Docs</a>
+       </div>
+       <p class="text-[9px] text-slate-300 dark:text-white/20 uppercase tracking-[0.2em] font-medium transition-colors">© 2024 Orbit Systems. Neural Link Established. <span class="text-slate-400 dark:text-white/40">Orbit AI</span></p>
+    </footer>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from "vue";
-import { auth, signOut } from "../../src/auth/firebase";
-const user = ref(null);
 
-const showEditModal = ref(false);
+const user = ref(null);
 const profileForm = ref({
-  name: "",
-  phone: "",
-  email: "",
+  firstName: "Elara",
+  lastName: "Vance",
+  email: "elara.vance@orbit.net",
+  bio: "Navigating the intersection of synthetic intelligence and human creativity. Primary focus on generative topology and neural pathing.",
+  mfa: true,
+  telemetry: false
 });
 
-const openEditModal = () => {
-  profileForm.value = {
-    name: user.value?.displayName || "",
-    phone: user.value?.phoneNumber || "",
-    email: user.value?.email || "",
-  };
-  showEditModal.value = true;
-};
-
-const closeEditModal = () => {
-  showEditModal.value = false;
-};
+const links = [
+  { name: 'Global Network (Google)', status: 'Connected', icon: 'public' },
+  { name: 'Social Matrix (Meta)', status: 'Unlinked', icon: 'hub' }
+];
 
 const saveProfile = async () => {
   try {
-    console.log("Update thành công:", data);
-    showEditModal.value = false;
+    console.log("Saving changes:", profileForm.value);
   } catch (error) {
-    console.error("Update thất bại:", error);
+    console.error("Save failed:", error);
   }
 };
 
 const setupAuthListener = async () => {
-  const userRoles = await $fetch("/api/auth/user-roles", {
-    method: "GET",
-  });
-  if (!Array.isArray(userRoles) || userRoles.length < 1) {
-    console.log("Không có quyền vào profile, chuyển hướng về login");
-    return navigateTo("/login");
-  }
-
-  const userProfileData = await $fetch("/api/auth/user-profile", {
-    method: "GET",
-  });
-
-  // console.log("User profile data:", JSON.stringify(userProfileData));
-  user.value = userProfileData;
-};
-
-const signOutUser = async () => {
   try {
-    await signOut(auth);
-    await $fetch("/api/auth/logout", {
+    const userProfileData = await $fetch("/api/auth/user-profile", {
       method: "GET",
     });
-    user.value = null;
-    // emitUsername(null);
-    // useCookie("userRoles").value = null;
-    // await useFetch("/api/auth/logout", {
-    //   method: "GET",
-    // });
-    navigateTo("/login");
-    console.log("Đăng xuất thành công");
-  } catch (error) {
-    console.error("Lỗi đăng xuất:", error);
+    user.value = userProfileData;
+    if (user.value) {
+      profileForm.value.email = user.value.email || profileForm.value.email;
+      const names = user.value.displayName?.split(" ") || [];
+      profileForm.value.firstName = names[0] || profileForm.value.firstName;
+      profileForm.value.lastName = names.slice(1).join(" ") || profileForm.value.lastName;
+    }
+  } catch (err) {
+    console.error("Auth listener error:", err);
+    return navigateTo("/login");
   }
 };
 
 onMounted(async () => {
   await setupAuthListener();
-  try {
-    const userRoles = await $fetch("/api/auth/user-roles", {
-      method: "GET",
-    });
-    if (Array.isArray(userRoles) && userRoles.includes("admin")) {
-      console.log("User has admin role");
-    } else {
-      return navigateTo("/");
-    }
-  } catch (error) {
-    console.error("Error fetching user roles:", error);
-  }
 });
 </script>
+
+<style scoped>
+.glass-card {
+  backdrop-filter: blur(40px);
+  -webkit-backdrop-filter: blur(40px);
+}
+
+.luminous-btn {
+  background: linear-gradient(90deg, #4f46e5, #9333ea);
+}
+.dark .luminous-btn {
+  background: linear-gradient(90deg, #00f0ff, #7701d0);
+}
+
+.luminous-btn {
+  box-shadow: 0 0 15px rgba(79, 70, 229, 0.2);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  border: none;
+}
+
+.dark .luminous-btn {
+  box-shadow: 0 0 25px rgba(0, 240, 255, 0.3);
+}
+
+.luminous-btn:hover {
+  filter: brightness(1.1);
+  transform: translateY(-2px);
+}
+
+.dark .luminous-btn:hover {
+  box-shadow: 0 0 50px rgba(0, 240, 255, 0.5);
+}
+
+input, textarea {
+  transition: all 0.3s ease;
+}
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(0, 0, 0, 0.05); border-radius: 10px; }
+.dark ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.05); }
+::-webkit-scrollbar-thumb:hover { background: rgba(0, 240, 255, 0.2); }
+</style>
