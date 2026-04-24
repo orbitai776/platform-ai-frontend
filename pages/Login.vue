@@ -95,8 +95,8 @@
           </button>
         </form>
 
-        <p class="mt-10 text-xs text-slate-400 dark:text-white/30 tracking-wide transition-colors">
-          Requesting access? <a href="#" class="text-indigo-600 dark:text-neon-cyan hover:text-slate-900 dark:hover:text-white transition-colors font-bold ml-1">Deploy new instance</a>
+        <p class="mt-10 text-xs text-slate-400 dark:text-white/30 tracking-wide transition-colors text-center">
+          Requesting access? <NuxtLink to="/user/Register" class="text-indigo-600 dark:text-neon-cyan hover:text-slate-900 dark:hover:text-white transition-colors font-bold ml-1">Deploy new instance</NuxtLink>
         </p>
       </div>
     </main>
@@ -107,7 +107,7 @@
 import { ref, onMounted } from 'vue';
 
 definePageMeta({
-  layout: 'authAdmin'  
+  layout: 'authAdmin'
 });
 
 const email = ref('');
@@ -146,40 +146,44 @@ onMounted(() => {
 const handleBackendAuth = async (firebaseIdToken) => {
   try {
     await useFetch('/api/auth/login', {
-      method: "POST",
+      method: 'POST',
       body: { idToken: firebaseIdToken },
     });
 
     const { data: userRolesData } = await useFetch('/api/auth/user-roles', {
-      method: "GET",
+      method: 'GET',
     });
 
     const userRoles = userRolesData.value || [];
+
     if (userRoles.includes('admin')) {
       window.location.href = '/admin';
     } else if (userRoles.includes('partner')) {
       window.location.href = '/partner';
     } else {
-      window.location.href = '/'; 
+      window.location.href = '/';
     }
   } catch (error) {
-    console.error("Lỗi Backend:", error);
-    toast.error("Đăng nhập thất bại!");
+    console.error('Backend auth failed:', error);
+    toast.error('Đăng nhập thất bại do lỗi phía Gateway hoặc tài khoản.');
   }
 };
 
 const handleEmailLogin = async () => {
   if (!process.client) return;
   isLoading.value = true;
+
   try {
-    const { signInWithEmailAndPassword } = await import("firebase/auth");
-    const { auth } = await import("~/src/auth/firebase.js");
+    const { signInWithEmailAndPassword } = await import('firebase/auth');
+    const { auth } = await import('~/src/auth/firebase.js');
+
     const result = await signInWithEmailAndPassword(auth, email.value, password.value);
     const idToken = await result.user.getIdToken();
+
     await handleBackendAuth(idToken);
   } catch (error) {
-    console.error("Login failed:", error);
-    toast.error("Sai email hoặc mật khẩu!");
+    console.error('Login failed:', error);
+    toast.error('Sai email hoặc mật khẩu.');
   } finally {
     isLoading.value = false;
   }
@@ -189,13 +193,16 @@ const handleGoogleLogin = async () => {
   if (!process.client) return;
   isLoading.value = true;
   try {
-    const { signInWithPopup } = await import("firebase/auth");
-    const { auth, provider } = await import("~/src/auth/firebase.js");
+    const { signInWithPopup } = await import('firebase/auth');
+    const { auth, provider } = await import('~/src/auth/firebase.js');
+
     const result = await signInWithPopup(auth, provider);
     const idToken = await result.user.getIdToken();
+
     await handleBackendAuth(idToken);
   } catch (error) {
-    console.error("Login failed:", error);
+    console.error('Google login failed:', error);
+    toast.error('Đăng nhập với Google thất bại.');
   } finally {
     isLoading.value = false;
   }
