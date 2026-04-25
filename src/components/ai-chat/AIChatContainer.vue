@@ -245,6 +245,9 @@ const activeTab = ref('messages')
 const messagesContainer = ref(null)
 const selectedServiceId = ref(null)
 
+// ✅ Lấy accessToken để check user
+const accessToken = useCookie('accessToken')
+
 const {
   messages,
   isLoading,
@@ -366,8 +369,24 @@ watch(() => currentConversationId.value, (value) => {
 onMounted(async () => {
   await loadOrganization()
   await loadPartnerServices()
-  await loadConversations()
 
+  const savedUserKey = localStorage.getItem('chat_user_key')
+  // ✅ Tính currentUserKey đúng cách: guest nếu không có token
+  const currentUserKey = accessToken.value
+    ? accessToken.value.substring(0, 20)
+    : 'guest'
+
+  if (savedUserKey !== currentUserKey) {
+    // Khác user (hoặc đã logout) → reset sạch
+    resetChat()
+    localStorage.setItem('chat_user_key', currentUserKey)
+    selectedServiceId.value = null
+    activeTab.value = 'messages'
+    return
+  }
+
+  // Cùng user → restore bình thường
+  await loadConversations()
   const savedConvId = localStorage.getItem('current_conversation_id')
   if (savedConvId) {
     currentConversationId.value = savedConvId

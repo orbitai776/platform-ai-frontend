@@ -1,21 +1,74 @@
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { getAuth } from "firebase/auth"
 import { auth, provider, signInWithPopup } from "../auth/firebase"
 
 export const useAIChatAPI = () => {
   const messages = ref([])
   const isLoading = ref(false)
-  const currentConversationId = ref(localStorage.getItem('current_conversation_id'))
-  const guestSessionId = ref(localStorage.getItem('guest_session_id') || '')
   const conversationsList = ref([])
   const partnerServices = ref([])
-  const currentServiceName = ref(localStorage.getItem('current_service_name') || '')
-  const currentPartnerId = ref(localStorage.getItem('current_partner_id') || '')
 
   const BASE_URL = 'https://platform-gateway-dev.orbitai.fun'
   const ORG_ID = 'e3845d6c-9bf8-4a2e-a766-33e67f23db22'
 
   const accessToken = useCookie('accessToken')
+
+  const getCurrentUserKey = () => {
+    if (!accessToken.value) return 'guest'
+    return accessToken.value.substring(0, 20)
+  }
+
+  const clearStorage = () => {
+    localStorage.removeItem('current_conversation_id')
+    localStorage.removeItem('guest_session_id')
+    localStorage.removeItem('current_service_name')
+    localStorage.removeItem('current_partner_id')
+    localStorage.removeItem('chat_user_key')
+  }
+
+  const restoreFromStorage = () => {
+    const savedUserKey = localStorage.getItem('chat_user_key')
+    const currentUserKey = getCurrentUserKey()
+
+    if (savedUserKey !== currentUserKey) {
+      clearStorage()
+      localStorage.setItem('chat_user_key', currentUserKey)
+      return { convId: null, sessionId: '', serviceName: '', partnerId: '' }
+    }
+
+    return {
+      convId: localStorage.getItem('current_conversation_id'),
+      sessionId: localStorage.getItem('guest_session_id') || '',
+      serviceName: localStorage.getItem('current_service_name') || '',
+      partnerId: localStorage.getItem('current_partner_id') || ''
+    }
+  }
+
+  const { convId, sessionId, serviceName, partnerId } = restoreFromStorage()
+
+  const currentConversationId = ref(convId)
+  const guestSessionId = ref(sessionId)
+  const currentServiceName = ref(serviceName)
+  const currentPartnerId = ref(partnerId)
+
+  watch(accessToken, (newToken, oldToken) => {
+    if (oldToken === undefined) return
+
+    const newKey = newToken ? newToken.substring(0, 20) : 'guest'
+    const savedKey = localStorage.getItem('chat_user_key')
+
+    if (newKey !== savedKey) {
+      clearStorage()
+      localStorage.setItem('chat_user_key', newKey)
+      currentConversationId.value = null
+      guestSessionId.value = ''
+      currentServiceName.value = ''
+      currentPartnerId.value = ''
+      messages.value = []
+      conversationsList.value = []
+      window.location.reload()
+    }
+  })
 
   const getFirebaseToken = async () => {
     const authInstance = getAuth()
@@ -97,7 +150,6 @@ export const useAIChatAPI = () => {
     }
   }
 
-
   const loadPartnerServices = async () => {
     const res = await callAPI('/v1/api/partner/active-ai-services')
 
@@ -111,7 +163,6 @@ export const useAIChatAPI = () => {
       return partnerServices.value
     }
 
-    // Fallback khi endpoint chưa trả data
     partnerServices.value = [{
       partner_service_id: "1392a458-889d-4825-a2b9-9dc1bc4c6e69",
       name: "Tư vấn Tour Du lịch",
@@ -122,7 +173,6 @@ export const useAIChatAPI = () => {
     }]
     return partnerServices.value
   }
-
 
   const createConversation = async (partnerServiceId, serviceName) => {
     if (serviceName) {
@@ -135,7 +185,6 @@ export const useAIChatAPI = () => {
       localStorage.setItem('current_partner_id', partnerServiceId)
     }
 
-    // guest_session_id: "" → BE tự gen mới; có sẵn → BE dùng lại session cũ
     const body = {
       partner_service_id: partnerServiceId || currentPartnerId.value,
       guest_session_id: guestSessionId.value || ""
@@ -150,6 +199,8 @@ export const useAIChatAPI = () => {
       const id = res.data.conversation_id
       currentConversationId.value = id
       localStorage.setItem('current_conversation_id', id)
+
+      localStorage.setItem('chat_user_key', getCurrentUserKey())
 
       if (res.data.guest_session_id) {
         guestSessionId.value = res.data.guest_session_id
@@ -213,7 +264,7 @@ export const useAIChatAPI = () => {
   }
 
   const resetChat = () => {
-    localStorage.removeItem('current_conversation_id')
+    clearStorage()
     currentConversationId.value = null
     messages.value = []
   }
