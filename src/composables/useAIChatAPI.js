@@ -1,47 +1,172 @@
 import { ref } from 'vue'
-
-// ✅ IMPORT MODEL Ở TRÊN CÙNG
-import { tourModel } from './ai-models/tourModel'
-import { villaModel } from './ai-models/villaModel'
-import { flightModel } from './ai-models/flightModel'
-import { productModel } from './ai-models/productModel'
-import { comboModel } from './ai-models/comboModel'
-
-const USE_FAKE = true
+import { getAuth } from "firebase/auth"
+import { auth, provider, signInWithPopup } from "../auth/firebase"
 
 export const useAIChatAPI = () => {
   const messages = ref([])
   const isLoading = ref(false)
+  const currentConversationId = ref(localStorage.getItem('current_conversation_id'))
+  const guestSessionId = ref(localStorage.getItem('guest_session_id') || '')
+  const conversationsList = ref([])
+  const partnerServices = ref([])
+  const currentServiceName = ref(localStorage.getItem('current_service_name') || '')
+  const currentPartnerId = ref(localStorage.getItem('current_partner_id') || '')
 
-  const currentConversationId = ref(null)
-  const currentServiceId = ref(null) // ✅ FIX: lưu riêng service
+  const BASE_URL = 'https://platform-gateway-dev.orbitai.fun'
+  const ORG_ID = 'e3845d6c-9bf8-4a2e-a766-33e67f23db22'
 
-  const partnerServices = ref([
-    { id: 'tour', name: 'AI Du Lịch', type: 'tour', status: 'active' },
-    { id: 'villa', name: 'AI Khách Sạn', type: 'villa', status: 'active' },
-    { id: 'flight', name: 'AI Vé Máy Bay', type: 'flight', status: 'active' },
-    { id: 'product', name: 'AI Đặc Sản', type: 'product', status: 'active' },
-    { id: 'combo', name: 'AI Combo', type: 'combo', status: 'active' }
-  ])
+  const accessToken = useCookie('accessToken')
 
-  // =========================
-  // CREATE CONVERSATION
-  // =========================
-  const createConversation = async (serviceId) => {
-    currentServiceId.value = serviceId
+  const getFirebaseToken = async () => {
+    const authInstance = getAuth()
+    let user = authInstance.currentUser
 
-    const fakeId = serviceId + '_' + Date.now()
-    currentConversationId.value = fakeId
-    messages.value = []
+    if (!user) {
+      await new Promise((resolve) => {
+        const unsubscribe = authInstance.onAuthStateChanged((u) => {
+          user = u
+          unsubscribe()
+          resolve()
+        })
+      })
+    }
 
-    return fakeId
+    if (!user) {
+      try {
+        const result = await signInWithPopup(auth, provider)
+        user = result.user
+      } catch (err) {
+        console.error("Firebase login error:", err)
+        return null
+      }
+    }
+
+    return await user.getIdToken(true)
   }
 
-  // =========================
-  // SEND MESSAGE
-  // =========================
+  const getBackendToken = async () => {
+    try {
+      if (accessToken.value) return accessToken.value
+      const firebaseToken = await getFirebaseToken()
+      if (!firebaseToken) return null
+      const res = await fetch(`${BASE_URL}/v1/api/auth`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ idToken: firebaseToken })
+      })
+      const data = await res.json()
+      const token = data?.data?.access_token
+      if (token) accessToken.value = token
+      return token
+    } catch (err) {
+      console.error("getBackendToken error:", err)
+      return null
+    }
+  }
+
+  const isGuestMode = () => !accessToken.value
+
+  const callAPI = async (url, options = {}) => {
+    const token = accessToken.value
+
+    const headers = {
+      "Content-Type": "application/json",
+      "x-org-id": ORG_ID,
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(options.headers || {})
+    }
+
+    try {
+      const res = await fetch(BASE_URL + url, {
+        method: options.method || "GET",
+        headers,
+        body: options.body
+      })
+
+      const data = await res.json().catch(() => ({}))
+
+      if (!res.ok) {
+        console.error(`API Error [${res.status}] ${url}:`, JSON.stringify(data))
+        return null
+      }
+
+      return data
+    } catch (err) {
+      console.error("Fetch Error:", err)
+      return null
+    }
+  }
+
+
+  const loadPartnerServices = async () => {
+    const res = await callAPI('/v1/api/partner/active-ai-services')
+
+    if (res?.data?.length) {
+      partnerServices.value = res.data.map((service) => ({
+        ...service,
+        partner_service_id: service.partner_service_id || service.id,
+        service_name: service.service_name || service.type || service.name,
+        status: service.status || 'active'
+      }))
+      return partnerServices.value
+    }
+
+    // Fallback khi endpoint chưa trả data
+    partnerServices.value = [{
+      partner_service_id: "1392a458-889d-4825-a2b9-9dc1bc4c6e69",
+      name: "Tư vấn Tour Du lịch",
+      description: "Tư vấn lịch trình, booking vé máy bay và khách sạn",
+      status: "active",
+      type: "tour",
+      service_name: "tourist"
+    }]
+    return partnerServices.value
+  }
+
+
+  const createConversation = async (partnerServiceId, serviceName) => {
+    if (serviceName) {
+      currentServiceName.value = serviceName
+      localStorage.setItem('current_service_name', serviceName)
+    }
+
+    if (partnerServiceId) {
+      currentPartnerId.value = partnerServiceId
+      localStorage.setItem('current_partner_id', partnerServiceId)
+    }
+
+    // guest_session_id: "" → BE tự gen mới; có sẵn → BE dùng lại session cũ
+    const body = {
+      partner_service_id: partnerServiceId || currentPartnerId.value,
+      guest_session_id: guestSessionId.value || ""
+    }
+
+    const res = await callAPI('/v1/api/chat/conversations', {
+      method: 'POST',
+      body: JSON.stringify(body)
+    })
+
+    if (res?.status === "success") {
+      const id = res.data.conversation_id
+      currentConversationId.value = id
+      localStorage.setItem('current_conversation_id', id)
+
+      if (res.data.guest_session_id) {
+        guestSessionId.value = res.data.guest_session_id
+        localStorage.setItem('guest_session_id', res.data.guest_session_id)
+      }
+
+      messages.value = []
+      return id
+    }
+
+    return null
+  }
+
   const sendMessage = async (text) => {
-    if (!text?.trim()) return
+    if (!text?.trim() || !currentConversationId.value) return
+
+    isLoading.value = true
 
     messages.value.push({
       id: Date.now(),
@@ -49,85 +174,65 @@ export const useAIChatAPI = () => {
       content: text
     })
 
-    isLoading.value = true
-
-    try {
-      await new Promise(r => setTimeout(r, 800))
-
-      const service = partnerServices.value.find(
-        s => s.id === currentServiceId.value
-      )
-
-      let reply = ''
-      let products = null
-
-      switch (service?.type) {
-        case 'tour':
-          reply = tourModel(text)
-          break
-
-        case 'villa':
-          reply = villaModel(text)
-          break
-
-        case 'flight':
-          reply = flightModel(text)
-          break
-
-        case 'product': {
-          const result = productModel(text)
-          reply = result.text
-          products = result.products
-          break
-        }
-
-        case 'combo': {
-          reply = comboModel(text)
-          break
-        }
-
-        default:
-          reply = '🤖 Bạn muốn hỏi gì thêm?'
+    const res = await callAPI(
+      `/v1/api/chat/conversations/${currentConversationId.value}/messages`,
+      {
+        method: 'POST',
+        body: JSON.stringify({ content: text })
       }
+    )
 
-      messages.value.push({
-        id: Date.now() + 1,
-        role: 'assistant',
-        content: reply,
-        products,
-        isCompleted: true
-      })
+    const ai = res?.data || {}
 
-    } catch (err) {
-      console.error(err)
+    messages.value.push({
+      id: Date.now() + 1,
+      role: 'assistant',
+      content: ai.content || "AI không phản hồi.",
+      is_completed: ai.is_completed || false,
+      products: ai.products || []
+    })
 
-      messages.value.push({
-        id: Date.now() + 1,
-        role: 'assistant',
-        content: '⚠️ Có lỗi xảy ra',
-        isCompleted: true
-      })
-    } finally {
-      isLoading.value = false
-    }
+    isLoading.value = false
   }
 
-  // =========================
-  // RESET CHAT
-  // =========================
+  const loadConversationHistory = async (id) => {
+    const res = await callAPI(`/v1/api/chat/conversations/${id}/messages`)
+    messages.value = (res?.data || []).map((m, i) => ({
+      id: i,
+      role: m.role,
+      content: m.content,
+      is_completed: m.is_completed || false,
+      products: m.products || []
+    }))
+  }
+
+  const loadConversations = async () => {
+    if (isGuestMode()) return
+    const res = await callAPI('/v1/api/chat/conversations')
+    conversationsList.value = res?.data || []
+  }
+
   const resetChat = () => {
+    localStorage.removeItem('current_conversation_id')
     currentConversationId.value = null
-    currentServiceId.value = null
     messages.value = []
   }
 
   return {
     messages,
     isLoading,
-    partnerServices,
     currentConversationId,
+    conversationsList,
+    partnerServices,
+    currentServiceName,
+    currentPartnerId,
+    isGuestMode,
+    getBackendToken,
+    loadPartnerServices,
     createConversation,
     sendMessage,
+    loadConversationHistory,
+    loadConversations,
     resetChat
   }
 }
