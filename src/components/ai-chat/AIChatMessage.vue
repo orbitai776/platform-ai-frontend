@@ -10,10 +10,10 @@
     <div class="max-w-[85%] min-w-0">
       <div class="mb-2 flex items-center gap-2" :class="isUser ? 'justify-end' : 'justify-start'">
         <span
-          class="text-[10px] font-bold uppercase tracking-[0.1em]"
-          :class="isUser ? 'text-slate-400' : 'text-sky-600'"
+          v-if="!isUser"
+          class="text-[10px] font-bold uppercase tracking-[0.1em] text-sky-600"
         >
-          {{ isUser ? 'Bạn' : 'Trợ lý AI' }}
+          Trợ lý AI
         </span>
 
         <span
@@ -30,13 +30,6 @@
       >
         <p class="whitespace-pre-wrap break-words text-[13px] leading-relaxed">{{ content }}</p>
       </div>
-    </div>
-
-    <div
-      v-if="isUser"
-      class="mt-1 hidden h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-sky-500 text-[11px] font-semibold text-white shadow-sm sm:flex"
-    >
-      Bạn
     </div>
   </div>
 </template>

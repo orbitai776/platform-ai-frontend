@@ -120,8 +120,14 @@ const handleLogout = async () => {
     user.value = null;
     isPartner.value = false;
     isAdmin.value = false;
-    // Optional: redirect to home
-    navigateTo('/');
+
+    localStorage.removeItem('current_conversation_id')
+    localStorage.removeItem('guest_session_id')
+    localStorage.removeItem('current_service_name')
+    localStorage.removeItem('current_partner_id')
+    localStorage.removeItem('chat_user_key')
+
+    window.location.href = '/'
   } catch (error) {
     console.error('Logout error:', error);
   }
