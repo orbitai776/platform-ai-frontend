@@ -12,7 +12,7 @@ export default defineEventHandler(async (event) => {
       headers: { Authorization: `Bearer ${token}` },
       body: body
     })
-  } catch (error) {
+  } catch (error : any) {
     throw createError({
       statusCode: error.response?.status || 500,
       message: 'Lỗi khi cập nhật thông tin dịch vụ'

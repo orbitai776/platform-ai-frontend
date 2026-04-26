@@ -6,7 +6,7 @@ export default defineEventHandler(async (event) => {
   if (!token) throw createError({ statusCode: 401, message: 'Unauthorized' })
 
   try {
-    return await $fetch(`${config.public.gatewayUrl}/v1/api/partner/ai-services/${id}`, {
+    return await $fetch(`${config.public.gatewayUrl}/v1/api/admin/services/${id}`, {
       method: 'DELETE',
       headers: { Authorization: `Bearer ${token}` }
     })
