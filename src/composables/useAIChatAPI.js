@@ -1,12 +1,14 @@
 import { ref, watch } from 'vue'
 import { getAuth } from "firebase/auth"
 import { auth, provider, signInWithPopup } from "../auth/firebase"
+import { usePartnerServices } from './usePartnerService'
 
 export const useAIChatAPI = () => {
   const messages = ref([])
   const isLoading = ref(false)
   const conversationsList = ref([])
-  const partnerServices = ref([])
+
+  const { services: partnerServices, loadPublicServices } = usePartnerServices()
 
   const BASE_URL = 'https://platform-gateway-dev.orbitai.fun'
   const ORG_ID = 'e3845d6c-9bf8-4a2e-a766-33e67f23db22'
@@ -26,30 +28,37 @@ export const useAIChatAPI = () => {
     localStorage.removeItem('chat_user_key')
   }
 
-  const restoreFromStorage = () => {
+  const currentConversationId = ref(null)
+  const guestSessionId = ref('')
+  const currentServiceName = ref('')
+  const currentPartnerId = ref('')
+
+  const resetState = () => {
+    currentConversationId.value = null
+    guestSessionId.value = ''
+    currentServiceName.value = ''
+    currentPartnerId.value = ''
+    messages.value = []
+    conversationsList.value = []
+  }
+
+  const initFromStorage = () => {
     const savedUserKey = localStorage.getItem('chat_user_key')
     const currentUserKey = getCurrentUserKey()
 
     if (savedUserKey !== currentUserKey) {
       clearStorage()
       localStorage.setItem('chat_user_key', currentUserKey)
-      return { convId: null, sessionId: '', serviceName: '', partnerId: '' }
+      return
     }
 
-    return {
-      convId: localStorage.getItem('current_conversation_id'),
-      sessionId: localStorage.getItem('guest_session_id') || '',
-      serviceName: localStorage.getItem('current_service_name') || '',
-      partnerId: localStorage.getItem('current_partner_id') || ''
-    }
+    currentConversationId.value = localStorage.getItem('current_conversation_id')
+    guestSessionId.value = localStorage.getItem('guest_session_id') || ''
+    currentServiceName.value = localStorage.getItem('current_service_name') || ''
+    currentPartnerId.value = localStorage.getItem('current_partner_id') || ''
   }
 
-  const { convId, sessionId, serviceName, partnerId } = restoreFromStorage()
-
-  const currentConversationId = ref(convId)
-  const guestSessionId = ref(sessionId)
-  const currentServiceName = ref(serviceName)
-  const currentPartnerId = ref(partnerId)
+  initFromStorage()
 
   watch(accessToken, (newToken, oldToken) => {
     if (oldToken === undefined) return
@@ -60,12 +69,7 @@ export const useAIChatAPI = () => {
     if (newKey !== savedKey) {
       clearStorage()
       localStorage.setItem('chat_user_key', newKey)
-      currentConversationId.value = null
-      guestSessionId.value = ''
-      currentServiceName.value = ''
-      currentPartnerId.value = ''
-      messages.value = []
-      conversationsList.value = []
+      resetState()
       window.location.reload()
     }
   })
@@ -151,26 +155,7 @@ export const useAIChatAPI = () => {
   }
 
   const loadPartnerServices = async () => {
-    const res = await callAPI('/v1/api/partner/active-ai-services')
-
-    if (res?.data?.length) {
-      partnerServices.value = res.data.map((service) => ({
-        ...service,
-        partner_service_id: service.partner_service_id || service.id,
-        service_name: service.service_name || service.type || service.name,
-        status: service.status || 'active'
-      }))
-      return partnerServices.value
-    }
-
-    partnerServices.value = [{
-      partner_service_id: "1392a458-889d-4825-a2b9-9dc1bc4c6e69",
-      name: "Tư vấn Tour Du lịch",
-      description: "Tư vấn lịch trình, booking vé máy bay và khách sạn",
-      status: "active",
-      type: "tour",
-      service_name: "tourist"
-    }]
+    await loadPublicServices()
     return partnerServices.value
   }
 
@@ -265,8 +250,7 @@ export const useAIChatAPI = () => {
 
   const resetChat = () => {
     clearStorage()
-    currentConversationId.value = null
-    messages.value = []
+    resetState()
   }
 
   return {
