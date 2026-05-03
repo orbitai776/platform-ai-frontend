@@ -51,7 +51,7 @@ const chartData = computed(() => ({
   datasets: [
     {
       label: 'Tokens Used',
-      data: displayServices.value.map(s => s.token_used),
+      data: displayServices.value.map(s => s.tokenUsed),
       backgroundColor: displayServices.value.map((_, i) => colors[i % colors.length] + '44'), // Semi-transparent
       borderColor: displayServices.value.map((_, i) => colors[i % colors.length]),
       borderWidth: 2,
