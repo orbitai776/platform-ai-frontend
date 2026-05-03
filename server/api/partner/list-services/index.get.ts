@@ -17,10 +17,14 @@ export default defineEventHandler(async (event) => {
     })
     
     return response
-  } catch (error) {
+  } catch (error :any) {
     console.error('Lỗi từ Gateway:', error.response?._data || error.message)
+     const status = error.response?.status || 500 ;
+      if (status === 404) {
+      return { data: [] } 
+    }
     throw createError({
-      statusCode: error.response?.status || 500,
+      statusCode: status,
       message: error.response?._data?.message || 'Lỗi kết nối đến Gateway'
     })
   }

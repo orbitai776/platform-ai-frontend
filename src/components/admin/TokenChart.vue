@@ -17,8 +17,8 @@
           <span class="text-xs font-bold text-slate-600 dark:text-white/70 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">{{ s.name }}</span>
         </div>
         <div class="flex flex-col items-end">
-          <span class="text-xs font-bold text-slate-900 dark:text-white transition-colors">{{ formatNumber(s.token_used) }}</span>
-          <span class="text-[8px] text-slate-400 dark:text-white/20 uppercase font-black transition-colors">{{ ((s.token_used / totalTokens) * 100).toFixed(1) }}%</span>
+          <span class="text-xs font-bold text-slate-900 dark:text-white transition-colors">{{ formatNumber(s.tokenUsed) }}</span>
+          <span class="text-[8px] text-slate-400 dark:text-white/20 uppercase font-black transition-colors">{{ ((s.tokenUsed / totalTokens) * 100).toFixed(1) }}%</span>
         </div>
       </div>
     </div>
@@ -65,13 +65,13 @@ const displayServices = computed(() => {
   ]
 })
 
-const totalTokens = computed(() => displayServices.value.reduce((acc, s) => acc + (s.token_used || 0), 0))
+const totalTokens = computed(() => displayServices.value.reduce((acc, s) => acc + (s.tokenUsed || 0), 0))
 
 const chartData = computed(() => ({
   labels: displayServices.value.map(s => s.name),
   datasets: [
     {
-      data: displayServices.value.map(s => s.token_used),
+      data: displayServices.value.map(s => s.tokenUsed),
       backgroundColor: colors,
       borderColor: isDark.value ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)',
       borderWidth: 2,
