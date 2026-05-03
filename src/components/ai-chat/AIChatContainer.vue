@@ -245,6 +245,8 @@ const activeTab = ref('messages')
 const messagesContainer = ref(null)
 const selectedServiceId = ref(null)
 
+const accessToken = useCookie('accessToken')
+
 const {
   messages,
   isLoading,
@@ -275,7 +277,6 @@ const currentService = computed(() => {
   return null
 })
 
-// === UI Helpers ===
 const getServiceIcon = (service) => {
   const source = `${service?.type || ''} ${service?.category || ''} ${service?.name || ''}`.toLowerCase()
   if (source.includes('tour') || source.includes('travel')) return '✈'
@@ -309,7 +310,6 @@ const scrollToBottom = async () => {
   }
 }
 
-// === Interaction Handlers ===
 const handleSelectService = async (serviceId) => {
   if (!serviceId) return
   selectedServiceId.value = serviceId
@@ -356,7 +356,6 @@ const backToServices = () => {
   }
 }
 
-// === Lifecycle & Watchers ===
 watch(() => messages.value.length, scrollToBottom)
 
 watch(() => currentConversationId.value, (value) => {
@@ -366,13 +365,30 @@ watch(() => currentConversationId.value, (value) => {
 onMounted(async () => {
   await loadOrganization()
   await loadPartnerServices()
+
+  const savedUserKey = localStorage.getItem('chat_user_key')
+  const currentUserKey = accessToken.value
+    ? accessToken.value.substring(0, 20)
+    : 'guest'
+  if (savedUserKey !== currentUserKey) {
+    resetChat()
+    localStorage.setItem('chat_user_key', currentUserKey)
+    selectedServiceId.value = null
+    activeTab.value = 'messages'
+    return
+  }
   await loadConversations()
 
   const savedConvId = localStorage.getItem('current_conversation_id')
-  if (savedConvId) {
-    currentConversationId.value = savedConvId
+  const isValid = conversationsList.value.some(
+    c => c.conversation_id === savedConvId
+  )
+
+  if (savedConvId && isValid) {
     await loadConversationHistory(savedConvId)
     scrollToBottom()
+  } else {
+    resetChat()
   }
 })
 </script>
