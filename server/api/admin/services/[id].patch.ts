@@ -8,22 +8,19 @@ export default defineEventHandler(async (event) => {
 
   try {
     return await $fetch(`${config.public.gatewayUrl}/v1/api/admin/services/${id}`, {
-      method: 'DELETE',
+      method: 'PATCH',
       headers: { Authorization: `Bearer ${token}` },
+      body
     })
   } catch (error :any) {
     const status=  error.response?.status || 500
-
-    if (status === 409) {
-      throw createError({
-        statusCode: 409,
-        message: 'Service đang được partner sử dụng, không thể xoá'
-      })
-    }
-
+    const message =
+      error.response?._data?.message ||
+      error.data?.message ||
+      'Lỗi khi cập nhật trạng thái service'
     throw createError({
       statusCode: status,
-      message: error.data?.message || 'Lỗi khi thực hiện xóa mềm'
+      message
     })
   }
 })

@@ -130,7 +130,6 @@
                   <th class="pb-4 text-center">Tier</th>
                   <th class="pb-4 text-center">Tokens</th>
                   <th class="pb-4 text-center">Cost (EST)</th>
-                  <th class="pb-4 text-right">Status</th>
                 </tr>
               </thead>
               <tbody class="text-[11px]">
@@ -149,12 +148,6 @@
                   </td>
                   <td class="py-5 text-center font-bold text-slate-500 dark:text-white/60 transition-colors">{{ org.tokens }}</td>
                   <td class="py-5 text-center font-bold text-slate-500 dark:text-white/60 transition-colors">{{ org.cost }}</td>
-                  <td class="py-5 text-right">
-                    <div class="flex items-center justify-end gap-2">
-                      <span class="w-1.5 h-1.5 rounded-full" :class="org.status === 'Throttled' ? 'bg-rose-500' : 'bg-emerald-500 dark:bg-[#4ade80]'"></span>
-                      <span class="font-bold" :class="org.status === 'Throttled' ? 'text-rose-500' : 'text-emerald-600 dark:text-[#4ade80]'">{{ org.status || 'Active' }}</span>
-                    </div>
-                  </td>
                 </tr>
               </tbody>
             </table>
@@ -187,7 +180,6 @@ const organizationData = computed(() => {
        tier: s.type,
        tokens: formatNumber(s.tokens),
        cost: `$${formatNumber(s.tokens * 0.0003)}`,
-       status: s.deployed > 0 ? 'Active' : 'Inactive'
     }))
   }
   return [

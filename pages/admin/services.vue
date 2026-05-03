@@ -330,17 +330,18 @@ const fetchAll = async () => {
   try {
     // 1. Catalog
     const resCatalog = await $fetch('/api/admin/services')
-    catalog.value = resCatalog.items || []
+    catalog.value = resCatalog.data || []
 
-    // 2. Services (instance)
     const resServices = await $fetch('/api/admin/services')
-    services.value = (resServices.items || []).map(item => ({
+    services.value = (resServices.data || []).map(item => ({
       id: item.id,
       name: item.name,
       type: item.type,
       description: item.description,
+      status: item.status, 
       active: item.status === 'active'
     }))
+
 
   } catch (err) {
     console.error(err)
@@ -412,36 +413,47 @@ const submitForm = async () => {
 
 // DELETE 
 const handleSoftDelete = async (item) => {
-  const isHidden = item.active === false
+  const isDisabled = item.status === 'disable'
 
-  if (!(await toast.askConfirm(
-    isHidden ? 'Khôi phục service?' : 'Ẩn service này?'
-  ))) return
+  const confirm = await toast.askConfirm(
+    isDisabled ? 'Khôi phục service?' : 'Ẩn service này?'
+  )
+
+  if (!confirm) return
 
   try {
-    if (!isHidden) {
+    if (!isDisabled) {
       await $fetch(`/api/admin/services/${item.id}`, {
-        method: 'DELETE'
+        method: 'DELETE',
       })
 
       toast.success('Ẩn service thành công')
+
     } else {
       await $fetch(`/api/admin/services/${item.id}`, {
         method: 'PATCH',
-        body: { active: true }
+        body: {
+          status: 'active' 
+        }
       })
+      
 
       toast.success('Khôi phục service thành công')
     }
 
     await fetchAll()
-
   } catch (err) {
-    if (err?.statusCode === 409) {
+    const status = err?.statusCode || err?.response?.status
+
+    if (status === 409) {
       toast.error('Không thể ẩn: Service đang được partner sử dụng')
-    } else {
-      toast.error(err.data?.message || 'Thao tác thất bại')
+      return
     }
+    toast.error(
+      err?.data?.message ||
+      err?.response?._data?.message ||
+      'Thao tác thất bại'
+    )
   }
 }
 

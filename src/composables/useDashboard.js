@@ -28,7 +28,7 @@ export function useDashboard() {
                 }
             );
 
-            
+
             if (res.status === 401 && retry) {
                 accessToken = await getAccessToken(true)
                 return await fetchDashboard(false)
@@ -40,11 +40,13 @@ export function useDashboard() {
 
             const data = await res.json()
 
-            users.value = data.users || {}
-            partners.value = data.partners || {}
-            services.value = data.services || {}
-            topServices.value = data.services?.topServices || []
+            const payload = data.data || {}
 
+            users.value = payload.summary?.users || {}
+            partners.value = payload.summary?.partners || {}
+            services.value = payload.summary?.services || {}
+            topServices.value = payload.topServices || []
+            
         } catch (err) {
             console.error('Dashboard error:', err)
         } finally {
@@ -52,7 +54,7 @@ export function useDashboard() {
         }
     }
 
-    
+
     const statCards = computed(() => [
         {
             label: 'Users',
@@ -66,29 +68,29 @@ export function useDashboard() {
         },
         {
             label: 'Services',
-            value: services.value.deployed_total || 0,
-            sub: `${services.value.deployed_active || 0} active`
+            value: services.value.deployedTotal || 0,
+            sub: `${services.value.deployedActive || 0} active`
         },
         {
             label: 'Tokens',
-            value: services.value.total_token_used || 0,
-            sub: `30d: ${services.value.recent_30d_tokens || 0}`
+            value: services.value.totalTokenUsed || 0,
+            sub: `30d: ${services.value.recent30dTokens || 0}`
         },
         {
             label: 'Partners Using',
-            value: services.value.partner_using_count || 0,
+            value: services.value.partnerUsingCount || 0,
             sub: 'Active usage'
         }
     ])
 
-   
+
     const tableData = computed(() => {
         return topServices.value.map(s => ({
             name: s.name,
             type: s.type,
-            partners: s.partner_count,
-            deployed: s.deployed_count,
-            tokens: s.token_used
+            partners: s.partnerCount,
+            deployed: s.deployedCount,
+            tokens: s.tokenUsed
         }))
     })
 
